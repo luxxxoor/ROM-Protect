@@ -2,6 +2,7 @@
 #include <amxmodx>
 #include <amxmisc>
 #include <cstrike>
+#include <fakemeta>
 
 #if AMXX_VERSION_NUM < 183
 #include <ColorChat>
@@ -10,12 +11,10 @@
 #endif
 
 #pragma semicolon 1
-//#pragma dynamic 1
 
 new sz_MenuText[ MAX_PLAYERS ][ MAX_PLAYERS ];
 new num[ MAX_PLAYERS ], cnt[ MAX_PLAYERS ];
 new bool:flood[ MAX_PLAYERS ], bool:Name[ MAX_PLAYERS ], bool:Admin[ MAX_PLAYERS ], g_szFile[ 128 ], last_pass[MAX_PLAYERS][MAX_PLAYERS];
-//new g_szMapName[ 32 ];
 
 static const Version[ ]   = "1.0.3f";
 static const Plugin_name[ ] = "ROM-Protect";
@@ -25,6 +24,17 @@ static const cfg[ ] = "addons/amxmodx/configs/rom_protect.cfg";
 
 new loginName[ 1024 ][ MAX_PLAYERS ], loginPass[ 1024 ][ MAX_PLAYERS ], loginAccs[ 1024 ][ MAX_PLAYERS ], loginFlag[ 1024 ][ MAX_PLAYERS ];
 new admin_number;
+
+enum
+{
+    FM_TEAM_T = 1,
+    FM_TEAM_CT,
+    FM_TEAM_SPECTATOR
+}
+
+#define OFFSET_TEAM  114 
+#define fm_set_user_team(%1,%2)  set_pdata_int( %1, OFFSET_TEAM, %2 )
+#define fm_get_user_team(%1)     get_pdata_int( %1, OFFSET_TEAM ) 
 
 enum _:g_Cvars
 {
@@ -49,7 +59,6 @@ enum _:g_Cvars
 	utf8_bom,
 	color_bug,
 	motdfile
-	//n_motdfile
 	
 };
 new g_Cvar[g_Cvars];
@@ -82,29 +91,8 @@ enum
 };
 
 public plugin_precache( )
-	{
-	g_Cvar [ Tag ]                          = register_cvar( "rom_tag", "*ROM-Protect" );
-	g_Cvar [ spec_bug ]                     = register_cvar( "rom_spec-bug", "1" );
-	g_Cvar [ admin_chat_flood ]             = register_cvar( "rom_admin_chat_flood", "1");
-	g_Cvar [ autobuy_bug ]                  = register_cvar( "rom_autobuy_bug", "1");
-	g_Cvar [ fullupdate_flood ]             = register_cvar( "rom_fullupdate", "1"  );
-	g_Cvar [ fake_players ]                 = register_cvar( "rom_fake-players", "1" );
-	g_Cvar [ fake_players_limit ]           = register_cvar( "rom_fake-players_limit", "3" );
-	g_Cvar [ delete_custom_hpk ]            = register_cvar( "rom_delete_custom_hpk", "1" );
-	g_Cvar [ delete_vault ]                 = register_cvar( "rom_delete_vault", "1" );
-	g_Cvar [ cmd_bug ]                      = register_cvar( "rom_cmd-bug", "1" );
-	g_Cvar [ advertise ]                    = register_cvar( "rom_advertise","1");
-	g_Cvar [ advertise_time ]               = register_cvar( "rom_advertise_time", "120" );
-	g_Cvar [ plug_warn ]                    = register_cvar( "rom_warn", "1" );
-	g_Cvar [ plug_log ]                     = register_cvar( "rom_log", "1" );
-	g_Cvar [ color_bug ]                    = register_cvar( "rom_color-bug", "1" );
-	g_Cvar [ admin_login ]                  = register_cvar( "rom_admin_login", "1" );
-	g_Cvar [ admin_login_file ]             = register_cvar( "rom_admin_login_file", "users_login.ini" );
-	g_Cvar [ admin_login_debug ]            = register_cvar( "rom_admin_login_debug", "0" );
-	g_Cvar [ utf8_bom ]                     = register_cvar( "rom_utf8-bom", "1" );
-	g_Cvar [ motdfile ]                     = register_cvar( "rom_motdfile", "1" );
-	
-	
+	{	
+	RegistersPrecache();
 	
 	new szCurentDate[ 15 ];
 	get_localinfo( "amxx_configsdir", g_szFile, charsmax ( g_szFile ) );
@@ -132,8 +120,7 @@ public plugin_precache( )
 	if( file_exists( cfg ) )
 		server_cmd( "exec %s", cfg );
 	
-	set_task(30.0, "CheckCFG");
-	
+	set_task(30.0, "CheckCFG");	
 }
 
 public CheckCFG()
@@ -166,22 +153,7 @@ public CheckCFG()
 
 public plugin_init( )
 	{
-	register_plugin( Plugin_name, Version, "FioriGinal.Ro" );
-	register_cvar( "rom_protect", Version, FCVAR_SERVER | FCVAR_SPONLY );
-	
-	register_message( get_user_msgid( "ShowMenu" ), "OldStyleMenusTeammenu" );
-	register_message( get_user_msgid( "VGUIMenu" ), "VGuiTeammenu" );
-	
-	register_clcmd( "say", "HookChat");
-	register_clcmd( "say_team", "HookChat");
-	register_clcmd( "cl_autobuy","CheckAutobuyBug");
-	register_clcmd( "cl_rebuy","CheckAutobuyBug");
-	register_clcmd( "cl_setautobuy","CheckAutobuyBug");
-	register_clcmd( "cl_setrebuy","CheckAutobuyBug");
-	register_clcmd( "fullupdate","FullupdateBlock");
-	register_clcmd( "login", "CmdPass" );
-	register_concmd( "amx_cvar", "CvarFunc");
-	register_concmd( "amx_reloadadmins", "ReloadLogin");
+	RegistersInit();
 	
 	if( GetNum(g_Cvar[advertise] ) == 1 )
 		{
@@ -222,15 +194,15 @@ public client_connect( id )
 		new s_name[ MAX_NAME_LENGTH ], bool:b_name[ MAX_PLAYERS ];
 		copy( s_name, charsmax( name ), name );
 		static j;
-		for( new i; i < sizeof( s_name ); i++ )  
+		for( new i; i < sizeof( s_name ); ++i )  
 			{
 			j = i+1;
 			if( i < 31)
-				if( s_name[ i ] == '#' && isalpha(s_name[ j ]))
-				{
-				s_name[ i ] = ' ';
-				b_name[ id ] = true;
-			}
+				if( (s_name[ i ] == '#' && isalpha(s_name[ j ])) || (s_name[ i ] == '+' && isalpha(s_name[ j ])) )
+					{
+					s_name[ i ] = ' ';
+					b_name[ id ] = true;
+				}
 		}
 		
 		if( b_name[ id ] )
@@ -245,7 +217,7 @@ public client_connect( id )
 		get_user_ip( players[ i ], address2, charsmax(address2), 1 );
 		if( equal( address, address2 ) && !is_user_bot( id ) )
 			{
-			cnt[ id ]++;
+			++cnt[ id ];
 			if( cnt[ id ] > GetNum( g_Cvar[fake_players_limit] ) && GetNum( g_Cvar[fake_players] ) == 1 )
 				{
 				server_cmd( "addip ^"30^" ^"%s^";wait;writeip", address );
@@ -275,7 +247,6 @@ public client_disconnect(id)
 	if( Admin[ id ] )
 		{
 		Admin[ id ] = false;
-		//client_print( 0, print_console, "debug 2 : out %d", id);
 		remove_user_flags( id );
 	}
 }
@@ -345,10 +316,12 @@ public client_infochanged( id )
 			{
 			j = i+1;
 			if( i < 31)
-				if( s_name[ i ] == '#' && isalpha(s_name[ j ]))
 				{
-				s_name[ i ] = ' ';
-				b_name[ id ] = true;
+				if ( (s_name[ i ] == '#' && isalpha(s_name[ j ])) || (s_name[ i ] == '+' && isalpha(s_name[ j ])) )
+					{
+					s_name[ i ] = ' ';
+					b_name[ id ] = true;
+				}
 			}
 		}
 		
@@ -592,15 +565,15 @@ public BlockSpecbugOldStyleMenus( id )
 	{
 	if( !is_user_alive( id ) && is_user_connected( id ) && GetNum( g_Cvar[spec_bug] ) == 1 )
 		{
-		if( cs_get_user_team( id ) == CS_TEAM_SPECTATOR && !is_user_alive(id) )
+		if( fm_get_user_team( id ) == FM_TEAM_SPECTATOR && !is_user_alive(id) )
 			{
 			if( equal( sz_MenuText[id], Terrorist ) && is_user_connected( id ) )
 				{
-				cs_set_user_team( id, CS_TEAM_T );
+				fm_set_user_team( id, FM_TEAM_T );
 			}
 			if( equal( sz_MenuText[id], CT_Select ) && is_user_connected( id ) )
 				{
-				cs_set_user_team( id, CS_TEAM_CT );
+				fm_set_user_team( id, FM_TEAM_CT );
 			}
 			if( GetNum( g_Cvar[plug_warn] ) )
 				{
@@ -624,16 +597,16 @@ public BlockSpecbugVGui( id )
 	new bool:bug_log[MAX_PLAYERS] = false;
 	if( !is_user_alive( id ) && is_user_connected( id ) && GetNum( g_Cvar[spec_bug] ) == 1 )
 		{
-		if(cs_get_user_team( id ) == CS_TEAM_SPECTATOR )
+		if(fm_get_user_team( id ) == FM_TEAM_SPECTATOR )
 			{
 			if(num[ id ] == 26 )
 				{
-				cs_set_user_team(id, CS_TEAM_T );
+				fm_set_user_team(id, FM_TEAM_T );
 				bug_log[id] = true;
 			}      
 			if(num[ id ] == 27 )
 				{
-				cs_set_user_team(id, CS_TEAM_CT );
+				fm_set_user_team(id, FM_TEAM_CT );
 				bug_log[id] = true;
 			}      
 			if( GetNum( g_Cvar[plug_warn] ) == 1 && bug_log[id])
@@ -879,6 +852,50 @@ GetNum( text )
 	return num;
 }
 
+RegistersPrecache()
+{
+	g_Cvar [ Tag ]                          = register_cvar( "rom_tag", "*ROM-Protect" );
+	g_Cvar [ spec_bug ]                     = register_cvar( "rom_spec-bug", "1" );
+	g_Cvar [ admin_chat_flood ]             = register_cvar( "rom_admin_chat_flood", "1");
+	g_Cvar [ autobuy_bug ]                  = register_cvar( "rom_autobuy_bug", "1");
+	g_Cvar [ fullupdate_flood ]             = register_cvar( "rom_fullupdate", "1"  );
+	g_Cvar [ fake_players ]                 = register_cvar( "rom_fake-players", "1" );
+	g_Cvar [ fake_players_limit ]           = register_cvar( "rom_fake-players_limit", "3" );
+	g_Cvar [ delete_custom_hpk ]            = register_cvar( "rom_delete_custom_hpk", "1" );
+	g_Cvar [ delete_vault ]                 = register_cvar( "rom_delete_vault", "1" );
+	g_Cvar [ cmd_bug ]                      = register_cvar( "rom_cmd-bug", "1" );
+	g_Cvar [ advertise ]                    = register_cvar( "rom_advertise","1");
+	g_Cvar [ advertise_time ]               = register_cvar( "rom_advertise_time", "120" );
+	g_Cvar [ plug_warn ]                    = register_cvar( "rom_warn", "1" );
+	g_Cvar [ plug_log ]                     = register_cvar( "rom_log", "1" );
+	g_Cvar [ color_bug ]                    = register_cvar( "rom_color-bug", "1" );
+	g_Cvar [ admin_login ]                  = register_cvar( "rom_admin_login", "1" );
+	g_Cvar [ admin_login_file ]             = register_cvar( "rom_admin_login_file", "users_login.ini" );
+	g_Cvar [ admin_login_debug ]            = register_cvar( "rom_admin_login_debug", "0" );
+	g_Cvar [ utf8_bom ]                     = register_cvar( "rom_utf8-bom", "1" );
+	g_Cvar [ motdfile ]                     = register_cvar( "rom_motdfile", "1" );
+}
+
+RegistersInit()
+{
+	register_plugin( Plugin_name, Version, "FioriGinal.Ro" );
+	register_cvar( "rom_protect", Version, FCVAR_SERVER | FCVAR_SPONLY );
+	
+	register_message( get_user_msgid( "ShowMenu" ), "OldStyleMenusTeammenu" );
+	register_message( get_user_msgid( "VGUIMenu" ), "VGuiTeammenu" );
+	
+	register_clcmd( "say", "HookChat");
+	register_clcmd( "say_team", "HookChat");
+	register_clcmd( "cl_autobuy","CheckAutobuyBug");
+	register_clcmd( "cl_rebuy","CheckAutobuyBug");
+	register_clcmd( "cl_setautobuy","CheckAutobuyBug");
+	register_clcmd( "cl_setrebuy","CheckAutobuyBug");
+	register_clcmd( "fullupdate","FullupdateBlock");
+	register_clcmd( "login", "CmdPass" );
+	register_concmd( "amx_cvar", "CvarFunc");
+	register_concmd( "amx_reloadadmins", "ReloadLogin");
+}
+
 stock bool:CheckName( id )
 	{
 	new name[ MAX_NAME_LENGTH ];
@@ -934,8 +951,9 @@ WriteCFG( bool:exist )
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_cmd-bug" , -1 );
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Scop      : Urmareste chatul si opeste bugurile de tip ^"%s^"/^"%s0^" care dau pluginurile peste cap." , -1 );
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Serverul nu pateste nimic, insa playerii acestuia primesc ^"quit^" indiferent de ce client folosesc, iar serverul ramane gol." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Update    : Incepand cu versiunea 1.0.1s, pluginul protejeaza serverele si de noul cmd-bug bazat pe caracterul #. Pluginul blocheaza de acum # si % in chat si # in nume." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Update    : Incepand cu versiunea 1.0.3a, pluginul devine mai inteligent, si va bloca doar posibilele folosiri ale acestui bug, astfel incat caracterele # si % vor putea fi folosite, insa nu in toate cazurile." , -1 );
+	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Update    : Incepand cu versiunea 1.0.1s, pluginul protejeaza serverele si de noul cmd-bug bazat pe caracterul '#'. Pluginul blocheaza de acum '#' si '%' in chat si '#' in nume." , -1 );
+	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Update    : Incepand cu versiunea 1.0.3a, pluginul devine mai inteligent, si va bloca doar posibilele folosiri ale acestui bug, astfel incat caracterele '#' si '%' vor putea fi folosite, insa nu in toate cazurile." , -1 );
+	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Update    : Incepand cu versiunea 1.0.3s, pluginul incearca sa inlature bugul provotat de caracterul '+' in nume, acesta incercand sa deruteze playerii sau adminii (nu aparea numele jucatorului in meniuri)." , -1 );
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Atacul este blocat. [Default]" , -1 );
 	if(exist)
