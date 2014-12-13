@@ -16,7 +16,7 @@ new sz_MenuText[ MAX_PLAYERS ][ MAX_PLAYERS ];
 new num[ MAX_PLAYERS ], cnt[ MAX_PLAYERS ];
 new bool:flood[ MAX_PLAYERS ], bool:Name[ MAX_PLAYERS ], bool:Admin[ MAX_PLAYERS ], g_szFile[ 128 ], last_pass[MAX_PLAYERS][MAX_PLAYERS];
 
-static const Version[ ]   = "1.0.3f";
+static const Version[ ]   = "1.0.3s";
 static const Plugin_name[ ] = "ROM-Protect";
 static const Terrorist[ ] = "#Terrorist_Select";
 static const CT_Select[ ] = "#CT_Select"; 
@@ -58,7 +58,8 @@ enum _:g_Cvars
 	admin_login_debug,
 	utf8_bom,
 	color_bug,
-	motdfile
+	motdfile,
+	anti_pause
 	
 };
 new g_Cvar[g_Cvars];
@@ -312,7 +313,7 @@ public client_infochanged( id )
 		new s_name[ MAX_NAME_LENGTH ], bool:b_name[ MAX_PLAYERS ];
 		copy( s_name, charsmax( newname ), newname );
 		static j;
-		for( new i; i < sizeof( s_name ); ++i )  
+		for( new i; i < sizeof( s_name ); i++ )  
 			{
 			j = i+1;
 			if( i < 31)
@@ -341,6 +342,24 @@ public client_infochanged( id )
 	return PLUGIN_CONTINUE;
 }
 
+public plugin_pause()
+{
+	if ( GetNum(g_Cvar[anti_pause]) == 1 )
+	{
+		if ( GetNum(g_Cvar[plug_warn]) == 1)
+			{
+			#if AMXX_VERSION_NUM < 183
+			ColorChat( 0, GREY, "^3%s :^4 S-a depistat o incercare a opririi pluginului de protectie. Operatiune oprita.", GetString(g_Cvar[Tag]) );
+			#else
+			client_print_color( 0, print_team_grey, "^3%s :^4 S-a depistat o incercare a opririi pluginului de protectie. Operatiune oprita.", GetString(g_Cvar[Tag]) );
+			#endif
+		}
+		if( GetNum(g_Cvar[plug_log]) == 1)
+				LogCommand( "*ROM-Protect : S-a depistat o incercare a opririi pluginului de protectie %s. Operatiune oprita.", GetString(g_Cvar[Tag]) );
+		server_cmd("amxx unpause rom_protect.amxx");
+	}
+}
+
 public CmdPass( id )
 	{
 	if( GetNum( g_Cvar[admin_login] ) == 0)
@@ -358,11 +377,11 @@ public CmdPass( id )
 		if(!Name[ id ])
 			{
 			#if AMXX_VERSION_NUM < 183
-			ColorChat( id, GREY, "^3%s :^4 Nume incorect.", GetString( g_Cvar[ Tag ] ) );
+			ColorChat( id, GREY, "^3%s :^4 Nume incorect.", GetString(g_Cvar[Tag]) );
 			#else
-			client_print_color( id, print_team_grey, "^3%s :^4 Nume incorect.", GetString( g_Cvar[ Tag ] ) );
+			client_print_color( id, print_team_grey, "^3%s :^4 Nume incorect.", GetString(g_Cvar[Tag]) );
 			#endif
-			client_print( id, print_console, "%s : Nume incorect.", GetString( g_Cvar[ Tag ] ));
+			client_print( id, print_console, "%s : Nume incorect.", GetString(g_Cvar[Tag] ));
 		}
 		else
 		{
@@ -397,7 +416,7 @@ public HookChat(id)
 		new s_said[ 192 ], bool:b_said_cmd_bug[ MAX_PLAYERS ], bool:b_said_color_bug[ MAX_PLAYERS ];
 		copy( s_said, charsmax( said ), said );
 		static j;
-		for( new i = 0; i < sizeof( s_said ); ++i )
+		for( new i = 0; i < sizeof( s_said ); i++ )
 			{
 			j = i+1;
 			if( GetNum( g_Cvar[cmd_bug] ) == 1 )
@@ -469,13 +488,13 @@ public HookChat(id)
 				g_Flooding[ id ] = nexTime + maxChat + 3.0;
 				return PLUGIN_HANDLED;
 			}
-			++g_Flood[ id ];
+			g_Flood[ id ]++;
 		}
 		else
 		{
 			if ( g_Flood[ id ] )
 				{
-				--g_Flood[id];
+				g_Flood[id]--;
 			}
 		}
 		g_Flooding[ id ] = nexTime + maxChat;
@@ -874,6 +893,7 @@ RegistersPrecache()
 	g_Cvar[admin_login_debug]     = register_cvar("rom_admin_login_debug", "0");
 	g_Cvar[utf8_bom]              = register_cvar("rom_utf8-bom", "1");
 	g_Cvar[motdfile]              = register_cvar("rom_motdfile", "1");
+	g_Cvar[anti_pause]            = register_cvar("rom_anti-pause", "1");
 }
 
 RegistersInit()
@@ -1198,7 +1218,7 @@ WriteCFG( bool:exist )
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_motdfile " , -1 );
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Scop      : Urmareste activitatea adminilor prin comanda amx_cvar si incearca sa opreasca modificare cvarului motdfile intr-un fisier .ini." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Serverul nu pateste nimic, insa adminul care foloseste acest exploit poate fura date importante din server, precum lista de admini, lista de pluginuri etc :." , -1 );
+	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Serverul nu pateste nimic, insa adminul care foloseste acest exploit poate fura date importante din server, precum lista de admini, lista de pluginuri etc ." , -1 );
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Nota      : Functia nu blocheaza deocamdata decat comanda amx_cvar." , -1 );
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Bug-ul este blocat. [Default]" , -1 );
@@ -1209,5 +1229,19 @@ WriteCFG( bool:exist )
 	}
 	else
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_motdfile ^"1^"" , -1 );
+	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
+	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_anti-pause " , -1 );
+	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Scop      : Urmareste ca pluginul de protectie ^"ROM-Protect^" sa nu poata fi pus pe pauza de catre un raufacator." , -1 );
+	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Serverul nu mai este protejat de plugin, acesta fiind expus la mai multe exploituri." , -1 );
+	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Nota      : -" , -1 );
+	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
+	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Bug-ul este blocat. [Default]" , -1 );
+	if(exist)
+		{
+		formatex(line, charsmax(line), "rom_anti-pause ^"%d^"", GetNum(g_Cvar[anti_pause]) );
+		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+	}
+	else
+	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_anti-pause ^"1^"" , -1 );
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
 }
