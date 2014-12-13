@@ -1,5 +1,5 @@
 ROM-Protect
 ===========
 
-Plugin anti-flood &amp; bug-fix.
-Destinat tuturor. Plugin OpenSource.
+Plugin anti-flood &amp; bug-fix destinat tuturor. 
+Plugin OpenSource.
