@@ -63,8 +63,8 @@ enum _:g_Cvars
 };
 new g_Cvar[g_Cvars];
 
-new Float:g_Flooding[ MAX_PLAYERS ] = {0.0, ...};
-new g_Flood[ 32 ] = {0, ...};
+new Float:g_Flooding[MAX_PLAYERS] = {0.0, ...};
+new g_Flood[MAX_PLAYERS] = {0, ...};
 
 new Trie:g_tDefaultRes;
 
