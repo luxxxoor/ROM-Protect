@@ -63,8 +63,8 @@ enum _:g_Cvars
 };
 new g_Cvar[g_Cvars];
 
-new Float:g_Flooding[MAX_PLAYERS] = {0.0, ...};
-new g_Flood[MAX_PLAYERS] = {0, ...};
+new Float:g_Flooding[ MAX_PLAYERS ] = {0.0, ...};
+new g_Flood[ MAX_PLAYERS ] = {0, ...};
 
 new Trie:g_tDefaultRes;
 
@@ -224,11 +224,11 @@ public client_connect( id )
 				if( GetNum( g_Cvar[plug_warn] ) == 1 )
 					{
 					#if AMXX_VERSION_NUM < 183
-					ColorChat( 0, GREY, "^x03%s :^x04 S-a observat un atac de Fake-Players. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
-					ColorChat( 0, GREY, "^x03%s :^x04 Atac identificat cu IP : %s. IP banat 30 minute.", GetString( g_Cvar[ Tag ] ), address );
+					ColorChat( 0, GREY, "^3%s :^4 S-a observat un atac de Fake-Players. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+					ColorChat( 0, GREY, "^3%s :^4 Atac identificat cu IP : %s. IP banat 30 minute.", GetString( g_Cvar[ Tag ] ), address );
 					#else
-					client_print_color( 0, print_team_grey, "^x03%s :^x04 S-a observat un atac de Fake-Players. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
-					client_print_color( 0, print_team_grey, "^x03%s :^x04 Atac identificat cu IP : %s. IP banat 30 minute.", GetString( g_Cvar[ Tag ] ), address );
+					client_print_color( 0, print_team_grey, "^3%s :^4 S-a observat un atac de Fake-Players. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+					client_print_color( 0, print_team_grey, "^3%s :^4 Atac identificat cu IP : %s. IP banat 30 minute.", GetString( g_Cvar[ Tag ] ), address );
 					#endif
 				}
 				if( GetNum( g_Cvar[plug_log] ) == 1 )
@@ -312,7 +312,7 @@ public client_infochanged( id )
 		new s_name[ MAX_NAME_LENGTH ], bool:b_name[ MAX_PLAYERS ];
 		copy( s_name, charsmax( newname ), newname );
 		static j;
-		for( new i; i < sizeof( s_name ); i++ )  
+		for( new i; i < sizeof( s_name ); ++i )  
 			{
 			j = i+1;
 			if( i < 31)
@@ -397,7 +397,7 @@ public HookChat(id)
 		new s_said[ 192 ], bool:b_said_cmd_bug[ MAX_PLAYERS ], bool:b_said_color_bug[ MAX_PLAYERS ];
 		copy( s_said, charsmax( said ), said );
 		static j;
-		for( new i = 0; i < sizeof( s_said ); i++ )
+		for( new i = 0; i < sizeof( s_said ); ++i )
 			{
 			j = i+1;
 			if( GetNum( g_Cvar[cmd_bug] ) == 1 )
@@ -423,9 +423,9 @@ public HookChat(id)
 			if( GetNum(g_Cvar[plug_warn]) == 1)
 				{
 				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^x03%s :^x04 Ai incercat sa creezi CMD_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi CMD_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
 				#else
-				client_print_color( id, print_team_grey, "^x03%s :^x04 Ai incercat sa creezi CMD_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi CMD_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
 				#endif
 			}
 			b_said_cmd_bug[ id ] = false;
@@ -438,9 +438,9 @@ public HookChat(id)
 			if( GetNum(g_Cvar[plug_warn]) == 1)
 				{
 				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^x03%s :^x04 Ai incercat sa creezi COLOR_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi COLOR_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
 				#else
-				client_print_color( id, print_team_grey, "^x03%s :^x04 Ai incercat sa creezi COLOR_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi COLOR_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
 				#endif
 			}
 			b_said_color_bug[ id ] = false;
@@ -469,13 +469,13 @@ public HookChat(id)
 				g_Flooding[ id ] = nexTime + maxChat + 3.0;
 				return PLUGIN_HANDLED;
 			}
-			g_Flood[ id ]++;
+			++g_Flood[ id ];
 		}
 		else
 		{
 			if ( g_Flood[ id ] )
 				{
-				g_Flood[id]--;
+				--g_Flood[id];
 			}
 		}
 		g_Flooding[ id ] = nexTime + maxChat;
@@ -491,9 +491,9 @@ public FullupdateBlock( id )
 		if( GetNum( g_Cvar[plug_warn] ) == 1 )
 			{
 			#if AMXX_VERSION_NUM < 183
-			ColorChat( id, GREY, "^x03%s :^x04 Ai incercat sa creezi FULLUPDATE-FLOOD. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+			ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi FULLUPDATE-FLOOD. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
 			#else
-			client_print_color( id, print_team_grey, "^x03%s :^x04 Ai incercat sa creezi FULLUPDATE-FLOOD. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+			client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi FULLUPDATE-FLOOD. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
 			#endif
 		}
 		if( GetNum( g_Cvar[plug_log] ) == 1 )
@@ -536,9 +536,9 @@ public CheckAutobuyBug( id )
 			if( GetNum( g_Cvar[plug_warn] ) == 1 )
 				{
 				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^x03%s :^x04 Ai incercat sa creezi AUTOBUY_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi AUTOBUY_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
 				#else
-				client_print_color( id, print_team_grey, "^x03%s :^x04 Ai incercat sa creezi AUTOBUY_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi AUTOBUY_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
 				#endif
 			}
 			if( GetNum( g_Cvar[plug_log] ) == 1 )
@@ -578,9 +578,9 @@ public BlockSpecbugOldStyleMenus( id )
 			if( GetNum( g_Cvar[plug_warn] ) )
 				{
 				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^x03%s :^x04 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
 				#else
-				client_print_color( id, print_team_grey, "^x03%s :^x04 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
 				#endif
 			}
 			if( GetNum( g_Cvar[plug_log] ))
@@ -612,9 +612,9 @@ public BlockSpecbugVGui( id )
 			if( GetNum( g_Cvar[plug_warn] ) == 1 && bug_log[id])
 				{
 				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^x03%s :^x04 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
 				#else
-				client_print_color( id, print_team_grey, "^x03%s :^x04 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
 				#endif
 			}
 			if( GetNum( g_Cvar[plug_log] ) == 1 && bug_log[id])
@@ -634,9 +634,9 @@ public ShowProtection( id )
 		if( GetNum( g_Cvar[plug_warn] ) == 1 )
 			{
 			#if AMXX_VERSION_NUM < 183
-			ColorChat( id, GREY, "^x03%s :^x04 Ai incercat sa creezi ADMIN_CHAT_FLOOD. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+			ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi ADMIN_CHAT_FLOOD. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
 			#else
-			client_print_color( id, print_team_grey, "^x03%s :^x04 Ai incercat sa creezi ADMIN_CHAT_FLOOD. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+			client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi ADMIN_CHAT_FLOOD. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
 			#endif
 		}
 		if( GetNum( g_Cvar[plug_log] ) == 1 )
@@ -649,9 +649,9 @@ public ShowProtection( id )
 public ChatMsgShow( id )
 	{
 	#if AMXX_VERSION_NUM < 183
-	ColorChat( id, GREY, "^x03%s :^x04 Acest server este protejat de ^x03%s^x04 versiunea ^x03%s^x04 .", GetString( g_Cvar[ Tag ] ), Plugin_name, Version );
+	ColorChat( id, GREY, "^3%s :^4 Acest server este protejat de ^3%s^4 versiunea ^3%s^4 .", GetString( g_Cvar[ Tag ] ), Plugin_name, Version );
 	#else
-	client_print_color( id, print_team_grey, "^x03%s :^x04 Acest server este protejat de ^x03%s^x04 versiunea ^x03%s^x04 .", GetString( g_Cvar[ Tag ] ), Plugin_name, Version );
+	client_print_color( id, print_team_grey, "^3%s :^4 Acest server este protejat de ^3%s^4 versiunea ^3%s^4 .", GetString( g_Cvar[ Tag ] ), Plugin_name, Version );
 	#endif
 }
 
@@ -839,7 +839,7 @@ GetTime( )
 
 GetString( text )
 	{
-	static File [ 32 ]; 
+	static File[32]; 
 	get_pcvar_string( text, File, charsmax( File ) );
 	
 	return File;
@@ -848,52 +848,52 @@ GetString( text )
 GetNum( text )
 	{
 	static num;
-	num = get_pcvar_num( text );
+	num = get_pcvar_num(text);
 	return num;
 }
 
 RegistersPrecache()
 {
-	g_Cvar [ Tag ]                          = register_cvar( "rom_tag", "*ROM-Protect" );
-	g_Cvar [ spec_bug ]                     = register_cvar( "rom_spec-bug", "1" );
-	g_Cvar [ admin_chat_flood ]             = register_cvar( "rom_admin_chat_flood", "1");
-	g_Cvar [ autobuy_bug ]                  = register_cvar( "rom_autobuy_bug", "1");
-	g_Cvar [ fullupdate_flood ]             = register_cvar( "rom_fullupdate", "1"  );
-	g_Cvar [ fake_players ]                 = register_cvar( "rom_fake-players", "1" );
-	g_Cvar [ fake_players_limit ]           = register_cvar( "rom_fake-players_limit", "3" );
-	g_Cvar [ delete_custom_hpk ]            = register_cvar( "rom_delete_custom_hpk", "1" );
-	g_Cvar [ delete_vault ]                 = register_cvar( "rom_delete_vault", "1" );
-	g_Cvar [ cmd_bug ]                      = register_cvar( "rom_cmd-bug", "1" );
-	g_Cvar [ advertise ]                    = register_cvar( "rom_advertise","1");
-	g_Cvar [ advertise_time ]               = register_cvar( "rom_advertise_time", "120" );
-	g_Cvar [ plug_warn ]                    = register_cvar( "rom_warn", "1" );
-	g_Cvar [ plug_log ]                     = register_cvar( "rom_log", "1" );
-	g_Cvar [ color_bug ]                    = register_cvar( "rom_color-bug", "1" );
-	g_Cvar [ admin_login ]                  = register_cvar( "rom_admin_login", "1" );
-	g_Cvar [ admin_login_file ]             = register_cvar( "rom_admin_login_file", "users_login.ini" );
-	g_Cvar [ admin_login_debug ]            = register_cvar( "rom_admin_login_debug", "0" );
-	g_Cvar [ utf8_bom ]                     = register_cvar( "rom_utf8-bom", "1" );
-	g_Cvar [ motdfile ]                     = register_cvar( "rom_motdfile", "1" );
+	g_Cvar[Tag]                   = register_cvar("rom_tag", "*ROM-Protect");
+	g_Cvar[spec_bug]              = register_cvar("rom_spec-bug", "1");
+	g_Cvar[admin_chat_flood]      = register_cvar("rom_admin_chat_flood", "1");
+	g_Cvar[autobuy_bug]           = register_cvar("rom_autobuy_bug", "1");
+	g_Cvar[fullupdate_flood]      = register_cvar("rom_fullupdate", "1");
+	g_Cvar[fake_players]          = register_cvar("rom_fake-players", "1");
+	g_Cvar[fake_players_limit]    = register_cvar("rom_fake-players_limit", "3");
+	g_Cvar[delete_custom_hpk]     = register_cvar("rom_delete_custom_hpk", "1");
+	g_Cvar[delete_vault]          = register_cvar("rom_delete_vault", "1");
+	g_Cvar[cmd_bug]               = register_cvar("rom_cmd-bug", "1");
+	g_Cvar[advertise]             = register_cvar("rom_advertise","1");
+	g_Cvar[advertise_time]        = register_cvar("rom_advertise_time", "120");
+	g_Cvar[plug_warn]             = register_cvar("rom_warn", "1");
+	g_Cvar[plug_log]              = register_cvar("rom_log", "1");
+	g_Cvar[color_bug]             = register_cvar("rom_color-bug", "1");
+	g_Cvar[admin_login]           = register_cvar("rom_admin_login", "1");
+	g_Cvar[admin_login_file]      = register_cvar("rom_admin_login_file", "users_login.ini");
+	g_Cvar[admin_login_debug]     = register_cvar("rom_admin_login_debug", "0");
+	g_Cvar[utf8_bom]              = register_cvar("rom_utf8-bom", "1");
+	g_Cvar[motdfile]              = register_cvar("rom_motdfile", "1");
 }
 
 RegistersInit()
 {
 	register_plugin( Plugin_name, Version, "FioriGinal.Ro" );
-	register_cvar( "rom_protect", Version, FCVAR_SERVER | FCVAR_SPONLY );
+	register_cvar("rom_protect", Version, FCVAR_SERVER | FCVAR_SPONLY);
 	
-	register_message( get_user_msgid( "ShowMenu" ), "OldStyleMenusTeammenu" );
-	register_message( get_user_msgid( "VGUIMenu" ), "VGuiTeammenu" );
+	register_message(get_user_msgid( "ShowMenu" ), "OldStyleMenusTeammenu");
+	register_message(get_user_msgid( "VGUIMenu" ), "VGuiTeammenu");
 	
-	register_clcmd( "say", "HookChat");
-	register_clcmd( "say_team", "HookChat");
-	register_clcmd( "cl_autobuy","CheckAutobuyBug");
-	register_clcmd( "cl_rebuy","CheckAutobuyBug");
-	register_clcmd( "cl_setautobuy","CheckAutobuyBug");
-	register_clcmd( "cl_setrebuy","CheckAutobuyBug");
-	register_clcmd( "fullupdate","FullupdateBlock");
-	register_clcmd( "login", "CmdPass" );
-	register_concmd( "amx_cvar", "CvarFunc");
-	register_concmd( "amx_reloadadmins", "ReloadLogin");
+	register_clcmd("say", "HookChat");
+	register_clcmd("say_team", "HookChat");
+	register_clcmd("cl_autobuy","CheckAutobuyBug");
+	register_clcmd("cl_rebuy","CheckAutobuyBug");
+	register_clcmd("cl_setautobuy","CheckAutobuyBug");
+	register_clcmd("cl_setrebuy","CheckAutobuyBug");
+	register_clcmd("fullupdate","FullupdateBlock");
+	register_clcmd("login", "CmdPass" );
+	register_concmd("amx_cvar", "CvarFunc");
+	register_concmd("amx_reloadadmins", "ReloadLogin");
 }
 
 stock bool:CheckName( id )
