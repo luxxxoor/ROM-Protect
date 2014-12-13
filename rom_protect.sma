@@ -212,7 +212,7 @@ public client_connect( id )
 			b_name[ id ] = false;
 		}
 	}
-	for( new i; i < pnum; i++)
+	for( new i; i < pnum; ++i)
 		{
 		get_user_ip( id, address, charsmax( address ), 1 );
 		get_user_ip( players[ i ], address2, charsmax(address2), 1 );
@@ -313,7 +313,7 @@ public client_infochanged( id )
 		new s_name[ MAX_NAME_LENGTH ], bool:b_name[ MAX_PLAYERS ];
 		copy( s_name, charsmax( newname ), newname );
 		static j;
-		for( new i; i < sizeof( s_name ); i++ )  
+		for( new i; i < sizeof( s_name ); ++i )  
 			{
 			j = i+1;
 			if( i < 31)
@@ -416,7 +416,7 @@ public HookChat(id)
 		new s_said[ 192 ], bool:b_said_cmd_bug[ MAX_PLAYERS ], bool:b_said_color_bug[ MAX_PLAYERS ];
 		copy( s_said, charsmax( said ), said );
 		static j;
-		for( new i = 0; i < sizeof( s_said ); i++ )
+		for( new i = 0; i < sizeof( s_said ); ++i )
 			{
 			j = i+1;
 			if( GetNum( g_Cvar[cmd_bug] ) == 1 )
@@ -488,13 +488,13 @@ public HookChat(id)
 				g_Flooding[ id ] = nexTime + maxChat + 3.0;
 				return PLUGIN_HANDLED;
 			}
-			g_Flood[ id ]++;
+			++g_Flood[ id ];
 		}
 		else
 		{
 			if ( g_Flood[ id ] )
 				{
-				g_Flood[id]--;
+				--g_Flood[id];
 			}
 		}
 		g_Flooding[ id ] = nexTime + maxChat;
@@ -547,7 +547,7 @@ public CheckAutobuyBug( id )
 	{
 	new szCommand[ 512 ];
 	new dwCount = read_argc( );
-	for( new i = 1; i < dwCount; i++ )
+	for( new i = 1; i < dwCount; ++i )
 		{
 		read_argv( i, szCommand, charsmax( szCommand ) );
 		if( CheckLong( szCommand, charsmax( szCommand ) ) && GetNum( g_Cvar[autobuy_bug] ) == 1)
@@ -721,7 +721,7 @@ LoadAdminLogin( )
 	}
 	
 	new text[ 121 ], name[ MAX_NAME_LENGTH ], pass[ 32 ], acc[ 26 ], flags[ 6 ];
-	for ( admin_number = 0; !feof( file ); admin_number++ )
+	for ( admin_number = 0; !feof( file ); ++admin_number )
 		{
 		fgets( file, text, charsmax( text ) );
 		
@@ -755,7 +755,7 @@ GetAccess( const id, const userPass[] )
 	if( !(get_user_flags( id ) & ADMIN_CHAT ) )
 		remove_user_flags( id );
 	copy(last_pass[id], charsmax(last_pass[ ]), userPass);
-	for( new i = 1; i <= admin_number; i++ )
+	for( new i = 1; i <= admin_number; ++i )
 		{
 		if(  equali( loginName[ i ], userName ) )
 			Name[ id ] = true;
@@ -923,9 +923,9 @@ stock bool:CheckName( id )
 	new bool:b_name = false;
 	get_user_info( id, "name", name, charsmax( name ) );
 	//new i = 0, j = 0
-	for(new i = 0 ; i <= charsmax( name ); i++)
+	for(new i = 0 ; i <= charsmax( name ); ++i)
 		{
-		for(new j = 0 ; j <= charsmax( char_list ); j++)
+		for(new j = 0 ; j <= charsmax( char_list ); ++j)
 			{
 			if( name[ i ] == char_list[ j ] )
 				b_name = true;
@@ -933,7 +933,7 @@ stock bool:CheckName( id )
 		if( b_name )
 			{
 			//server_print("debug 3 - %d", contor);
-			contor++;
+			++contor;
 			b_name = false
 		}              
 		else
