@@ -45,10 +45,8 @@ enum _:g_Cvars
 	fake_players_limit,
 	admin_chat_flood,
 	admin_chat_flood_time,
-	autobuy_bug,
 	advertise,
 	advertise_time,
-	fullupdate_flood,
 	delete_custom_hpk,
 	delete_vault,
 	plug_warn,
@@ -503,25 +501,6 @@ public HookChat(id)
 	return PLUGIN_CONTINUE;
 }
 
-public FullupdateBlock( id )
-	{
-	if( GetNum( g_Cvar[fullupdate_flood] ) == 1 )
-		{
-		if( GetNum( g_Cvar[plug_warn] ) == 1 )
-			{
-			#if AMXX_VERSION_NUM < 183
-			ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi FULLUPDATE-FLOOD. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
-			#else
-			client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi FULLUPDATE-FLOOD. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
-			#endif
-		}
-		if( GetNum( g_Cvar[plug_log] ) == 1 )
-			LogCommand( "*ROM-Protect : %s [ %s | %s ] a incercat sa foloseasca ^"FULLUPDATE-FLOOD^" ca sa strice buna functionare a serverului. ", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
-		return PLUGIN_HANDLED;
-	}
-	return PLUGIN_CONTINUE;
-}
-
 public OldStyleMenusTeammenu( msg, des, rec )
 	{
 	if( is_user_connected( rec ) )
@@ -541,31 +520,6 @@ public VGuiTeammenu( msg, des, rec )
 		num[ rec ] = get_msg_arg_int( 1 );
 		set_task( 0.1, "BlockSpecbugVGui", rec );
 	}
-}
-
-public CheckAutobuyBug( id )
-	{
-	new szCommand[ 512 ];
-	new dwCount = read_argc( );
-	for( new i = 1; i < dwCount; ++i )
-		{
-		read_argv( i, szCommand, charsmax( szCommand ) );
-		if( CheckLong( szCommand, charsmax( szCommand ) ) && GetNum( g_Cvar[autobuy_bug] ) == 1)
-			{
-			if( GetNum( g_Cvar[plug_warn] ) == 1 )
-				{
-				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi AUTOBUY_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
-				#else
-				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi AUTOBUY_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
-				#endif
-			}
-			if( GetNum( g_Cvar[plug_log] ) == 1 )
-				LogCommand( "*ROM-Protect : %s [ %s | %s ] a incercat sa foloseasca ^"AUTOBUY_BUG^" ca sa strice buna functionare a serverului. ", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
-			return PLUGIN_HANDLED;
-		}
-	}
-	return PLUGIN_CONTINUE;
 }
 
 public CheckLong( c_szCommand[ ],c_dwLen )
@@ -876,8 +830,6 @@ RegistersPrecache()
 	g_Cvar[Tag]                   = register_cvar("rom_tag", "*ROM-Protect");
 	g_Cvar[spec_bug]              = register_cvar("rom_spec-bug", "1");
 	g_Cvar[admin_chat_flood]      = register_cvar("rom_admin_chat_flood", "1");
-	g_Cvar[autobuy_bug]           = register_cvar("rom_autobuy_bug", "1");
-	g_Cvar[fullupdate_flood]      = register_cvar("rom_fullupdate", "1");
 	g_Cvar[fake_players]          = register_cvar("rom_fake-players", "1");
 	g_Cvar[fake_players_limit]    = register_cvar("rom_fake-players_limit", "3");
 	g_Cvar[delete_custom_hpk]     = register_cvar("rom_delete_custom_hpk", "1");
@@ -906,11 +858,6 @@ RegistersInit()
 	
 	register_clcmd("say", "HookChat");
 	register_clcmd("say_team", "HookChat");
-	register_clcmd("cl_autobuy","CheckAutobuyBug");
-	register_clcmd("cl_rebuy","CheckAutobuyBug");
-	register_clcmd("cl_setautobuy","CheckAutobuyBug");
-	register_clcmd("cl_setrebuy","CheckAutobuyBug");
-	register_clcmd("fullupdate","FullupdateBlock");
 	register_clcmd("login", "CmdPass" );
 	register_concmd("amx_cvar", "CvarFunc");
 	register_concmd("amx_reloadadmins", "ReloadLogin");
@@ -1011,36 +958,7 @@ WriteCFG( bool:exist )
 	}
 	else
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_admin_chat_flood ^"1^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_autobuy_bug" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Scop      : Urmareste comenzile de tip autobuy/rebuy, iar daca acestea devin suspecte sunt oprite." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Serverul primeste crash in momentul in care se apeleaza la autobuybug." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Nota      : Serverele cu engine HLDS 5xxx/6xxx nu mai sunt vulnerabile la acest bug." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Atacul este blocat. [Default]" , -1 );
-	if(exist)
-		{
-		formatex(line, charsmax(line), "rom_autobuy_bug ^"%d^"", GetNum( g_Cvar [ autobuy_bug ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
-	}
-	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_autobuy_bug ^"1^"" , -1 );
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_fullupdate" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Scop      : Urmareste comenzile/cfgurile care contin ^"fullupdate^", acestea fiind oprite." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Serverul experimenteaza lag peste 200+ la orice jucator prezent pe server." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Nota      : Serverele cu engine HLDS 5xxx/6xxx nu mai sunt vulnerabile la acest flood." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Atacul este blocat. [Default]" , -1 );
-	if(exist)
-		{
-		formatex(line, charsmax(line), "rom_fullupdate ^"%d^"", GetNum( g_Cvar [ fullupdate_flood ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
-	}
-	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_fullupdate ^"1^"" , -1 );
-	
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_fake-players" , -1 );
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Scop      : Urmareste persoanele conectate pe server si baneaza atunci cand numarul persoanelor cu acelasi ip il depaseste pe cel setat in cvarul rom_fake-players_limit." , -1 );
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Serverul experimenteaza lag peste 200+ la orice jucator prezent pe server, cateodata chiar crash." , -1 );
