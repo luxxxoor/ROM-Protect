@@ -1114,7 +1114,7 @@ WriteCFG( bool:exist )
 		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_advertise_time ^"1^"" , -1 );
+	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_advertise_time ^"120^"" , -1 );
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_warn " , -1 );
 	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Efect     : Afiseaza mesaje prin care anunta clientii care incearca sa distube activitatea normala a serverului. " , -1 );
