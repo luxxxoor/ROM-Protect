@@ -107,7 +107,7 @@ public plugin_precache( )
 	
 	if( !file_exists( g_szFile ) )
 		{
-		write_file( g_szFile, "*Aici este salvata activitatea suspecta a fiecarui jucattor. ", -1 );
+		write_file( g_szFile, "*Aici este salvata activitatea suspecta a fiecarui jucator. ", -1 );
 		write_file( g_szFile, " ", -1 );
 		write_file( g_szFile, " ", -1 );
 	}
@@ -145,7 +145,7 @@ public CheckCFG()
 			WriteCFG( true );
 			cfg_file = false;
 			if( GetNum( g_Cvar[plug_log] ) == 1 )
-				LogCommand( "*ROM-Protect : Am actualizat fisierul rom_protect.cfg." );
+				LogCommand( "%s : Am actualizat fisierul rom_protect.cfg.", GetString(g_Cvar[Tag]));
 		}
 	}
 }
@@ -219,20 +219,21 @@ public client_connect( id )
 			++cnt[ id ];
 			if( cnt[ id ] > GetNum( g_Cvar[fake_players_limit] ) && GetNum( g_Cvar[fake_players] ) == 1 )
 				{
-				server_cmd( "addip ^"30^" ^"%s^";wait;writeip", address );
+				server_cmd("addip ^"30^" ^"%s^";wait;writeip", address);
+				server_print("%s : Atac identificat cu IP : %s. IP banat 30 minute.", GetString(g_Cvar[Tag]), address);
 				if( GetNum( g_Cvar[plug_warn] ) == 1 )
 					{
 					#if AMXX_VERSION_NUM < 183
-					ColorChat( 0, GREY, "^3%s :^4 S-a observat un atac de Fake-Players. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
-					ColorChat( 0, GREY, "^3%s :^4 Atac identificat cu IP : %s. IP banat 30 minute.", GetString( g_Cvar[ Tag ] ), address );
+					ColorChat( 0, GREY, "^3%s :^4 S-a observat un atac de Fake-Players. Tentativa blocata.", GetString(g_Cvar[Tag]) );
+					ColorChat( 0, GREY, "^3%s :^4 Atac identificat cu IP : %s. IP banat 30 minute.", GetString(g_Cvar[Tag]), address );
 					#else
-					client_print_color( 0, print_team_grey, "^3%s :^4 S-a observat un atac de Fake-Players. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
-					client_print_color( 0, print_team_grey, "^3%s :^4 Atac identificat cu IP : %s. IP banat 30 minute.", GetString( g_Cvar[ Tag ] ), address );
+					client_print_color( 0, print_team_grey, "^3%s :^4 S-a observat un atac de Fake-Players. Tentativa blocata.", GetString(g_Cvar[Tag]) );
+					client_print_color( 0, print_team_grey, "^3%s :^4 Atac identificat cu IP : %s. IP banat 30 minute.", GetString(g_Cvar[Tag]), address );
 					#endif
 				}
 				if( GetNum( g_Cvar[plug_log] ) == 1 )
 					{
-					LogCommand( "*ROM-Protect : Atac blocat de ^"Fake-Players^" de la IP : %s . ", address );
+					LogCommand( "%s : Atac blocat de ^"Fake-Players^" de la IP : %s . ", GetString( g_Cvar[ Tag ]), address );
 				}
 				break;
 			}
@@ -344,6 +345,7 @@ public plugin_pause()
 {
 	if ( GetNum(g_Cvar[anti_pause]) == 1 )
 	{
+		server_print("%s : S-a depistat o incercare a opririi pluginului de protectie. Operatiune oprita.", GetString(g_Cvar[Tag]) );
 		if ( GetNum(g_Cvar[plug_warn]) == 1)
 			{
 			#if AMXX_VERSION_NUM < 183
@@ -353,7 +355,7 @@ public plugin_pause()
 			#endif
 		}
 		if( GetNum(g_Cvar[plug_log]) == 1)
-				LogCommand( "*ROM-Protect : S-a depistat o incercare a opririi pluginului de protectie %s. Operatiune oprita.", GetString(g_Cvar[Tag]) );
+				LogCommand( "%s : S-a depistat o incercare a opririi pluginului de protectie %s. Operatiune oprita.", GetString(g_Cvar[Tag]), GetString(g_Cvar[Tag]) );
 		server_cmd("amxx unpause rom_protect.amxx");
 	}
 }
@@ -384,21 +386,21 @@ public CmdPass( id )
 		else
 		{
 			#if AMXX_VERSION_NUM < 183
-			ColorChat( id, GREY, "^3%s :^4 Parola incorecta.", GetString( g_Cvar[ Tag ] ) );
+			ColorChat( id, GREY, "^3%s :^4 Parola incorecta.", GetString(g_Cvar[Tag]) );
 			#else
-			client_print_color( id, print_team_grey, "^3%s :^4 Parola incorecta.", GetString( g_Cvar[ Tag ] ) );
+			client_print_color( id, print_team_grey, "^3%s :^4 Parola incorecta.", GetString(g_Cvar[Tag]) );
 			#endif
-			client_print( id, print_console, "%s : Parola incorecta.", GetString( g_Cvar[ Tag ] ));
+			client_print( id, print_console, "%s : Parola incorecta.", GetString(g_Cvar[Tag]));
 		}
 	}
 	else
 	{
 		#if AMXX_VERSION_NUM < 183
-		ColorChat( id, GREY, "^3%s :^4 Admin incarcat.", GetString( g_Cvar[ Tag ] ) );
+		ColorChat( id, GREY, "^3%s :^4 Admin incarcat.", GetString(g_Cvar[Tag]) );
 		#else
-		client_print_color( id, print_team_grey, "^3%s :^4 Admin incarcat.", GetString( g_Cvar[ Tag ] ) );
+		client_print_color( id, print_team_grey, "^3%s :^4 Admin incarcat.", GetString(g_Cvar[Tag]) );
 		#endif
-		client_print( id, print_console, "%s : Admin incarcat.", GetString( g_Cvar[ Tag ] ));
+		client_print( id, print_console, "%s : Admin incarcat.", GetString(g_Cvar[Tag]));
 	}
 	
 	return PLUGIN_CONTINUE;
@@ -435,31 +437,33 @@ public HookChat(id)
 		
 		if(b_said_cmd_bug[ id ])
 			{
-			if( GetNum(g_Cvar[plug_log]) == 1)
-				LogCommand( "*ROM-Protect : %s [ %s | %s ] a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului. ", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+			server_print("%s : %s [ %s | %s ] a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
 			if( GetNum(g_Cvar[plug_warn]) == 1)
 				{
 				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi CMD_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi CMD_BUG. Tentativa blocata.", GetString(g_Cvar[Tag]) );
 				#else
-				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi CMD_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi CMD_BUG. Tentativa blocata.", GetString(g_Cvar[Tag]) );
 				#endif
 			}
+			if( GetNum(g_Cvar[plug_log]) == 1)
+				LogCommand( "%s : %s [ %s | %s ] a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
 			b_said_cmd_bug[ id ] = false;
 			return PLUGIN_HANDLED;
 		}
 		if(b_said_color_bug[ id ])
 			{
-			if( GetNum(g_Cvar[plug_log]) == 1)
-				LogCommand( "*ROM-Protect : %s [ %s | %s ] a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii. ", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+			server_print("%s : %s [ %s | %s ] a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
 			if( GetNum(g_Cvar[plug_warn]) == 1)
 				{
 				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi COLOR_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi COLOR_BUG. Tentativa blocata.", GetString(g_Cvar[Tag]) );
 				#else
-				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi COLOR_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi COLOR_BUG. Tentativa blocata.", GetString(g_Cvar[Tag]) );
 				#endif
 			}
+			if( GetNum(g_Cvar[plug_log]) == 1)
+				LogCommand( "%s : %s [ %s | %s ] a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
 			b_said_color_bug[ id ] = false;
 			return PLUGIN_HANDLED;
 		}
@@ -548,18 +552,17 @@ public BlockSpecbugOldStyleMenus( id )
 				{
 				fm_set_user_team( id, FM_TEAM_CT );
 			}
+			server_print("%s : %s [ %s | %s ] a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
 			if( GetNum( g_Cvar[plug_warn] ) )
 				{
 				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString(g_Cvar[Tag]) );
 				#else
-				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString(g_Cvar[Tag]) );
 				#endif
 			}
 			if( GetNum( g_Cvar[plug_log] ))
-				{
-				LogCommand( "*ROM-Protect : %s [ %s | %s ] a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului. ", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
-			}
+				LogCommand( "%s : %s [ %s | %s ] a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
 		}
 		set_task( 0.1, "BlockSpecbugOldStyleMenus", id );
 	}
@@ -582,17 +585,18 @@ public BlockSpecbugVGui( id )
 				fm_set_user_team(id, FM_TEAM_CT );
 				bug_log[id] = true;
 			}      
+			server_print("%s : %s [ %s | %s ] a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
 			if( GetNum( g_Cvar[plug_warn] ) == 1 && bug_log[id])
 				{
 				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString(g_Cvar[Tag]) );
 				#else
-				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString(g_Cvar[Tag]) );
 				#endif
 			}
 			if( GetNum( g_Cvar[plug_log] ) == 1 && bug_log[id])
 				{
-				LogCommand( "*ROM-Protect : %s [ %s | %s ] a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului. ", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+				LogCommand( "%s : %s [ %s | %s ] a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
 				bug_log[id] = false;
 			}
 		}
@@ -604,16 +608,17 @@ public ShowProtection( id )
 	{
 	if( flood[ id ] )
 		{
+		server_print("%s : %s [ %s | %s ] a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa strice buna functionare a serverului. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
 		if( GetNum( g_Cvar[plug_warn] ) == 1 )
 			{
 			#if AMXX_VERSION_NUM < 183
-			ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi ADMIN_CHAT_FLOOD. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+			ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi ADMIN_CHAT_FLOOD. Tentativa blocata.", GetString(g_Cvar[Tag]) );
 			#else
-			client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi ADMIN_CHAT_FLOOD. Tentativa blocata.", GetString( g_Cvar[ Tag ] ) );
+			client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi ADMIN_CHAT_FLOOD. Tentativa blocata.", GetString(g_Cvar[Tag]) );
 			#endif
 		}
 		if( GetNum( g_Cvar[plug_log] ) == 1 )
-			LogCommand( "*ROM-Protect : %s [ %s | %s ] a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa strice buna functionare a serverului. ", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+			LogCommand( "%s : %s [ %s | %s ] a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa strice buna functionare a serverului. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
 		flood[ id ] = false;
 		
 	}
@@ -622,9 +627,9 @@ public ShowProtection( id )
 public ChatMsgShow( id )
 	{
 	#if AMXX_VERSION_NUM < 183
-	ColorChat( id, GREY, "^3%s :^4 Acest server este protejat de ^3%s^4 versiunea ^3%s^4 .", GetString( g_Cvar[ Tag ] ), Plugin_name, Version );
+	ColorChat( id, GREY, "^3%s :^4 Acest server este protejat de ^3%s^4 versiunea ^3%s^4 .", GetString(g_Cvar[Tag]), Plugin_name, Version );
 	#else
-	client_print_color( id, print_team_grey, "^3%s :^4 Acest server este protejat de ^3%s^4 versiunea ^3%s^4 .", GetString( g_Cvar[ Tag ] ), Plugin_name, Version );
+	client_print_color( id, print_team_grey, "^3%s :^4 Acest server este protejat de ^3%s^4 versiunea ^3%s^4 .", GetString(g_Cvar[Tag]), Plugin_name, Version );
 	#endif
 }
 
@@ -670,7 +675,9 @@ LoadAdminLogin( )
 	
 	if ( !file )
 		{
-		LogCommand( "*ROM-Protect : Fisierul %s nu exista.", GetString( g_Cvar [ admin_login_file ] ) );
+		server_print("%s : Fisierul %s nu exista.", GetString(g_Cvar[Tag]), GetString(g_Cvar[admin_login_file]));
+		if( GetNum( g_Cvar[plug_log] ) == 1 )
+			LogCommand( "%s : Fisierul %s nu exista.", GetString(g_Cvar[Tag]), GetString(g_Cvar[admin_login_file]));
 		return;
 	}
 	
@@ -752,8 +759,10 @@ public CvarFunc(id, level, cid)
 		
 		if( equali(arg, "motdfile") && contain(arg2, ".ini") != -1 ) 
 			{
-			console_print(id, "%s: Ai incercat sa furi informatii din acest server, comanda ta a fost blocata.", GetString( g_Cvar[ Tag ] )); 
-			LogCommand( "*ROM-Protect : %s [ %s | %s ] a incercat sa foloseasca cvarul motdfile ca sa fure informatii din acest server. ", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+			console_print(id, "%s: Ai incercat sa furi informatii din acest server, comanda ta a fost blocata.", GetString(g_Cvar[Tag])); 
+			server_print("%s: %s [ %s | %s ] a incercat sa foloseasca cvarul motdfile ca sa fure informatii din acest server. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+			if( GetNum( g_Cvar[plug_log] ) == 1 )
+				LogCommand( "%s : %s [ %s | %s ] a incercat sa foloseasca cvarul motdfile ca sa fure informatii din acest server. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
 			return PLUGIN_HANDLED; 
 		}
 	} 
