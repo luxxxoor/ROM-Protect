@@ -16,7 +16,7 @@ new sz_MenuText[ MAX_PLAYERS ][ MAX_PLAYERS ];
 new num[ MAX_PLAYERS ], cnt[ MAX_PLAYERS ];
 new bool:flood[ MAX_PLAYERS ], bool:Name[ MAX_PLAYERS ], bool:Admin[ MAX_PLAYERS ], g_szFile[ 128 ], last_pass[MAX_PLAYERS][MAX_PLAYERS];
 
-static const Version[ ]   = "1.0.4";
+static const Version[ ]   = "1.0.3s";
 static const Plugin_name[ ] = "ROM-Protect";
 static const Terrorist[ ] = "#Terrorist_Select";
 static const CT_Select[ ] = "#CT_Select"; 
