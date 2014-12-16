@@ -16,7 +16,7 @@ new sz_MenuText[ MAX_PLAYERS ][ MAX_PLAYERS ];
 new num[ MAX_PLAYERS ], cnt[ MAX_PLAYERS ];
 new bool:flood[ MAX_PLAYERS ], bool:Name[ MAX_PLAYERS ], bool:Admin[ MAX_PLAYERS ], g_szFile[ 128 ], last_pass[MAX_PLAYERS][MAX_PLAYERS];
 
-static const Version[ ]   = "1.0.3s";
+static const Version[ ]   = "1.0.4";
 static const Plugin_name[ ] = "ROM-Protect";
 static const Terrorist[ ] = "#Terrorist_Select";
 static const CT_Select[ ] = "#CT_Select"; 
@@ -145,7 +145,7 @@ public CheckCFG()
 			WriteCFG( true );
 			cfg_file = false;
 			if( GetNum( g_Cvar[plug_log] ) == 1 )
-				LogCommand( "%s : Am actualizat fisierul rom_protect.cfg.", GetString(g_Cvar[Tag]));
+				LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Update_Cfg" );
 		}
 	}
 }
@@ -219,21 +219,21 @@ public client_connect( id )
 			++cnt[ id ];
 			if( cnt[ id ] > GetNum( g_Cvar[fake_players_limit] ) && GetNum( g_Cvar[fake_players] ) == 1 )
 				{
-				server_cmd("addip ^"30^" ^"%s^";wait;writeip", address);
-				server_print("%s : Atac identificat cu IP : %s. IP banat 30 minute.", GetString(g_Cvar[Tag]), address);
+				server_cmd( "addip ^"30^" ^"%s^";wait;writeip", address );
+				server_print( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Fake_Players1", address );
 				if( GetNum( g_Cvar[plug_warn] ) == 1 )
 					{
 					#if AMXX_VERSION_NUM < 183
-					ColorChat( 0, GREY, "^3%s :^4 S-a observat un atac de Fake-Players. Tentativa blocata.", GetString(g_Cvar[Tag]) );
-					ColorChat( 0, GREY, "^3%s :^4 Atac identificat cu IP : %s. IP banat 30 minute.", GetString(g_Cvar[Tag]), address );
+					ColorChat( 0, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Fake_Players" );
+					ColorChat( 0, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Fake_Players1", address );
 					#else
-					client_print_color( 0, print_team_grey, "^3%s :^4 S-a observat un atac de Fake-Players. Tentativa blocata.", GetString(g_Cvar[Tag]) );
-					client_print_color( 0, print_team_grey, "^3%s :^4 Atac identificat cu IP : %s. IP banat 30 minute.", GetString(g_Cvar[Tag]), address );
+					client_print_color( 0, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Fake_Players" );
+					client_print_color( 0, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Fake_Players1", address );
 					#endif
 				}
 				if( GetNum( g_Cvar[plug_log] ) == 1 )
 					{
-					LogCommand( "%s : Atac blocat de ^"Fake-Players^" de la IP : %s . ", GetString( g_Cvar[ Tag ]), address );
+					LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Fake_PlayersL", address );
 				}
 				break;
 			}
@@ -345,17 +345,17 @@ public plugin_pause()
 {
 	if ( GetNum(g_Cvar[anti_pause]) == 1 )
 	{
-		server_print("%s : S-a depistat o incercare a opririi pluginului de protectie. Operatiune oprita.", GetString(g_Cvar[Tag]) );
+		server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Plugin_Pause");
 		if ( GetNum(g_Cvar[plug_warn]) == 1)
 			{
 			#if AMXX_VERSION_NUM < 183
-			ColorChat( 0, GREY, "^3%s :^4 S-a depistat o incercare a opririi pluginului de protectie. Operatiune oprita.", GetString(g_Cvar[Tag]) );
+			ColorChat( 0, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Plugin_Pause" );
 			#else
-			client_print_color( 0, print_team_grey, "^3%s :^4 S-a depistat o incercare a opririi pluginului de protectie. Operatiune oprita.", GetString(g_Cvar[Tag]) );
+			client_print_color( 0, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Plugin_Pause" );
 			#endif
 		}
 		if( GetNum(g_Cvar[plug_log]) == 1)
-				LogCommand( "%s : S-a depistat o incercare a opririi pluginului de protectie %s. Operatiune oprita.", GetString(g_Cvar[Tag]), GetString(g_Cvar[Tag]) );
+				LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Plugin_PauseL", GetString(g_Cvar[Tag]) );
 		server_cmd("amxx unpause rom_protect.amxx");
 	}
 }
@@ -377,30 +377,30 @@ public CmdPass( id )
 		if(!Name[ id ])
 			{
 			#if AMXX_VERSION_NUM < 183
-			ColorChat( id, GREY, "^3%s :^4 Nume incorect.", GetString(g_Cvar[Tag]) );
+			ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Fail_Name" );
 			#else
-			client_print_color( id, print_team_grey, "^3%s :^4 Nume incorect.", GetString(g_Cvar[Tag]) );
+			client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Fail_Name" );
 			#endif
-			client_print( id, print_console, "%s : Nume incorect.", GetString(g_Cvar[Tag] ));
+			client_print( id, print_console, "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Fail_Name" );
 		}
 		else
 		{
 			#if AMXX_VERSION_NUM < 183
-			ColorChat( id, GREY, "^3%s :^4 Parola incorecta.", GetString(g_Cvar[Tag]) );
+			ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Fail_Pass" );
 			#else
-			client_print_color( id, print_team_grey, "^3%s :^4 Parola incorecta.", GetString(g_Cvar[Tag]) );
+			client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Fail_Pass" );
 			#endif
-			client_print( id, print_console, "%s : Parola incorecta.", GetString(g_Cvar[Tag]));
+			client_print( id, print_console, "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Fail_Pass" );
 		}
 	}
 	else
 	{
 		#if AMXX_VERSION_NUM < 183
-		ColorChat( id, GREY, "^3%s :^4 Admin incarcat.", GetString(g_Cvar[Tag]) );
+		ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin" );
 		#else
-		client_print_color( id, print_team_grey, "^3%s :^4 Admin incarcat.", GetString(g_Cvar[Tag]) );
+		client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin" );
 		#endif
-		client_print( id, print_console, "%s : Admin incarcat.", GetString(g_Cvar[Tag]));
+		client_print( id, print_console, "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin" );
 	}
 	
 	return PLUGIN_CONTINUE;
@@ -437,33 +437,33 @@ public HookChat(id)
 		
 		if(b_said_cmd_bug[ id ])
 			{
-			server_print("%s : %s [ %s | %s ] a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Cmd_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum(g_Cvar[plug_warn]) == 1)
 				{
 				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi CMD_BUG. Tentativa blocata.", GetString(g_Cvar[Tag]) );
+				ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Cmd_Bug" );
 				#else
-				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi CMD_BUG. Tentativa blocata.", GetString(g_Cvar[Tag]) );
+				client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Cmd_Bug" );
 				#endif
 			}
 			if( GetNum(g_Cvar[plug_log]) == 1)
-				LogCommand( "%s : %s [ %s | %s ] a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Cmd_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			b_said_cmd_bug[ id ] = false;
 			return PLUGIN_HANDLED;
 		}
 		if(b_said_color_bug[ id ])
 			{
-			server_print("%s : %s [ %s | %s ] a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Color_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum(g_Cvar[plug_warn]) == 1)
 				{
 				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi COLOR_BUG. Tentativa blocata.", GetString(g_Cvar[Tag]) );
+				ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Color_Bug" );
 				#else
-				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi COLOR_BUG. Tentativa blocata.", GetString(g_Cvar[Tag]) );
+				client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Color_Bug" );
 				#endif
 			}
 			if( GetNum(g_Cvar[plug_log]) == 1)
-				LogCommand( "%s : %s [ %s | %s ] a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Color_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			b_said_color_bug[ id ] = false;
 			return PLUGIN_HANDLED;
 		}
@@ -552,17 +552,17 @@ public BlockSpecbugOldStyleMenus( id )
 				{
 				fm_set_user_team( id, FM_TEAM_CT );
 			}
-			server_print("%s : %s [ %s | %s ] a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Spec_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum( g_Cvar[plug_warn] ) )
 				{
 				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString(g_Cvar[Tag]) );
+				ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Spec_Bug" );
 				#else
-				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString(g_Cvar[Tag]) );
+				client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Spec_Bug" );
 				#endif
 			}
 			if( GetNum( g_Cvar[plug_log] ))
-				LogCommand( "%s : %s [ %s | %s ] a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Spec_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 		}
 		set_task( 0.1, "BlockSpecbugOldStyleMenus", id );
 	}
@@ -585,18 +585,18 @@ public BlockSpecbugVGui( id )
 				fm_set_user_team(id, FM_TEAM_CT );
 				bug_log[id] = true;
 			}      
-			server_print("%s : %s [ %s | %s ] a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Spec_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum( g_Cvar[plug_warn] ) == 1 && bug_log[id])
 				{
 				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString(g_Cvar[Tag]) );
+				ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Spec_Bug" );
 				#else
-				client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", GetString(g_Cvar[Tag]) );
+				client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Spec_Bug" );
 				#endif
 			}
 			if( GetNum( g_Cvar[plug_log] ) == 1 && bug_log[id])
 				{
-				LogCommand( "%s : %s [ %s | %s ] a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Spec_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 				bug_log[id] = false;
 			}
 		}
@@ -608,17 +608,17 @@ public ShowProtection( id )
 	{
 	if( flood[ id ] )
 		{
-		server_print("%s : %s [ %s | %s ] a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa strice buna functionare a serverului. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+		server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Chat_FloodL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 		if( GetNum( g_Cvar[plug_warn] ) == 1 )
 			{
 			#if AMXX_VERSION_NUM < 183
-			ColorChat( id, GREY, "^3%s :^4 Ai incercat sa creezi ADMIN_CHAT_FLOOD. Tentativa blocata.", GetString(g_Cvar[Tag]) );
+			ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Chat_Flood" );
 			#else
-			client_print_color( id, print_team_grey, "^3%s :^4 Ai incercat sa creezi ADMIN_CHAT_FLOOD. Tentativa blocata.", GetString(g_Cvar[Tag]) );
+			client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Chat_Flood" );
 			#endif
 		}
 		if( GetNum( g_Cvar[plug_log] ) == 1 )
-			LogCommand( "%s : %s [ %s | %s ] a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa strice buna functionare a serverului. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+			LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Chat_FloodL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 		flood[ id ] = false;
 		
 	}
@@ -675,9 +675,9 @@ LoadAdminLogin( )
 	
 	if ( !file )
 		{
-		server_print("%s : Fisierul %s nu exista.", GetString(g_Cvar[Tag]), GetString(g_Cvar[admin_login_file]));
+		server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Fail_Cfg", GetString(g_Cvar[admin_login_file]));
 		if( GetNum( g_Cvar[plug_log] ) == 1 )
-			LogCommand( "%s : Fisierul %s nu exista.", GetString(g_Cvar[Tag]), GetString(g_Cvar[admin_login_file]));
+			LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Fail_Cfg", GetString(g_Cvar[admin_login_file]) );
 		return;
 	}
 	
@@ -704,7 +704,7 @@ LoadAdminLogin( )
 		copy( loginFlag[ admin_number ], charsmax( loginFlag[ ] ),  flags );
 		
 		if( GetNum( g_Cvar[admin_login_debug] ) == 1 )
-			server_print( "%s - %s - %s - %s", loginName[ admin_number ], loginPass[ admin_number ], loginAccs[ admin_number ], loginFlag[ admin_number ] );              
+			server_print( "%L", LANG_PLAYER, "ROM-Protect_Admin_Debug", loginName[ admin_number ], loginPass[ admin_number ], loginAccs[ admin_number ], loginFlag[ admin_number ] );              
 	}
 	fclose( file );
 }
@@ -759,10 +759,10 @@ public CvarFunc(id, level, cid)
 		
 		if( equali(arg, "motdfile") && contain(arg2, ".ini") != -1 ) 
 			{
-			console_print(id, "%s: Ai incercat sa furi informatii din acest server, comanda ta a fost blocata.", GetString(g_Cvar[Tag])); 
-			server_print("%s: %s [ %s | %s ] a incercat sa foloseasca cvarul motdfile ca sa fure informatii din acest server. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+			console_print(id, "%s: %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Motdfile");
+			server_print("%s: %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_MotdfileL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum( g_Cvar[plug_log] ) == 1 )
-				LogCommand( "%s : %s [ %s | %s ] a incercat sa foloseasca cvarul motdfile ca sa fure informatii din acest server. ", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+				LogCommand( "%s: %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_MotdfileL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
 			return PLUGIN_HANDLED; 
 		}
 	} 
@@ -870,6 +870,8 @@ RegistersInit()
 	register_clcmd("login", "CmdPass" );
 	register_concmd("amx_cvar", "CvarFunc");
 	register_concmd("amx_reloadadmins", "ReloadLogin");
+	// Registering Language file by COOPER
+	register_dictionary("rom-protect.txt");
 }
 
 stock bool:CheckName( id )
