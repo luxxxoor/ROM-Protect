@@ -12,9 +12,9 @@
 
 #pragma semicolon 1
 
-new sz_MenuText[ MAX_PLAYERS ][ MAX_PLAYERS ],
-	num[ MAX_PLAYERS ], cnt[ MAX_PLAYERS ],
-	bool:flood[ MAX_PLAYERS ], bool:Name[ MAX_PLAYERS ], bool:Admin[ MAX_PLAYERS ], g_szFile[ 128 ], last_pass[MAX_PLAYERS][MAX_PLAYERS];
+new sz_MenuText[MAX_PLAYERS][ MAX_PLAYERS],
+	num[MAX_PLAYERS], cnt[MAX_PLAYERS],
+	bool:flood[MAX_PLAYERS], bool:Name[MAX_PLAYERS], bool:Admin[MAX_PLAYERS], g_szFile[128], last_pass[MAX_PLAYERS][MAX_PLAYERS];
 
 static const Version[]   = "1.0.3s",
 			 Plugin_name[] = "ROM-Protect",
@@ -23,7 +23,7 @@ static const Version[]   = "1.0.3s",
 			 cfg[] = "addons/amxmodx/configs/rom_protect.cfg",
 			 lang[] = "addons/amxmodx/data/lang/rom_protect.txt";
 
-new loginName[ 1024 ][ MAX_PLAYERS ], loginPass[ 1024 ][ MAX_PLAYERS ], loginAccs[ 1024 ][ MAX_PLAYERS ], loginFlag[ 1024 ][ MAX_PLAYERS ];
+new loginName[1024][MAX_PLAYERS], loginPass[1024][MAX_PLAYERS], loginAccs[1024][MAX_PLAYERS], loginFlag[1024][MAX_PLAYERS];
 new admin_number;
 
 enum
@@ -944,265 +944,266 @@ WriteCFG( bool:exist )
 	if(exist)
 		delete_file( cfg );
 	new line[121];
-	write_file( "cfg", "// *ROM-Protect" , -1 );
-	write_file( "cfg", "// Plugin FREE anti-flood/bug-fix pentru orice server." , -1 );
+	write_file( cfg, "// *ROM-Protect" , -1 );
+	write_file( cfg, "// Plugin FREE anti-flood/bug-fix pentru orice server." , -1 );
 	formatex(line, charsmax(line), "// Versiunea %s", Version);
-	write_file( "cfg", line , -1 ); 
-	write_file( "cfg", "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor" , -1 );
-	write_file( "cfg", "// O productie FioriGinal.ro - site : www.fioriginal.ro" , -1 );
-	write_file( "cfg", "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Verificare daca CFG-ul a fost executat cu succes." , -1 );
-	write_file( "cfg", "echo ^"*ROM-Protect : Fisierul rom_protect.cfg a fost gasit. Incep protejarea serverului.^"" , -1 );
-	write_file( "cfg", "// Cvar      : rom_cmd-bug" , -1 );
-	write_file( "cfg", "// Scop      : Urmareste chatul si opeste bugurile de tip ^"%s^"/^"%s0^" care dau pluginurile peste cap." , -1 );
-	write_file( "cfg", "// Impact    : Serverul nu pateste nimic, insa playerii acestuia primesc ^"quit^" indiferent de ce client folosesc, iar serverul ramane gol." , -1 );
-	write_file( "cfg", "// Update    : Incepand cu versiunea 1.0.1s, pluginul protejeaza serverele si de noul cmd-bug bazat pe caracterul '#'. Pluginul blocheaza de acum '#' si '%' in chat si '#' in nume." , -1 );
-	write_file( "cfg", "// Update    : Incepand cu versiunea 1.0.3a, pluginul devine mai inteligent, si va bloca doar posibilele folosiri ale acestui bug, astfel incat caracterele '#' si '%' vor putea fi folosite, insa nu in toate cazurile." , -1 );
-	write_file( "cfg", "// Update    : Incepand cu versiunea 1.0.3s, pluginul incearca sa inlature bugul provotat de caracterul '+' in nume, acesta incercand sa deruteze playerii sau adminii (nu aparea numele jucatorului in meniuri)." , -1 );
-	write_file( "cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "cfg", "// Valoarea 1: Atacul este blocat. [Default]" , -1 );
+	write_file( cfg, line , -1 ); 
+	write_file( cfg, "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor" , -1 );
+	write_file( cfg, "// O productie FioriGinal.ro - site : www.fioriginal.ro" , -1 );
+	write_file( cfg, "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html" , -1 );
+	write_file( cfg, "// Link sursa : https://github.com/luxxxoor/ROM-Protect", -1);
+	write_file( cfg, " " , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Verificare daca CFG-ul a fost executat cu succes." , -1 );
+	write_file( cfg, "echo ^"*ROM-Protect : Fisierul rom_protect.cfg a fost gasit. Incep protejarea serverului.^"" , -1 );
+	write_file( cfg, "// Cvar      : rom_cmd-bug" , -1 );
+	write_file( cfg, "// Scop      : Urmareste chatul si opeste bugurile de tip ^"%s^"/^"%s0^" care dau pluginurile peste cap." , -1 );
+	write_file( cfg, "// Impact    : Serverul nu pateste nimic, insa playerii acestuia primesc ^"quit^" indiferent de ce client folosesc, iar serverul ramane gol." , -1 );
+	write_file( cfg, "// Update    : Incepand cu versiunea 1.0.1s, pluginul protejeaza serverele si de noul cmd-bug bazat pe caracterul '#'. Pluginul blocheaza de acum '#' si '%' in chat si '#' in nume." , -1 );
+	write_file( cfg, "// Update    : Incepand cu versiunea 1.0.3a, pluginul devine mai inteligent, si va bloca doar posibilele folosiri ale acestui bug, astfel incat caracterele '#' si '%' vor putea fi folosite, insa nu in toate cazurile." , -1 );
+	write_file( cfg, "// Update    : Incepand cu versiunea 1.0.3s, pluginul incearca sa inlature bugul provotat de caracterul '+' in nume, acesta incercand sa deruteze playerii sau adminii (nu aparea numele jucatorului in meniuri)." , -1 );
+	write_file( cfg, "// Valoarea 0: Functia este dezactivata." , -1 );
+	write_file( cfg, "// Valoarea 1: Atacul este blocat. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_cmd-bug ^"%d^"", GetNum( g_Cvar[ cmd_bug ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_cmd-bug ^"1^"" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Cvar      : rom_spec-bug" , -1 );
-	write_file( "cfg", "// Scop      : Urmareste activitatea playerilor si opreste schimbarea echipei, pentru a opri specbug." , -1 );
-	write_file( "cfg", "// Impact    : Serverul primeste crash in momentul in care se apeleaza la acest bug." , -1 );
-	write_file( "cfg", "// Nota      : -" , -1 );
-	write_file( "cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "cfg", "// Valoarea 1: Atacul este blocat. [Default]" , -1 );
+	write_file( cfg, "rom_cmd-bug ^"1^"" , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Cvar      : rom_spec-bug" , -1 );
+	write_file( cfg, "// Scop      : Urmareste activitatea playerilor si opreste schimbarea echipei, pentru a opri specbug." , -1 );
+	write_file( cfg, "// Impact    : Serverul primeste crash in momentul in care se apeleaza la acest bug." , -1 );
+	write_file( cfg, "// Nota      : -" , -1 );
+	write_file( cfg, "// Valoarea 0: Functia este dezactivata." , -1 );
+	write_file( cfg, "// Valoarea 1: Atacul este blocat. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_spec-bug ^"%d^"", GetNum( g_Cvar [ spec_bug ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_spec-bug ^"1^"" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Cvar      : rom_admin_chat_flood" , -1 );
-	write_file( "cfg", "// Scop      : Urmareste activitatea playerilor care folosesc chat-ul adminilor, daca persoanele incearca sa floodeze acest chat sunt opriti fortat." , -1 );
-	write_file( "cfg", "// Impact    : Serverul nu pateste nimic, insa adminii primesc kick cu motivul : ^"reliable channel overflowed^"." , -1 );
-	write_file( "cfg", "// Nota      : -" , -1 );
-	write_file( "cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "cfg", "// Valoarea 1: Atacul este blocat. [Default]" , -1 );
+	write_file( cfg, "rom_spec-bug ^"1^"" , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Cvar      : rom_admin_chat_flood" , -1 );
+	write_file( cfg, "// Scop      : Urmareste activitatea playerilor care folosesc chat-ul adminilor, daca persoanele incearca sa floodeze acest chat sunt opriti fortat." , -1 );
+	write_file( cfg, "// Impact    : Serverul nu pateste nimic, insa adminii primesc kick cu motivul : ^"reliable channel overflowed^"." , -1 );
+	write_file( cfg, "// Nota      : -" , -1 );
+	write_file( cfg, "// Valoarea 0: Functia este dezactivata." , -1 );
+	write_file( cfg, "// Valoarea 1: Atacul este blocat. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_admin_chat_flood ^"%d^"", GetNum( g_Cvar [ admin_chat_flood ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_admin_chat_flood ^"1^"" , -1 );
-	write_file( "cfg", "" , -1 );
-	write_file( "cfg", "// Cvar      : rom_fake-players" , -1 );
-	write_file( "cfg", "// Scop      : Urmareste persoanele conectate pe server si baneaza atunci cand numarul persoanelor cu acelasi ip il depaseste pe cel setat in cvarul rom_fake-players_limit." , -1 );
-	write_file( "cfg", "// Impact    : Serverul experimenteaza lag peste 200+ la orice jucator prezent pe server, cateodata chiar crash." , -1 );
-	write_file( "cfg", "// Nota      : Daca sunt mai multe persoane care impart aceasi legatura de internet pot fi banate ( 0 minute ), in acest caz ridicati cvarul : rom_fake-players_limit sau opriti rom_fake-players." , -1 );
-	write_file( "cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "cfg", "// Valoarea 1: Atacul este blocat prin ban 30 minute. [Default]" , -1 );
+	write_file( cfg, "rom_admin_chat_flood ^"1^"" , -1 );
+	write_file( cfg, "" , -1 );
+	write_file( cfg, "// Cvar      : rom_fake-players" , -1 );
+	write_file( cfg, "// Scop      : Urmareste persoanele conectate pe server si baneaza atunci cand numarul persoanelor cu acelasi ip il depaseste pe cel setat in cvarul rom_fake-players_limit." , -1 );
+	write_file( cfg, "// Impact    : Serverul experimenteaza lag peste 200+ la orice jucator prezent pe server, cateodata chiar crash." , -1 );
+	write_file( cfg, "// Nota      : Daca sunt mai multe persoane care impart aceasi legatura de internet pot fi banate ( 0 minute ), in acest caz ridicati cvarul : rom_fake-players_limit sau opriti rom_fake-players." , -1 );
+	write_file( cfg, "// Valoarea 0: Functia este dezactivata." , -1 );
+	write_file( cfg, "// Valoarea 1: Atacul este blocat prin ban 30 minute. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_fake-players ^"%d^"", GetNum( g_Cvar [ fake_players ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_fake-players ^"1^"" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Cvar      : rom_fake-players_limit ( Activat numai in cazul in care cvarul ^"rom_fake-players^" este setat pe 1 )" , -1 );
-	write_file( "cfg", "// Utilizare : Limiteaza numarul maxim de persoane de pe acelasi IP, blocand astfel atacurile tip fake-player." , -1 );
+	write_file( cfg, "rom_fake-players ^"1^"" , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Cvar      : rom_fake-players_limit ( Activat numai in cazul in care cvarul ^"rom_fake-players^" este setat pe 1 )" , -1 );
+	write_file( cfg, "// Utilizare : Limiteaza numarul maxim de persoane de pe acelasi IP, blocand astfel atacurile tip fake-player." , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_fake-players_limit ^"%d^"", GetNum( g_Cvar [ fake_players_limit ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_fake-players_limit ^"1^"" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Cvar      : rom_delete_custom_hpk" , -1 );
-	write_file( "cfg", "// Scop      : La finalul fiecarei harti, se va sterge fisierul custom.hpk." , -1 );
-	write_file( "cfg", "// Impact    : Serverul experimenteaza probleme la schimbarea hartii, aceasta putand sa dureze si pana la 60secunde." , -1 );
-	write_file( "cfg", "// Nota      : -" , -1 );
-	write_file( "cfg", "// Valoarea 0: Functie este dezactivata." , -1 );
-	write_file( "cfg", "// Valoarea 1: Fisierul este sters. [Default]" , -1 );
+	write_file( cfg, "rom_fake-players_limit ^"1^"" , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Cvar      : rom_delete_custom_hpk" , -1 );
+	write_file( cfg, "// Scop      : La finalul fiecarei harti, se va sterge fisierul custom.hpk." , -1 );
+	write_file( cfg, "// Impact    : Serverul experimenteaza probleme la schimbarea hartii, aceasta putand sa dureze si pana la 60secunde." , -1 );
+	write_file( cfg, "// Nota      : -" , -1 );
+	write_file( cfg, "// Valoarea 0: Functie este dezactivata." , -1 );
+	write_file( cfg, "// Valoarea 1: Fisierul este sters. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_delete_custom_hpk ^"%d^"", GetNum( g_Cvar [ delete_custom_hpk ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_delete_custom_hpk ^"1^"" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Cvar      : rom_delete_vault " , -1 );
-	write_file( "cfg", "// Scop      : La finalul fiecarei harti, se va sterge fisierul vault.ini." , -1 );
-	write_file( "cfg", "// Impact    : Serverul experimenteaza probleme la schimbarea hartii, aceasta putand sa dureze si pana la 60secunde." , -1 );
-	write_file( "cfg", "// Nota      : -" , -1 );
-	write_file( "cfg", "// Valoarea 0: Functie este dezactivata." , -1 );
-	write_file( "cfg", "// Valoarea 1: Fisierul este sters si e setat ^"server_language en^" in vault.ini. [Default]" , -1 );
-	write_file( "cfg", "// Valoarea 2: Fisierul este sters si e setat ^"server_language ro^" in vault.ini." , -1 );
+	write_file( cfg, "rom_delete_custom_hpk ^"1^"" , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Cvar      : rom_delete_vault " , -1 );
+	write_file( cfg, "// Scop      : La finalul fiecarei harti, se va sterge fisierul vault.ini." , -1 );
+	write_file( cfg, "// Impact    : Serverul experimenteaza probleme la schimbarea hartii, aceasta putand sa dureze si pana la 60secunde." , -1 );
+	write_file( cfg, "// Nota      : -" , -1 );
+	write_file( cfg, "// Valoarea 0: Functie este dezactivata." , -1 );
+	write_file( cfg, "// Valoarea 1: Fisierul este sters si e setat ^"server_language en^" in vault.ini. [Default]" , -1 );
+	write_file( cfg, "// Valoarea 2: Fisierul este sters si e setat ^"server_language ro^" in vault.ini." , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_delete_vault ^"%d^"", GetNum( g_Cvar [ delete_vault ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_delete_vault ^"1^"" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Cvar      : rom_advertise" , -1 );
-	write_file( "cfg", "// Efect     : Afiseaza un mesaj prin care anunta clientii ca serverul este protejat de *ROM-Protect." , -1 );
-	write_file( "cfg", "// Valoarea 0: Mesajele sunt dezactivate." , -1 );
-	write_file( "cfg", "// Valoarea 1: Mesajele sunt activate. [Default]" , -1 );
+	write_file( cfg, "rom_delete_vault ^"1^"" , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Cvar      : rom_advertise" , -1 );
+	write_file( cfg, "// Efect     : Afiseaza un mesaj prin care anunta clientii ca serverul este protejat de *ROM-Protect." , -1 );
+	write_file( cfg, "// Valoarea 0: Mesajele sunt dezactivate." , -1 );
+	write_file( cfg, "// Valoarea 1: Mesajele sunt activate. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_advertise ^"%d^"", GetNum( g_Cvar [ advertise ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_advertise ^"1^"" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Cvar      : rom_advertise_time ( Activat numai in cazul in care cvarul ^"rom_advertise^" este setat pe 1 )" , -1 );
-	write_file( "cfg", "// Utilizare : Seteaza ca mesajul sa apara o data la (cat este setat cvarul) secunda/secunde. " , -1 );
+	write_file( cfg, "rom_advertise ^"1^"" , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Cvar      : rom_advertise_time ( Activat numai in cazul in care cvarul ^"rom_advertise^" este setat pe 1 )" , -1 );
+	write_file( cfg, "// Utilizare : Seteaza ca mesajul sa apara o data la (cat este setat cvarul) secunda/secunde. " , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_advertise_time ^"%d^"", GetNum( g_Cvar [ advertise_time ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_advertise_time ^"120^"" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Cvar      : rom_warn " , -1 );
-	write_file( "cfg", "// Efect     : Afiseaza mesaje prin care anunta clientii care incearca sa distube activitatea normala a serverului. " , -1 );
-	write_file( "cfg", "// Valoarea 0: Mesajele sunt dezactivate." , -1 );
-	write_file( "cfg", "// Valoarea 1: Mesajele sunt activate. [Default]" , -1 );
+	write_file( cfg, "rom_advertise_time ^"120^"" , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Cvar      : rom_warn " , -1 );
+	write_file( cfg, "// Efect     : Afiseaza mesaje prin care anunta clientii care incearca sa distube activitatea normala a serverului. " , -1 );
+	write_file( cfg, "// Valoarea 0: Mesajele sunt dezactivate." , -1 );
+	write_file( cfg, "// Valoarea 1: Mesajele sunt activate. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_warn ^"%d^"", GetNum( g_Cvar [ plug_warn ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_warn ^"1^"" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Cvar  : rom_log" , -1 );
-	write_file( "cfg", "// Efect : Permite sau nu plugin-ului sa ne creeze fisiere.log." , -1 );
-	write_file( "cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "cfg", "// Valoarea 1: Functia este activata." , -1 );
+	write_file( cfg, "rom_warn ^"1^"" , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Cvar  : rom_log" , -1 );
+	write_file( cfg, "// Efect : Permite sau nu plugin-ului sa ne creeze fisiere.log." , -1 );
+	write_file( cfg, "// Valoarea 0: Functia este dezactivata." , -1 );
+	write_file( cfg, "// Valoarea 1: Functia este activata." , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_log ^"%d^"", GetNum( g_Cvar [ plug_log ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_log ^"1^"" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Cvar      : rom_admin_login" , -1 );
-	write_file( "cfg", "// Scop      : Permite autentificarea adminilor prin comanda ^"login parola^" in consola (nu necesita setinfo)" , -1 );
-	write_file( "cfg", "// Impact    : Parolele adminilor sunt foarte usor de furat in ziua de astazi, e destul doar sa intri pe un server iar parola ta dispare." , -1 );
-	write_file( "cfg", "// Nota      : Adminele se adauga normal ^"nume^" ^"parola^" ^"acces^" ^"f^"." , -1 );
-	write_file( "cfg", "// Update    : Incepand de la versiunea 1.0.3a, comanda in chat !login sau /login dispare, deoarece nu era folosita." , -1 );
-	write_file( "cfg", "// Valoarea 0: Functie este dezactivata." , -1 );
-	write_file( "cfg", "// Valoarea 1: Adminele sunt protejate. [Default]" , -1 );
+	write_file( cfg, "rom_log ^"1^"" , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Cvar      : rom_admin_login" , -1 );
+	write_file( cfg, "// Scop      : Permite autentificarea adminilor prin comanda ^"login parola^" in consola (nu necesita setinfo)" , -1 );
+	write_file( cfg, "// Impact    : Parolele adminilor sunt foarte usor de furat in ziua de astazi, e destul doar sa intri pe un server iar parola ta dispare." , -1 );
+	write_file( cfg, "// Nota      : Adminele se adauga normal ^"nume^" ^"parola^" ^"acces^" ^"f^"." , -1 );
+	write_file( cfg, "// Update    : Incepand de la versiunea 1.0.3a, comanda in chat !login sau /login dispare, deoarece nu era folosita." , -1 );
+	write_file( cfg, "// Valoarea 0: Functie este dezactivata." , -1 );
+	write_file( cfg, "// Valoarea 1: Adminele sunt protejate. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_admin_login ^"%d^"", GetNum( g_Cvar [ admin_login ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_admin_login ^"1^"" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Cvar  : rom_admin_login_file ( Activat numai in cazul in care cvarul ^"rom_admin_login^" este setat pe 1 )" , -1 );
-	write_file( "cfg", "// Efect : Selecteaza fisierul de unde sa fie citite adminele cu flag ^"f^"" , -1 );
+	write_file( cfg, "rom_admin_login ^"1^"" , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Cvar  : rom_admin_login_file ( Activat numai in cazul in care cvarul ^"rom_admin_login^" este setat pe 1 )" , -1 );
+	write_file( cfg, "// Efect : Selecteaza fisierul de unde sa fie citite adminele cu flag ^"f^"" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_admin_login_file ^"%s^"", GetString( g_Cvar [ admin_login_file ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_admin_login_file ^"users_login.ini^"" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Cvar  : rom_admin_login_debug ( Activat numai in cazul in care cvarul ^"rom_admin_login^" este setat pe 1 )" , -1 );
-	write_file( "cfg", "// Efect : In cazul in care adminele nu se incarca corect acesta va printa in consola serverului argumentele citite (nume - parola - acces - flag)" , -1 );
-	write_file( "cfg", "// Valoarea 0: Functie este dezactivata. [Default]" , -1 );
-	write_file( "cfg", "// Valoarea 1: Argumentele sunt printate in consola. " , -1 );
+	write_file( cfg, "rom_admin_login_file ^"users_login.ini^"" , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Cvar  : rom_admin_login_debug ( Activat numai in cazul in care cvarul ^"rom_admin_login^" este setat pe 1 )" , -1 );
+	write_file( cfg, "// Efect : In cazul in care adminele nu se incarca corect acesta va printa in consola serverului argumentele citite (nume - parola - acces - flag)" , -1 );
+	write_file( cfg, "// Valoarea 0: Functie este dezactivata. [Default]" , -1 );
+	write_file( cfg, "// Valoarea 1: Argumentele sunt printate in consola. " , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_admin_login_debug ^"%d^"", GetNum( g_Cvar [ admin_login_debug ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_admin_login_debug ^"0^"" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Cvar      : rom_utf8-bom" , -1 );
-	write_file( "cfg", "// Scop      : Verifica fiecare fisier .res in maps, si daca descopera caractere UTF8-BOM le elimina." , -1 );
-	write_file( "cfg", "// Impact    : Serverul da crash cu eroarea : Host_Error: PF_precache_generic_I: Bad string." , -1 );
-	write_file( "cfg", "// Nota      : Eroarea apare doar la versiunile de HLDS 6***." , -1 );
-	write_file( "cfg", "// Valoarea 0: Functie este dezactivata." , -1 );
-	write_file( "cfg", "// Valoarea 1: Fisierul este decontaminat. [Default]" , -1 );
+	write_file( cfg, "rom_admin_login_debug ^"0^"" , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Cvar      : rom_utf8-bom" , -1 );
+	write_file( cfg, "// Scop      : Verifica fiecare fisier .res in maps, si daca descopera caractere UTF8-BOM le elimina." , -1 );
+	write_file( cfg, "// Impact    : Serverul da crash cu eroarea : Host_Error: PF_precache_generic_I: Bad string." , -1 );
+	write_file( cfg, "// Nota      : Eroarea apare doar la versiunile de HLDS 6***." , -1 );
+	write_file( cfg, "// Valoarea 0: Functie este dezactivata." , -1 );
+	write_file( cfg, "// Valoarea 1: Fisierul este decontaminat. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_utf8-bom ^"%d^"", GetNum( g_Cvar [ utf8_bom ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_utf8-bom ^"1^"" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Cvar      : rom_tag " , -1 );
-	write_file( "cfg", "// Utilizare : Seteaza tag-ul pluginului. (Numele acestuia)" , -1 );
-	write_file( "cfg", "// Nota      : Incepand de la versiunea 1.0.2s, pluginul *ROM-Protect devine mult mai primitor si te lasa chiar sa ii schimbi numele." , -1 );
+	write_file( cfg, "rom_utf8-bom ^"1^"" , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Cvar      : rom_tag " , -1 );
+	write_file( cfg, "// Utilizare : Seteaza tag-ul pluginului. (Numele acestuia)" , -1 );
+	write_file( cfg, "// Nota      : Incepand de la versiunea 1.0.2s, pluginul *ROM-Protect devine mult mai primitor si te lasa chiar sa ii schimbi numele." , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_tag ^"%s^"", GetString( g_Cvar [ Tag ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_tag ^"*ROM-Protect^"" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Cvar      : rom_color-bug " , -1 );
-	write_file( "cfg", "// Scop      : Urmareste chatul si opeste bugurile de tip color-bug care alerteaza playerii si adminii." , -1 );
-	write_file( "cfg", "// Impact    : Serverul nu pateste nimic, insa playerii sau adminii vor fi alertati de culorile folosite de unul din clienti." , -1 );
-	write_file( "cfg", "// Nota      : - " , -1 );
-	write_file( "cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "cfg", "// Valoarea 1: Bug-ul este blocat. [Default]" , -1 );
+	write_file( cfg, "rom_tag ^"*ROM-Protect^"" , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Cvar      : rom_color-bug " , -1 );
+	write_file( cfg, "// Scop      : Urmareste chatul si opeste bugurile de tip color-bug care alerteaza playerii si adminii." , -1 );
+	write_file( cfg, "// Impact    : Serverul nu pateste nimic, insa playerii sau adminii vor fi alertati de culorile folosite de unul din clienti." , -1 );
+	write_file( cfg, "// Nota      : - " , -1 );
+	write_file( cfg, "// Valoarea 0: Functia este dezactivata." , -1 );
+	write_file( cfg, "// Valoarea 1: Bug-ul este blocat. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_color-bug ^"%d^"", GetNum( g_Cvar [ color_bug ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_color-bug ^"1^"" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Cvar      : rom_motdfile " , -1 );
-	write_file( "cfg", "// Scop      : Urmareste activitatea adminilor prin comanda amx_cvar si incearca sa opreasca modificare cvarului motdfile intr-un fisier .ini." , -1 );
-	write_file( "cfg", "// Impact    : Serverul nu pateste nimic, insa adminul care foloseste acest exploit poate fura date importante din server, precum lista de admini, lista de pluginuri etc ." , -1 );
-	write_file( "cfg", "// Nota      : Functia nu blocheaza deocamdata decat comanda amx_cvar." , -1 );
-	write_file( "cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "cfg", "// Valoarea 1: Bug-ul este blocat. [Default]" , -1 );
+	write_file( cfg, "rom_color-bug ^"1^"" , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Cvar      : rom_motdfile " , -1 );
+	write_file( cfg, "// Scop      : Urmareste activitatea adminilor prin comanda amx_cvar si incearca sa opreasca modificare cvarului motdfile intr-un fisier .ini." , -1 );
+	write_file( cfg, "// Impact    : Serverul nu pateste nimic, insa adminul care foloseste acest exploit poate fura date importante din server, precum lista de admini, lista de pluginuri etc ." , -1 );
+	write_file( cfg, "// Nota      : Functia nu blocheaza deocamdata decat comanda amx_cvar." , -1 );
+	write_file( cfg, "// Valoarea 0: Functia este dezactivata." , -1 );
+	write_file( cfg, "// Valoarea 1: Bug-ul este blocat. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_motdfile ^"%d^"", GetNum( g_Cvar [ motdfile ] ));
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_motdfile ^"1^"" , -1 );
-	write_file( "cfg", " " , -1 );
-	write_file( "cfg", "// Cvar      : rom_anti-pause " , -1 );
-	write_file( "cfg", "// Scop      : Urmareste ca pluginul de protectie ^"ROM-Protect^" sa nu poata fi pus pe pauza de catre un raufacator." , -1 );
-	write_file( "cfg", "// Impact    : Serverul nu mai este protejat de plugin, acesta fiind expus la mai multe exploituri." , -1 );
-	write_file( "cfg", "// Nota      : -" , -1 );
-	write_file( "cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "cfg", "// Valoarea 1: Bug-ul este blocat. [Default]" , -1 );
+	write_file( cfg, "rom_motdfile ^"1^"" , -1 );
+	write_file( cfg, " " , -1 );
+	write_file( cfg, "// Cvar      : rom_anti-pause " , -1 );
+	write_file( cfg, "// Scop      : Urmareste ca pluginul de protectie ^"ROM-Protect^" sa nu poata fi pus pe pauza de catre un raufacator." , -1 );
+	write_file( cfg, "// Impact    : Serverul nu mai este protejat de plugin, acesta fiind expus la mai multe exploituri." , -1 );
+	write_file( cfg, "// Nota      : -" , -1 );
+	write_file( cfg, "// Valoarea 0: Functia este dezactivata." , -1 );
+	write_file( cfg, "// Valoarea 1: Bug-ul este blocat. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_anti-pause ^"%d^"", GetNum(g_Cvar[anti_pause]) );
-		write_file( "cfg", line , -1 );
+		write_file( cfg, line , -1 );
 	}
 	else
-	write_file( "cfg", "rom_anti-pause ^"1^"" , -1 );
-	write_file( "cfg", " " , -1 );
+	write_file( cfg, "rom_anti-pause ^"1^"" , -1 );
+	write_file( cfg, " " , -1 );
 }
 
 WriteLang( bool:exist )
@@ -1210,15 +1211,40 @@ WriteLang( bool:exist )
 	if(exist)
 		delete_file( lang );
 	new line[121];
-	write_file( "lang", "// *ROM-Protect" , -1 );
-	write_file( "lang", "// Plugin FREE anti-flood/bug-fix pentru orice server." , -1 );
+	write_file( lang, "// *ROM-Protect" , -1 );
+	write_file( lang, "// Plugin FREE anti-flood/bug-fix pentru orice server." , -1 );
 	formatex(line, charsmax(line), "// Versiunea %s", Version);
-	write_file( "lang", line , -1 ); 
-	write_file( "lang", "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor" , -1 );
-	write_file( "lang", "// O productie FioriGinal.ro - site : www.fioriginal.ro" , -1 );
-	write_file( "lang", "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html" , -1 );
-	write_file( "lang", " " , -1 );
-	write_file( "lang", " " , -1 );
-	write_file( "lang", " " , -1 );
+	write_file( lang, line , -1 ); 
+	write_file( lang, "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor" , -1 );
+	write_file( lang, "// O productie FioriGinal.ro - site : www.fioriginal.ro" , -1 );
+	write_file( lang, "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html" , -1 );
+	write_file( lang, "// Link sursa : https://github.com/luxxxoor/ROM-Protect", -1);
+	write_file( lang, " ", -1 );
+	write_file( lang, " ", -1 );
+	write_file( lang, " ", -1 );
+	write_file( lang, "[en]", -1);
+	write_file( lang, " ", -1 );
+	write_file( lang, "ROM_Update_Cfg = Am actualizat fisierul configurator : rom_protect.cfg.", -1 );
+	write_file( lang, "ROM_Update_Lang = Am actualizat fisierul LANG : rom_protect.txt.", -1 );
+	write_file( lang, "ROM_Fake_Players = S-a observat un atac de Fake-Players. Tentativa blocata.", -1 );
+	write_file( lang, "ROM_Fake_Players_Punish = Atac identificat cu IP : %s. IP banat 30 minute.", -1 );
+	write_file( lang, "ROM_Fake_Players_Log = Atac blocat de ^"Fake-Players^" de la IP : %s .", -1 );
+	write_file( lang, "ROM_Plugin_Pause = S-a depistat o incercare a opririi pluginului de protectie. Operatiune oprita.", -1 );
+	write_file( lang, "ROM_Plugin_Pause_Log = S-a depistat o incercare a opririi pluginului de protectie %s. Operatiune oprita.", -1 );
+	write_file( lang, "ROM_Admin_Wrong_Name = Nume incorect.", -1 );
+	write_file( lang, "ROM_Admin_Wrong_Pass = Parola incorecta.", -1 );
+	write_file( lang, "ROM_Admin_Loaded = Admin incarcat.", -1 );
+	write_file( lang, "ROM_Cmd_Bug = Ai incercat sa creezi CMD_BUG. Tentativa blocata.", -1 );
+	write_file( lang, "ROM_Cmd_Bug_Log = %s [ %s | %s ] a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului.", -1 );
+	write_file( lang, "ROM_Color_Bug = Ai incercat sa creezi COLOR_BUG. Tentativa blocata.", -1 );
+	write_file( lang, "ROM_Color_Bug_Log = %s [ %s | %s ] a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii.", -1 );
+	write_file( lang, "ROM_Spec_Bug = Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", -1 );
+	write_file( lang, "ROM_Spec_Bug_Log = %s [ %s | %s ] a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului.", -1 );
+	write_file( lang, "ROM_Admin_Chat_Flood = Ai incercat sa creezi ADMIN_CHAT_FLOOD. Tentativa blocata.", -1 );
+	write_file( lang, "ROM_Admin_Chat_Flood_Log = %s [ %s | %s ] a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa strice buna functionare a serverului.", -1 );	
+	write_file( lang, "ROM_File_Not_Found = Fisierul %s nu exista.", -1 );	
+	write_file( lang, "ROM_Admin_Debug = %s - %s - %s - %s", -1 );	
+	write_file( lang, "ROM_Motdfile = Ai incercat sa furi informatii din acest server, comanda ta a fost blocata.", -1 );	
+	write_file( lang, "ROM_Motdfile_Log = %s [ %s | %s ] a incercat sa foloseasca cvarul motdfile ca sa fure informatii din acest server.", -1 );	
 	
 }
