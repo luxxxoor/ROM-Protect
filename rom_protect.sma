@@ -250,20 +250,20 @@ public client_connect( id )
 			if( cnt[ id ] > GetNum( g_Cvar[fake_players_limit] ) && GetNum( g_Cvar[fake_players] ) == 1 )
 				{
 				server_cmd( "addip ^"30^" ^"%s^";wait;writeip", address );
-				server_print( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_Players1", address );
+				server_print( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_Players_Log", address );
 				if( GetNum( g_Cvar[plug_warn] ) == 1 )
 					{
 					#if AMXX_VERSION_NUM < 183
 					ColorChat( 0, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_Players" );
-					ColorChat( 0, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_Players1", address );
+					ColorChat( 0, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_Players_Punish", address );
 					#else
 					client_print_color( 0, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_Players" );
-					client_print_color( 0, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_Players1", address );
+					client_print_color( 0, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_Players_Punish", address );
 					#endif
 				}
 				if( GetNum( g_Cvar[plug_log] ) == 1 )
 					{
-					LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_PlayersL", address );
+					LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_Players_Log", address );
 				}
 				break;
 			}
@@ -375,7 +375,7 @@ public plugin_pause()
 {
 	if ( GetNum(g_Cvar[anti_pause]) == 1 )
 	{
-		server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Plugin_Pause");
+		server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Plugin_Pause_Log");
 		if ( GetNum(g_Cvar[plug_warn]) == 1)
 			{
 			#if AMXX_VERSION_NUM < 183
@@ -385,7 +385,7 @@ public plugin_pause()
 			#endif
 		}
 		if( GetNum(g_Cvar[plug_log]) == 1)
-				LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Plugin_PauseL", GetString(g_Cvar[Tag]) );
+				LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Plugin_Pause_Log", GetString(g_Cvar[Tag]) );
 		server_cmd("amxx unpause rom_protect.amxx");
 	}
 }
@@ -407,30 +407,30 @@ public CmdPass( id )
 		if(!Name[ id ])
 			{
 			#if AMXX_VERSION_NUM < 183
-			ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Fail_Name" );
+			ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Wrong_Name" );
 			#else
-			client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Fail_Name" );
+			client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Wrong_Name" );
 			#endif
-			client_print( id, print_console, "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Fail_Name" );
+			client_print( id, print_console, "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Wrong_Name" );
 		}
 		else
 		{
 			#if AMXX_VERSION_NUM < 183
-			ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Fail_Pass" );
+			ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Wrong_Pass" );
 			#else
-			client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Fail_Pass" );
+			client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Wrong_Pass" );
 			#endif
-			client_print( id, print_console, "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Fail_Pass" );
+			client_print( id, print_console, "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Wrong_Pass" );
 		}
 	}
 	else
 	{
 		#if AMXX_VERSION_NUM < 183
-		ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin" );
+		ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Loaded" );
 		#else
-		client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin" );
+		client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Loaded" );
 		#endif
-		client_print( id, print_console, "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin" );
+		client_print( id, print_console, "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Loaded" );
 	}
 	
 	return PLUGIN_CONTINUE;
@@ -467,7 +467,7 @@ public HookChat(id)
 		
 		if(b_said_cmd_bug[ id ])
 			{
-			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Cmd_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Cmd_Bug_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum(g_Cvar[plug_warn]) == 1)
 				{
 				#if AMXX_VERSION_NUM < 183
@@ -477,13 +477,13 @@ public HookChat(id)
 				#endif
 			}
 			if( GetNum(g_Cvar[plug_log]) == 1)
-				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Cmd_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Cmd_Bug_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			b_said_cmd_bug[ id ] = false;
 			return PLUGIN_HANDLED;
 		}
 		if(b_said_color_bug[ id ])
 			{
-			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Color_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Color_Bug_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum(g_Cvar[plug_warn]) == 1)
 				{
 				#if AMXX_VERSION_NUM < 183
@@ -493,7 +493,7 @@ public HookChat(id)
 				#endif
 			}
 			if( GetNum(g_Cvar[plug_log]) == 1)
-				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Color_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Color_Bug_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			b_said_color_bug[ id ] = false;
 			return PLUGIN_HANDLED;
 		}
@@ -582,7 +582,7 @@ public BlockSpecbugOldStyleMenus( id )
 				{
 				fm_set_user_team( id, FM_TEAM_CT );
 			}
-			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_Bug_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum( g_Cvar[plug_warn] ) )
 				{
 				#if AMXX_VERSION_NUM < 183
@@ -592,7 +592,7 @@ public BlockSpecbugOldStyleMenus( id )
 				#endif
 			}
 			if( GetNum( g_Cvar[plug_log] ))
-				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_Bug_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 		}
 		set_task( 0.1, "BlockSpecbugOldStyleMenus", id );
 	}
@@ -615,7 +615,7 @@ public BlockSpecbugVGui( id )
 				fm_set_user_team(id, FM_TEAM_CT );
 				bug_log[id] = true;
 			}      
-			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_Bug_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum( g_Cvar[plug_warn] ) == 1 && bug_log[id])
 				{
 				#if AMXX_VERSION_NUM < 183
@@ -626,7 +626,7 @@ public BlockSpecbugVGui( id )
 			}
 			if( GetNum( g_Cvar[plug_log] ) == 1 && bug_log[id])
 				{
-				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_Bug_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 				bug_log[id] = false;
 			}
 		}
@@ -638,7 +638,7 @@ public ShowProtection( id )
 	{
 	if( flood[ id ] )
 		{
-		server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Chat_FloodL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+		server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Chat_Flood_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 		if( GetNum( g_Cvar[plug_warn] ) == 1 )
 			{
 			#if AMXX_VERSION_NUM < 183
@@ -648,7 +648,7 @@ public ShowProtection( id )
 			#endif
 		}
 		if( GetNum( g_Cvar[plug_log] ) == 1 )
-			LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Chat_FloodL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+			LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Chat_Flood_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 		flood[ id ] = false;
 		
 	}
@@ -705,9 +705,9 @@ LoadAdminLogin( )
 	
 	if ( !file )
 		{
-		server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Fail_Cfg", GetString(g_Cvar[admin_login_file]));
+		server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_File_Not_Found", GetString(g_Cvar[admin_login_file]));
 		if( GetNum( g_Cvar[plug_log] ) == 1 )
-			LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Fail_Cfg", GetString(g_Cvar[admin_login_file]) );
+			LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_File_Not_Found", GetString(g_Cvar[admin_login_file]) );
 		return;
 	}
 	
@@ -790,9 +790,9 @@ public CvarFunc(id, level, cid)
 		if( equali(arg, "motdfile") && contain(arg2, ".ini") != -1 ) 
 			{
 			console_print(id, "%s: %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Motdfile");
-			server_print("%s: %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_MotdfileL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+			server_print("%s: %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Motdfile_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum( g_Cvar[plug_log] ) == 1 )
-				LogCommand( "%s: %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_MotdfileL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+				LogCommand( "%s: %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Motdfile_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
 			return PLUGIN_HANDLED; 
 		}
 	} 
