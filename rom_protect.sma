@@ -1,26 +1,27 @@
-//﻿
+//?
 #include <amxmodx>
 #include <amxmisc>
 #include <cstrike>
 #include <fakemeta>
 
 #if AMXX_VERSION_NUM < 183
-#include <ColorChat>
-#define MAX_PLAYERS 33
-#define MAX_NAME_LENGTH 32
+	#include <ColorChat>
+	#define MAX_PLAYERS 33
+	#define MAX_NAME_LENGTH 32
 #endif
 
 #pragma semicolon 1
 
-new sz_MenuText[ MAX_PLAYERS ][ MAX_PLAYERS ];
-new num[ MAX_PLAYERS ], cnt[ MAX_PLAYERS ];
-new bool:flood[ MAX_PLAYERS ], bool:Name[ MAX_PLAYERS ], bool:Admin[ MAX_PLAYERS ], g_szFile[ 128 ], last_pass[MAX_PLAYERS][MAX_PLAYERS];
+new sz_MenuText[ MAX_PLAYERS ][ MAX_PLAYERS ],
+	num[ MAX_PLAYERS ], cnt[ MAX_PLAYERS ],
+	bool:flood[ MAX_PLAYERS ], bool:Name[ MAX_PLAYERS ], bool:Admin[ MAX_PLAYERS ], g_szFile[ 128 ], last_pass[MAX_PLAYERS][MAX_PLAYERS];
 
-static const Version[ ]   = "1.0.3s";
-static const Plugin_name[ ] = "ROM-Protect";
-static const Terrorist[ ] = "#Terrorist_Select";
-static const CT_Select[ ] = "#CT_Select"; 
-static const cfg[ ] = "addons/amxmodx/configs/rom_protect.cfg";
+static const Version[]   = "1.0.3s",
+			 Plugin_name[] = "ROM-Protect",
+			 Terrorist[] = "#Terrorist_Select",
+			 CT_Select[] = "#CT_Select",
+			 cfg[] = "addons/amxmodx/configs/rom_protect.cfg",
+			 lang[] = "addons/amxmodx/data/lang/rom_protect.txt";
 
 new loginName[ 1024 ][ MAX_PLAYERS ], loginPass[ 1024 ][ MAX_PLAYERS ], loginAccs[ 1024 ][ MAX_PLAYERS ], loginFlag[ 1024 ][ MAX_PLAYERS ];
 new admin_number;
@@ -62,8 +63,8 @@ enum _:g_Cvars
 };
 new g_Cvar[g_Cvars];
 
-new Float:g_Flooding[ MAX_PLAYERS ] = {0.0, ...};
-new g_Flood[ MAX_PLAYERS ] = {0, ...};
+new Float:g_Flooding[ MAX_PLAYERS ] = {0.0, ...},
+	g_Flood[ MAX_PLAYERS ] = {0, ...};
 
 new Trie:g_tDefaultRes;
 
@@ -119,13 +120,14 @@ public plugin_precache( )
 	if( file_exists( cfg ) )
 		server_cmd( "exec %s", cfg );
 	
-	set_task(30.0, "CheckCFG");	
+	set_task(30.0, "CheckCFG");
+	set_task(30.0, "CheckLang");
 }
 
 public CheckCFG()
 	{
-	if( !file_exists( cfg ) )
-		WriteCFG( false );
+	if( !file_exists(cfg) )
+		WriteCFG(false);
 	else
 	{
 		new file = fopen( cfg, "r+" );
@@ -145,7 +147,35 @@ public CheckCFG()
 			WriteCFG( true );
 			cfg_file = false;
 			if( GetNum( g_Cvar[plug_log] ) == 1 )
-				LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Update_Cfg" );
+				LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Update_Cfg" );
+		}
+	}
+}
+
+public CheckLang()
+	{
+	if( !file_exists(lang) )
+		WriteLang(false);
+	else
+	{
+		new file = fopen( lang, "r+" );
+		
+		new text[ 121 ], bool:lang_file, bool:find_search; 
+		while ( !feof( file ) )
+			{
+			fgets( file, text, charsmax(text) );
+			
+			if( containi(text, Version) != -1 )
+				find_search = true;
+			else
+			lang_file = true;			
+		}
+		if(lang_file && !find_search)
+			{
+			WriteLang( true );
+			lang_file = false;
+			if( GetNum( g_Cvar[plug_log] ) == 1 )
+				LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Update_Lang" );
 		}
 	}
 }
@@ -220,20 +250,20 @@ public client_connect( id )
 			if( cnt[ id ] > GetNum( g_Cvar[fake_players_limit] ) && GetNum( g_Cvar[fake_players] ) == 1 )
 				{
 				server_cmd( "addip ^"30^" ^"%s^";wait;writeip", address );
-				server_print( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Fake_Players1", address );
+				server_print( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_Players1", address );
 				if( GetNum( g_Cvar[plug_warn] ) == 1 )
 					{
 					#if AMXX_VERSION_NUM < 183
-					ColorChat( 0, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Fake_Players" );
-					ColorChat( 0, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Fake_Players1", address );
+					ColorChat( 0, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_Players" );
+					ColorChat( 0, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_Players1", address );
 					#else
-					client_print_color( 0, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Fake_Players" );
-					client_print_color( 0, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Fake_Players1", address );
+					client_print_color( 0, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_Players" );
+					client_print_color( 0, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_Players1", address );
 					#endif
 				}
 				if( GetNum( g_Cvar[plug_log] ) == 1 )
 					{
-					LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Fake_PlayersL", address );
+					LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_PlayersL", address );
 				}
 				break;
 			}
@@ -345,17 +375,17 @@ public plugin_pause()
 {
 	if ( GetNum(g_Cvar[anti_pause]) == 1 )
 	{
-		server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Plugin_Pause");
+		server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Plugin_Pause");
 		if ( GetNum(g_Cvar[plug_warn]) == 1)
 			{
 			#if AMXX_VERSION_NUM < 183
-			ColorChat( 0, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Plugin_Pause" );
+			ColorChat( 0, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Plugin_Pause" );
 			#else
-			client_print_color( 0, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Plugin_Pause" );
+			client_print_color( 0, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Plugin_Pause" );
 			#endif
 		}
 		if( GetNum(g_Cvar[plug_log]) == 1)
-				LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Plugin_PauseL", GetString(g_Cvar[Tag]) );
+				LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Plugin_PauseL", GetString(g_Cvar[Tag]) );
 		server_cmd("amxx unpause rom_protect.amxx");
 	}
 }
@@ -377,30 +407,30 @@ public CmdPass( id )
 		if(!Name[ id ])
 			{
 			#if AMXX_VERSION_NUM < 183
-			ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Fail_Name" );
+			ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Fail_Name" );
 			#else
-			client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Fail_Name" );
+			client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Fail_Name" );
 			#endif
-			client_print( id, print_console, "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Fail_Name" );
+			client_print( id, print_console, "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Fail_Name" );
 		}
 		else
 		{
 			#if AMXX_VERSION_NUM < 183
-			ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Fail_Pass" );
+			ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Fail_Pass" );
 			#else
-			client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Fail_Pass" );
+			client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Fail_Pass" );
 			#endif
-			client_print( id, print_console, "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Fail_Pass" );
+			client_print( id, print_console, "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Fail_Pass" );
 		}
 	}
 	else
 	{
 		#if AMXX_VERSION_NUM < 183
-		ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin" );
+		ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin" );
 		#else
-		client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin" );
+		client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin" );
 		#endif
-		client_print( id, print_console, "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin" );
+		client_print( id, print_console, "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin" );
 	}
 	
 	return PLUGIN_CONTINUE;
@@ -437,33 +467,33 @@ public HookChat(id)
 		
 		if(b_said_cmd_bug[ id ])
 			{
-			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Cmd_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Cmd_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum(g_Cvar[plug_warn]) == 1)
 				{
 				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Cmd_Bug" );
+				ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Cmd_Bug" );
 				#else
-				client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Cmd_Bug" );
+				client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Cmd_Bug" );
 				#endif
 			}
 			if( GetNum(g_Cvar[plug_log]) == 1)
-				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Cmd_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Cmd_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			b_said_cmd_bug[ id ] = false;
 			return PLUGIN_HANDLED;
 		}
 		if(b_said_color_bug[ id ])
 			{
-			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Color_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Color_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum(g_Cvar[plug_warn]) == 1)
 				{
 				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Color_Bug" );
+				ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Color_Bug" );
 				#else
-				client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Color_Bug" );
+				client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Color_Bug" );
 				#endif
 			}
 			if( GetNum(g_Cvar[plug_log]) == 1)
-				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Color_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Color_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			b_said_color_bug[ id ] = false;
 			return PLUGIN_HANDLED;
 		}
@@ -552,17 +582,17 @@ public BlockSpecbugOldStyleMenus( id )
 				{
 				fm_set_user_team( id, FM_TEAM_CT );
 			}
-			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Spec_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum( g_Cvar[plug_warn] ) )
 				{
 				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Spec_Bug" );
+				ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_Bug" );
 				#else
-				client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Spec_Bug" );
+				client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_Bug" );
 				#endif
 			}
 			if( GetNum( g_Cvar[plug_log] ))
-				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Spec_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 		}
 		set_task( 0.1, "BlockSpecbugOldStyleMenus", id );
 	}
@@ -585,18 +615,18 @@ public BlockSpecbugVGui( id )
 				fm_set_user_team(id, FM_TEAM_CT );
 				bug_log[id] = true;
 			}      
-			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Spec_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum( g_Cvar[plug_warn] ) == 1 && bug_log[id])
 				{
 				#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Spec_Bug" );
+				ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_Bug" );
 				#else
-				client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Spec_Bug" );
+				client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_Bug" );
 				#endif
 			}
 			if( GetNum( g_Cvar[plug_log] ) == 1 && bug_log[id])
 				{
-				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Spec_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_BugL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 				bug_log[id] = false;
 			}
 		}
@@ -608,17 +638,17 @@ public ShowProtection( id )
 	{
 	if( flood[ id ] )
 		{
-		server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Chat_FloodL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+		server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Chat_FloodL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 		if( GetNum( g_Cvar[plug_warn] ) == 1 )
 			{
 			#if AMXX_VERSION_NUM < 183
-			ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Chat_Flood" );
+			ColorChat( id, GREY, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Chat_Flood" );
 			#else
-			client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Chat_Flood" );
+			client_print_color( id, print_team_grey, "^3%s :^4 %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Chat_Flood" );
 			#endif
 		}
 		if( GetNum( g_Cvar[plug_log] ) == 1 )
-			LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Chat_FloodL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+			LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Chat_FloodL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 		flood[ id ] = false;
 		
 	}
@@ -675,9 +705,9 @@ LoadAdminLogin( )
 	
 	if ( !file )
 		{
-		server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Fail_Cfg", GetString(g_Cvar[admin_login_file]));
+		server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Fail_Cfg", GetString(g_Cvar[admin_login_file]));
 		if( GetNum( g_Cvar[plug_log] ) == 1 )
-			LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Admin_Fail_Cfg", GetString(g_Cvar[admin_login_file]) );
+			LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Fail_Cfg", GetString(g_Cvar[admin_login_file]) );
 		return;
 	}
 	
@@ -704,7 +734,7 @@ LoadAdminLogin( )
 		copy( loginFlag[ admin_number ], charsmax( loginFlag[ ] ),  flags );
 		
 		if( GetNum( g_Cvar[admin_login_debug] ) == 1 )
-			server_print( "%L", LANG_PLAYER, "ROM-Protect_Admin_Debug", loginName[ admin_number ], loginPass[ admin_number ], loginAccs[ admin_number ], loginFlag[ admin_number ] );              
+			server_print( "%L", LANG_PLAYER, "ROM_Admin_Debug", loginName[ admin_number ], loginPass[ admin_number ], loginAccs[ admin_number ], loginFlag[ admin_number ] );              
 	}
 	fclose( file );
 }
@@ -759,10 +789,10 @@ public CvarFunc(id, level, cid)
 		
 		if( equali(arg, "motdfile") && contain(arg2, ".ini") != -1 ) 
 			{
-			console_print(id, "%s: %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_Motdfile");
-			server_print("%s: %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_MotdfileL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+			console_print(id, "%s: %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Motdfile");
+			server_print("%s: %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_MotdfileL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum( g_Cvar[plug_log] ) == 1 )
-				LogCommand( "%s: %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM-Protect_MotdfileL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+				LogCommand( "%s: %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_MotdfileL", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
 			return PLUGIN_HANDLED; 
 		}
 	} 
@@ -871,7 +901,7 @@ RegistersInit()
 	register_concmd("amx_cvar", "CvarFunc");
 	register_concmd("amx_reloadadmins", "ReloadLogin");
 	// Registering Language file by COOPER
-	register_dictionary("rom-protect.txt");
+	register_dictionary("rom_protect.txt");
 }
 
 stock bool:CheckName( id )
@@ -914,263 +944,281 @@ WriteCFG( bool:exist )
 	if(exist)
 		delete_file( cfg );
 	new line[121];
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// *ROM-Protect" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Plugin FREE anti-flood/bug-fix pentru orice server." , -1 );
+	write_file( "cfg", "// *ROM-Protect" , -1 );
+	write_file( "cfg", "// Plugin FREE anti-flood/bug-fix pentru orice server." , -1 );
 	formatex(line, charsmax(line), "// Versiunea %s", Version);
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 ); 
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// O productie FioriGinal.ro - site : www.fioriginal.ro" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Verificare daca CFG-ul a fost executat cu succes." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "echo ^"*ROM-Protect : Fisierul rom_protect.cfg a fost gasit. Incep protejarea serverului.^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_cmd-bug" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Scop      : Urmareste chatul si opeste bugurile de tip ^"%s^"/^"%s0^" care dau pluginurile peste cap." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Serverul nu pateste nimic, insa playerii acestuia primesc ^"quit^" indiferent de ce client folosesc, iar serverul ramane gol." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Update    : Incepand cu versiunea 1.0.1s, pluginul protejeaza serverele si de noul cmd-bug bazat pe caracterul '#'. Pluginul blocheaza de acum '#' si '%' in chat si '#' in nume." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Update    : Incepand cu versiunea 1.0.3a, pluginul devine mai inteligent, si va bloca doar posibilele folosiri ale acestui bug, astfel incat caracterele '#' si '%' vor putea fi folosite, insa nu in toate cazurile." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Update    : Incepand cu versiunea 1.0.3s, pluginul incearca sa inlature bugul provotat de caracterul '+' in nume, acesta incercand sa deruteze playerii sau adminii (nu aparea numele jucatorului in meniuri)." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Atacul este blocat. [Default]" , -1 );
+	write_file( "cfg", line , -1 ); 
+	write_file( "cfg", "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor" , -1 );
+	write_file( "cfg", "// O productie FioriGinal.ro - site : www.fioriginal.ro" , -1 );
+	write_file( "cfg", "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Verificare daca CFG-ul a fost executat cu succes." , -1 );
+	write_file( "cfg", "echo ^"*ROM-Protect : Fisierul rom_protect.cfg a fost gasit. Incep protejarea serverului.^"" , -1 );
+	write_file( "cfg", "// Cvar      : rom_cmd-bug" , -1 );
+	write_file( "cfg", "// Scop      : Urmareste chatul si opeste bugurile de tip ^"%s^"/^"%s0^" care dau pluginurile peste cap." , -1 );
+	write_file( "cfg", "// Impact    : Serverul nu pateste nimic, insa playerii acestuia primesc ^"quit^" indiferent de ce client folosesc, iar serverul ramane gol." , -1 );
+	write_file( "cfg", "// Update    : Incepand cu versiunea 1.0.1s, pluginul protejeaza serverele si de noul cmd-bug bazat pe caracterul '#'. Pluginul blocheaza de acum '#' si '%' in chat si '#' in nume." , -1 );
+	write_file( "cfg", "// Update    : Incepand cu versiunea 1.0.3a, pluginul devine mai inteligent, si va bloca doar posibilele folosiri ale acestui bug, astfel incat caracterele '#' si '%' vor putea fi folosite, insa nu in toate cazurile." , -1 );
+	write_file( "cfg", "// Update    : Incepand cu versiunea 1.0.3s, pluginul incearca sa inlature bugul provotat de caracterul '+' in nume, acesta incercand sa deruteze playerii sau adminii (nu aparea numele jucatorului in meniuri)." , -1 );
+	write_file( "cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
+	write_file( "cfg", "// Valoarea 1: Atacul este blocat. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_cmd-bug ^"%d^"", GetNum( g_Cvar[ cmd_bug ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_cmd-bug ^"1^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_spec-bug" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Scop      : Urmareste activitatea playerilor si opreste schimbarea echipei, pentru a opri specbug." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Serverul primeste crash in momentul in care se apeleaza la acest bug." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Nota      : -" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Atacul este blocat. [Default]" , -1 );
+	write_file( "cfg", "rom_cmd-bug ^"1^"" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Cvar      : rom_spec-bug" , -1 );
+	write_file( "cfg", "// Scop      : Urmareste activitatea playerilor si opreste schimbarea echipei, pentru a opri specbug." , -1 );
+	write_file( "cfg", "// Impact    : Serverul primeste crash in momentul in care se apeleaza la acest bug." , -1 );
+	write_file( "cfg", "// Nota      : -" , -1 );
+	write_file( "cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
+	write_file( "cfg", "// Valoarea 1: Atacul este blocat. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_spec-bug ^"%d^"", GetNum( g_Cvar [ spec_bug ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_spec-bug ^"1^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_admin_chat_flood" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Scop      : Urmareste activitatea playerilor care folosesc chat-ul adminilor, daca persoanele incearca sa floodeze acest chat sunt opriti fortat." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Serverul nu pateste nimic, insa adminii primesc kick cu motivul : ^"reliable channel overflowed^"." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Nota      : -" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Atacul este blocat. [Default]" , -1 );
+	write_file( "cfg", "rom_spec-bug ^"1^"" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Cvar      : rom_admin_chat_flood" , -1 );
+	write_file( "cfg", "// Scop      : Urmareste activitatea playerilor care folosesc chat-ul adminilor, daca persoanele incearca sa floodeze acest chat sunt opriti fortat." , -1 );
+	write_file( "cfg", "// Impact    : Serverul nu pateste nimic, insa adminii primesc kick cu motivul : ^"reliable channel overflowed^"." , -1 );
+	write_file( "cfg", "// Nota      : -" , -1 );
+	write_file( "cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
+	write_file( "cfg", "// Valoarea 1: Atacul este blocat. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_admin_chat_flood ^"%d^"", GetNum( g_Cvar [ admin_chat_flood ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_admin_chat_flood ^"1^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_fake-players" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Scop      : Urmareste persoanele conectate pe server si baneaza atunci cand numarul persoanelor cu acelasi ip il depaseste pe cel setat in cvarul rom_fake-players_limit." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Serverul experimenteaza lag peste 200+ la orice jucator prezent pe server, cateodata chiar crash." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Nota      : Daca sunt mai multe persoane care impart aceasi legatura de internet pot fi banate ( 0 minute ), in acest caz ridicati cvarul : rom_fake-players_limit sau opriti rom_fake-players." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Atacul este blocat prin ban 30 minute. [Default]" , -1 );
+	write_file( "cfg", "rom_admin_chat_flood ^"1^"" , -1 );
+	write_file( "cfg", "" , -1 );
+	write_file( "cfg", "// Cvar      : rom_fake-players" , -1 );
+	write_file( "cfg", "// Scop      : Urmareste persoanele conectate pe server si baneaza atunci cand numarul persoanelor cu acelasi ip il depaseste pe cel setat in cvarul rom_fake-players_limit." , -1 );
+	write_file( "cfg", "// Impact    : Serverul experimenteaza lag peste 200+ la orice jucator prezent pe server, cateodata chiar crash." , -1 );
+	write_file( "cfg", "// Nota      : Daca sunt mai multe persoane care impart aceasi legatura de internet pot fi banate ( 0 minute ), in acest caz ridicati cvarul : rom_fake-players_limit sau opriti rom_fake-players." , -1 );
+	write_file( "cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
+	write_file( "cfg", "// Valoarea 1: Atacul este blocat prin ban 30 minute. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_fake-players ^"%d^"", GetNum( g_Cvar [ fake_players ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_fake-players ^"1^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_fake-players_limit ( Activat numai in cazul in care cvarul ^"rom_fake-players^" este setat pe 1 )" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Utilizare : Limiteaza numarul maxim de persoane de pe acelasi IP, blocand astfel atacurile tip fake-player." , -1 );
+	write_file( "cfg", "rom_fake-players ^"1^"" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Cvar      : rom_fake-players_limit ( Activat numai in cazul in care cvarul ^"rom_fake-players^" este setat pe 1 )" , -1 );
+	write_file( "cfg", "// Utilizare : Limiteaza numarul maxim de persoane de pe acelasi IP, blocand astfel atacurile tip fake-player." , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_fake-players_limit ^"%d^"", GetNum( g_Cvar [ fake_players_limit ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_fake-players_limit ^"1^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_delete_custom_hpk" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Scop      : La finalul fiecarei harti, se va sterge fisierul custom.hpk." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Serverul experimenteaza probleme la schimbarea hartii, aceasta putand sa dureze si pana la 60secunde." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Nota      : -" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functie este dezactivata." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Fisierul este sters. [Default]" , -1 );
+	write_file( "cfg", "rom_fake-players_limit ^"1^"" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Cvar      : rom_delete_custom_hpk" , -1 );
+	write_file( "cfg", "// Scop      : La finalul fiecarei harti, se va sterge fisierul custom.hpk." , -1 );
+	write_file( "cfg", "// Impact    : Serverul experimenteaza probleme la schimbarea hartii, aceasta putand sa dureze si pana la 60secunde." , -1 );
+	write_file( "cfg", "// Nota      : -" , -1 );
+	write_file( "cfg", "// Valoarea 0: Functie este dezactivata." , -1 );
+	write_file( "cfg", "// Valoarea 1: Fisierul este sters. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_delete_custom_hpk ^"%d^"", GetNum( g_Cvar [ delete_custom_hpk ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_delete_custom_hpk ^"1^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_delete_vault " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Scop      : La finalul fiecarei harti, se va sterge fisierul vault.ini." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Serverul experimenteaza probleme la schimbarea hartii, aceasta putand sa dureze si pana la 60secunde." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Nota      : -" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functie este dezactivata." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Fisierul este sters si e setat ^"server_language en^" in vault.ini. [Default]" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 2: Fisierul este sters si e setat ^"server_language ro^" in vault.ini." , -1 );
+	write_file( "cfg", "rom_delete_custom_hpk ^"1^"" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Cvar      : rom_delete_vault " , -1 );
+	write_file( "cfg", "// Scop      : La finalul fiecarei harti, se va sterge fisierul vault.ini." , -1 );
+	write_file( "cfg", "// Impact    : Serverul experimenteaza probleme la schimbarea hartii, aceasta putand sa dureze si pana la 60secunde." , -1 );
+	write_file( "cfg", "// Nota      : -" , -1 );
+	write_file( "cfg", "// Valoarea 0: Functie este dezactivata." , -1 );
+	write_file( "cfg", "// Valoarea 1: Fisierul este sters si e setat ^"server_language en^" in vault.ini. [Default]" , -1 );
+	write_file( "cfg", "// Valoarea 2: Fisierul este sters si e setat ^"server_language ro^" in vault.ini." , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_delete_vault ^"%d^"", GetNum( g_Cvar [ delete_vault ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_delete_vault ^"1^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_advertise" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Efect     : Afiseaza un mesaj prin care anunta clientii ca serverul este protejat de *ROM-Protect." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Mesajele sunt dezactivate." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Mesajele sunt activate. [Default]" , -1 );
+	write_file( "cfg", "rom_delete_vault ^"1^"" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Cvar      : rom_advertise" , -1 );
+	write_file( "cfg", "// Efect     : Afiseaza un mesaj prin care anunta clientii ca serverul este protejat de *ROM-Protect." , -1 );
+	write_file( "cfg", "// Valoarea 0: Mesajele sunt dezactivate." , -1 );
+	write_file( "cfg", "// Valoarea 1: Mesajele sunt activate. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_advertise ^"%d^"", GetNum( g_Cvar [ advertise ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_advertise ^"1^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_advertise_time ( Activat numai in cazul in care cvarul ^"rom_advertise^" este setat pe 1 )" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Utilizare : Seteaza ca mesajul sa apara o data la (cat este setat cvarul) secunda/secunde. " , -1 );
+	write_file( "cfg", "rom_advertise ^"1^"" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Cvar      : rom_advertise_time ( Activat numai in cazul in care cvarul ^"rom_advertise^" este setat pe 1 )" , -1 );
+	write_file( "cfg", "// Utilizare : Seteaza ca mesajul sa apara o data la (cat este setat cvarul) secunda/secunde. " , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_advertise_time ^"%d^"", GetNum( g_Cvar [ advertise_time ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_advertise_time ^"120^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_warn " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Efect     : Afiseaza mesaje prin care anunta clientii care incearca sa distube activitatea normala a serverului. " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Mesajele sunt dezactivate." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Mesajele sunt activate. [Default]" , -1 );
+	write_file( "cfg", "rom_advertise_time ^"120^"" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Cvar      : rom_warn " , -1 );
+	write_file( "cfg", "// Efect     : Afiseaza mesaje prin care anunta clientii care incearca sa distube activitatea normala a serverului. " , -1 );
+	write_file( "cfg", "// Valoarea 0: Mesajele sunt dezactivate." , -1 );
+	write_file( "cfg", "// Valoarea 1: Mesajele sunt activate. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_warn ^"%d^"", GetNum( g_Cvar [ plug_warn ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_warn ^"1^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar  : rom_log" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Efect : Permite sau nu plugin-ului sa ne creeze fisiere.log." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Functia este activata." , -1 );
+	write_file( "cfg", "rom_warn ^"1^"" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Cvar  : rom_log" , -1 );
+	write_file( "cfg", "// Efect : Permite sau nu plugin-ului sa ne creeze fisiere.log." , -1 );
+	write_file( "cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
+	write_file( "cfg", "// Valoarea 1: Functia este activata." , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_log ^"%d^"", GetNum( g_Cvar [ plug_log ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_log ^"1^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_admin_login" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Scop      : Permite autentificarea adminilor prin comanda ^"login parola^" in consola (nu necesita setinfo)" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Parolele adminilor sunt foarte usor de furat in ziua de astazi, e destul doar sa intri pe un server iar parola ta dispare." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Nota      : Adminele se adauga normal ^"nume^" ^"parola^" ^"acces^" ^"f^"." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Update    : Incepand de la versiunea 1.0.3a, comanda in chat !login sau /login dispare, deoarece nu era folosita." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functie este dezactivata." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Adminele sunt protejate. [Default]" , -1 );
+	write_file( "cfg", "rom_log ^"1^"" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Cvar      : rom_admin_login" , -1 );
+	write_file( "cfg", "// Scop      : Permite autentificarea adminilor prin comanda ^"login parola^" in consola (nu necesita setinfo)" , -1 );
+	write_file( "cfg", "// Impact    : Parolele adminilor sunt foarte usor de furat in ziua de astazi, e destul doar sa intri pe un server iar parola ta dispare." , -1 );
+	write_file( "cfg", "// Nota      : Adminele se adauga normal ^"nume^" ^"parola^" ^"acces^" ^"f^"." , -1 );
+	write_file( "cfg", "// Update    : Incepand de la versiunea 1.0.3a, comanda in chat !login sau /login dispare, deoarece nu era folosita." , -1 );
+	write_file( "cfg", "// Valoarea 0: Functie este dezactivata." , -1 );
+	write_file( "cfg", "// Valoarea 1: Adminele sunt protejate. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_admin_login ^"%d^"", GetNum( g_Cvar [ admin_login ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_admin_login ^"1^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar  : rom_admin_login_file ( Activat numai in cazul in care cvarul ^"rom_admin_login^" este setat pe 1 )" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Efect : Selecteaza fisierul de unde sa fie citite adminele cu flag ^"f^"" , -1 );
+	write_file( "cfg", "rom_admin_login ^"1^"" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Cvar  : rom_admin_login_file ( Activat numai in cazul in care cvarul ^"rom_admin_login^" este setat pe 1 )" , -1 );
+	write_file( "cfg", "// Efect : Selecteaza fisierul de unde sa fie citite adminele cu flag ^"f^"" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_admin_login_file ^"%s^"", GetString( g_Cvar [ admin_login_file ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_admin_login_file ^"users_login.ini^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar  : rom_admin_login_debug ( Activat numai in cazul in care cvarul ^"rom_admin_login^" este setat pe 1 )" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Efect : In cazul in care adminele nu se incarca corect acesta va printa in consola serverului argumentele citite (nume - parola - acces - flag)" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functie este dezactivata. [Default]" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Argumentele sunt printate in consola. " , -1 );
+	write_file( "cfg", "rom_admin_login_file ^"users_login.ini^"" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Cvar  : rom_admin_login_debug ( Activat numai in cazul in care cvarul ^"rom_admin_login^" este setat pe 1 )" , -1 );
+	write_file( "cfg", "// Efect : In cazul in care adminele nu se incarca corect acesta va printa in consola serverului argumentele citite (nume - parola - acces - flag)" , -1 );
+	write_file( "cfg", "// Valoarea 0: Functie este dezactivata. [Default]" , -1 );
+	write_file( "cfg", "// Valoarea 1: Argumentele sunt printate in consola. " , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_admin_login_debug ^"%d^"", GetNum( g_Cvar [ admin_login_debug ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_admin_login_debug ^"0^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_utf8-bom" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Scop      : Verifica fiecare fisier .res in maps, si daca descopera caractere UTF8-BOM le elimina." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Serverul da crash cu eroarea : Host_Error: PF_precache_generic_I: Bad string." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Nota      : Eroarea apare doar la versiunile de HLDS 6***." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functie este dezactivata." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Fisierul este decontaminat. [Default]" , -1 );
+	write_file( "cfg", "rom_admin_login_debug ^"0^"" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Cvar      : rom_utf8-bom" , -1 );
+	write_file( "cfg", "// Scop      : Verifica fiecare fisier .res in maps, si daca descopera caractere UTF8-BOM le elimina." , -1 );
+	write_file( "cfg", "// Impact    : Serverul da crash cu eroarea : Host_Error: PF_precache_generic_I: Bad string." , -1 );
+	write_file( "cfg", "// Nota      : Eroarea apare doar la versiunile de HLDS 6***." , -1 );
+	write_file( "cfg", "// Valoarea 0: Functie este dezactivata." , -1 );
+	write_file( "cfg", "// Valoarea 1: Fisierul este decontaminat. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_utf8-bom ^"%d^"", GetNum( g_Cvar [ utf8_bom ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_utf8-bom ^"1^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_tag " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Utilizare : Seteaza tag-ul pluginului. (Numele acestuia)" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Nota      : Incepand de la versiunea 1.0.2s, pluginul *ROM-Protect devine mult mai primitor si te lasa chiar sa ii schimbi numele." , -1 );
+	write_file( "cfg", "rom_utf8-bom ^"1^"" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Cvar      : rom_tag " , -1 );
+	write_file( "cfg", "// Utilizare : Seteaza tag-ul pluginului. (Numele acestuia)" , -1 );
+	write_file( "cfg", "// Nota      : Incepand de la versiunea 1.0.2s, pluginul *ROM-Protect devine mult mai primitor si te lasa chiar sa ii schimbi numele." , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_tag ^"%s^"", GetString( g_Cvar [ Tag ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_tag ^"*ROM-Protect^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_color-bug " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Scop      : Urmareste chatul si opeste bugurile de tip color-bug care alerteaza playerii si adminii." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Serverul nu pateste nimic, insa playerii sau adminii vor fi alertati de culorile folosite de unul din clienti." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Nota      : - " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Bug-ul este blocat. [Default]" , -1 );
+	write_file( "cfg", "rom_tag ^"*ROM-Protect^"" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Cvar      : rom_color-bug " , -1 );
+	write_file( "cfg", "// Scop      : Urmareste chatul si opeste bugurile de tip color-bug care alerteaza playerii si adminii." , -1 );
+	write_file( "cfg", "// Impact    : Serverul nu pateste nimic, insa playerii sau adminii vor fi alertati de culorile folosite de unul din clienti." , -1 );
+	write_file( "cfg", "// Nota      : - " , -1 );
+	write_file( "cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
+	write_file( "cfg", "// Valoarea 1: Bug-ul este blocat. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_color-bug ^"%d^"", GetNum( g_Cvar [ color_bug ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_color-bug ^"1^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_motdfile " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Scop      : Urmareste activitatea adminilor prin comanda amx_cvar si incearca sa opreasca modificare cvarului motdfile intr-un fisier .ini." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Serverul nu pateste nimic, insa adminul care foloseste acest exploit poate fura date importante din server, precum lista de admini, lista de pluginuri etc ." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Nota      : Functia nu blocheaza deocamdata decat comanda amx_cvar." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Bug-ul este blocat. [Default]" , -1 );
+	write_file( "cfg", "rom_color-bug ^"1^"" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Cvar      : rom_motdfile " , -1 );
+	write_file( "cfg", "// Scop      : Urmareste activitatea adminilor prin comanda amx_cvar si incearca sa opreasca modificare cvarului motdfile intr-un fisier .ini." , -1 );
+	write_file( "cfg", "// Impact    : Serverul nu pateste nimic, insa adminul care foloseste acest exploit poate fura date importante din server, precum lista de admini, lista de pluginuri etc ." , -1 );
+	write_file( "cfg", "// Nota      : Functia nu blocheaza deocamdata decat comanda amx_cvar." , -1 );
+	write_file( "cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
+	write_file( "cfg", "// Valoarea 1: Bug-ul este blocat. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_motdfile ^"%d^"", GetNum( g_Cvar [ motdfile ] ));
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_motdfile ^"1^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Cvar      : rom_anti-pause " , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Scop      : Urmareste ca pluginul de protectie ^"ROM-Protect^" sa nu poata fi pus pe pauza de catre un raufacator." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Impact    : Serverul nu mai este protejat de plugin, acesta fiind expus la mai multe exploituri." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Nota      : -" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "// Valoarea 1: Bug-ul este blocat. [Default]" , -1 );
+	write_file( "cfg", "rom_motdfile ^"1^"" , -1 );
+	write_file( "cfg", " " , -1 );
+	write_file( "cfg", "// Cvar      : rom_anti-pause " , -1 );
+	write_file( "cfg", "// Scop      : Urmareste ca pluginul de protectie ^"ROM-Protect^" sa nu poata fi pus pe pauza de catre un raufacator." , -1 );
+	write_file( "cfg", "// Impact    : Serverul nu mai este protejat de plugin, acesta fiind expus la mai multe exploituri." , -1 );
+	write_file( "cfg", "// Nota      : -" , -1 );
+	write_file( "cfg", "// Valoarea 0: Functia este dezactivata." , -1 );
+	write_file( "cfg", "// Valoarea 1: Bug-ul este blocat. [Default]" , -1 );
 	if(exist)
 		{
 		formatex(line, charsmax(line), "rom_anti-pause ^"%d^"", GetNum(g_Cvar[anti_pause]) );
-		write_file( "addons/amxmodx/configs/rom_protect.cfg", line , -1 );
+		write_file( "cfg", line , -1 );
 	}
 	else
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", "rom_anti-pause ^"1^"" , -1 );
-	write_file( "addons/amxmodx/configs/rom_protect.cfg", " " , -1 );
+	write_file( "cfg", "rom_anti-pause ^"1^"" , -1 );
+	write_file( "cfg", " " , -1 );
+}
+
+WriteLang( bool:exist )
+	{
+	if(exist)
+		delete_file( lang );
+	new line[121];
+	write_file( "lang", "// *ROM-Protect" , -1 );
+	write_file( "lang", "// Plugin FREE anti-flood/bug-fix pentru orice server." , -1 );
+	formatex(line, charsmax(line), "// Versiunea %s", Version);
+	write_file( "lang", line , -1 ); 
+	write_file( "lang", "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor" , -1 );
+	write_file( "lang", "// O productie FioriGinal.ro - site : www.fioriginal.ro" , -1 );
+	write_file( "lang", "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html" , -1 );
+	write_file( "lang", " " , -1 );
+	write_file( "lang", " " , -1 );
+	write_file( "lang", " " , -1 );
+	
 }
