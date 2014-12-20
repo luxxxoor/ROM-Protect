@@ -147,7 +147,7 @@ public CheckCFG()
 			WriteCFG( true );
 			cfg_file = false;
 			if( GetNum( g_Cvar[plug_log] ) == 1 )
-				LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Update_Cfg" );
+				LogCommand( "%L",LANG_PLAYER, "ROM_Update_Cfg", GetString(g_Cvar[Tag]) );
 		}
 	}
 }
@@ -175,7 +175,7 @@ public CheckLang()
 			WriteLang( true );
 			lang_file = false;
 			if( GetNum( g_Cvar[plug_log] ) == 1 )
-				LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Update_Lang" );
+				LogCommand( "%L", LANG_PLAYER, "ROM_Update_Lang", GetString(g_Cvar[Tag]) );
 		}
 	}
 }
@@ -250,7 +250,7 @@ public client_connect( id )
 			if( cnt[ id ] > GetNum( g_Cvar[fake_players_limit] ) && GetNum( g_Cvar[fake_players] ) == 1 )
 				{
 				server_cmd( "addip ^"30^" ^"%s^";wait;writeip", address );
-				server_print( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_Players_Log", address );
+				server_print( "%L", LANG_PLAYER, "ROM_Fake_Players_Log", GetString(g_Cvar[Tag]), address );
 				if( GetNum( g_Cvar[plug_warn] ) == 1 )
 					{
 					#if AMXX_VERSION_NUM < 183
@@ -263,7 +263,7 @@ public client_connect( id )
 				}
 				if( GetNum( g_Cvar[plug_log] ) == 1 )
 					{
-					LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Fake_Players_Log", address );
+					LogCommand( "%L", LANG_PLAYER, "ROM_Fake_Players_Log", GetString(g_Cvar[Tag]), address );
 				}
 				break;
 			}
@@ -375,7 +375,7 @@ public plugin_pause()
 {
 	if ( GetNum(g_Cvar[anti_pause]) == 1 )
 	{
-		server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Plugin_Pause_Log");
+		server_print("%L", LANG_PLAYER, "ROM_Plugin_Pause_Log", GetString(g_Cvar[Tag]) );
 		if ( GetNum(g_Cvar[plug_warn]) == 1)
 			{
 			#if AMXX_VERSION_NUM < 183
@@ -385,7 +385,7 @@ public plugin_pause()
 			#endif
 		}
 		if( GetNum(g_Cvar[plug_log]) == 1)
-				LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Plugin_Pause_Log", GetString(g_Cvar[Tag]) );
+				LogCommand( "%L", LANG_PLAYER, "ROM_Plugin_Pause_Log", GetString(g_Cvar[Tag]), GetString(g_Cvar[Tag]) );
 		server_cmd("amxx unpause rom_protect.amxx");
 	}
 }
@@ -467,7 +467,7 @@ public HookChat(id)
 		
 		if(b_said_cmd_bug[ id ])
 			{
-			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Cmd_Bug_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+			server_print("%L", LANG_PLAYER, "ROM_Cmd_Bug_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum(g_Cvar[plug_warn]) == 1)
 				{
 				#if AMXX_VERSION_NUM < 183
@@ -477,13 +477,13 @@ public HookChat(id)
 				#endif
 			}
 			if( GetNum(g_Cvar[plug_log]) == 1)
-				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Cmd_Bug_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+				LogCommand("%L", LANG_PLAYER, "ROM_Cmd_Bug_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			b_said_cmd_bug[ id ] = false;
 			return PLUGIN_HANDLED;
 		}
 		if(b_said_color_bug[ id ])
 			{
-			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Color_Bug_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+			server_print("%L", LANG_PLAYER, "ROM_Color_Bug_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum(g_Cvar[plug_warn]) == 1)
 				{
 				#if AMXX_VERSION_NUM < 183
@@ -493,7 +493,7 @@ public HookChat(id)
 				#endif
 			}
 			if( GetNum(g_Cvar[plug_log]) == 1)
-				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Color_Bug_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+				LogCommand("%L", LANG_PLAYER, "ROM_Color_Bug_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			b_said_color_bug[ id ] = false;
 			return PLUGIN_HANDLED;
 		}
@@ -582,7 +582,7 @@ public BlockSpecbugOldStyleMenus( id )
 				{
 				fm_set_user_team( id, FM_TEAM_CT );
 			}
-			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_Bug_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+			server_print("%L", LANG_PLAYER, "ROM_Spec_Bug_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum( g_Cvar[plug_warn] ) )
 				{
 				#if AMXX_VERSION_NUM < 183
@@ -592,7 +592,7 @@ public BlockSpecbugOldStyleMenus( id )
 				#endif
 			}
 			if( GetNum( g_Cvar[plug_log] ))
-				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_Bug_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+				LogCommand("%L", LANG_PLAYER, "ROM_Spec_Bug_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 		}
 		set_task( 0.1, "BlockSpecbugOldStyleMenus", id );
 	}
@@ -615,7 +615,7 @@ public BlockSpecbugVGui( id )
 				fm_set_user_team(id, FM_TEAM_CT );
 				bug_log[id] = true;
 			}      
-			server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_Bug_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+			server_print("%L", LANG_PLAYER, "ROM_Spec_Bug_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum( g_Cvar[plug_warn] ) == 1 && bug_log[id])
 				{
 				#if AMXX_VERSION_NUM < 183
@@ -626,7 +626,7 @@ public BlockSpecbugVGui( id )
 			}
 			if( GetNum( g_Cvar[plug_log] ) == 1 && bug_log[id])
 				{
-				LogCommand("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Spec_Bug_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+				LogCommand("%L", LANG_PLAYER, "ROM_Spec_Bug_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 				bug_log[id] = false;
 			}
 		}
@@ -638,7 +638,7 @@ public ShowProtection( id )
 	{
 	if( flood[ id ] )
 		{
-		server_print("%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Chat_Flood_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+		server_print("%L", LANG_PLAYER, "ROM_Admin_Chat_Flood_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 		if( GetNum( g_Cvar[plug_warn] ) == 1 )
 			{
 			#if AMXX_VERSION_NUM < 183
@@ -648,7 +648,7 @@ public ShowProtection( id )
 			#endif
 		}
 		if( GetNum( g_Cvar[plug_log] ) == 1 )
-			LogCommand( "%s : %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Admin_Chat_Flood_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+			LogCommand( "%L", LANG_PLAYER, "ROM_Admin_Chat_Flood_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 		flood[ id ] = false;
 		
 	}
@@ -789,10 +789,10 @@ public CvarFunc(id, level, cid)
 		
 		if( equali(arg, "motdfile") && contain(arg2, ".ini") != -1 ) 
 			{
+			server_print("%L", LANG_PLAYER, "ROM_Motdfile_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			console_print(id, "%s: %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Motdfile");
-			server_print("%s: %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Motdfile_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum( g_Cvar[plug_log] ) == 1 )
-				LogCommand( "%s: %L", GetString(g_Cvar[Tag]), LANG_PLAYER, "ROM_Motdfile_Log", GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+				LogCommand( "%L", LANG_PLAYER, "ROM_Motdfile_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
 			return PLUGIN_HANDLED; 
 		}
 	} 
@@ -1224,27 +1224,27 @@ WriteLang( bool:exist )
 	write_file( lang, " ", -1 );
 	write_file( lang, "[en]", -1);
 	write_file( lang, " ", -1 );
-	write_file( lang, "ROM_Update_Cfg = Am actualizat fisierul configurator : rom_protect.cfg.", -1 );
-	write_file( lang, "ROM_Update_Lang = Am actualizat fisierul LANG : rom_protect.txt.", -1 );
+	write_file( lang, "ROM_Update_Cfg = %s : Am actualizat fisierul configurator : rom_protect.cfg.", -1 );
+	write_file( lang, "ROM_Update_Lang = %s : Am actualizat fisierul LANG : rom_protect.txt.", -1 );
 	write_file( lang, "ROM_Fake_Players = S-a observat un atac de Fake-Players. Tentativa blocata.", -1 );
 	write_file( lang, "ROM_Fake_Players_Punish = Atac identificat cu IP : %s. IP banat 30 minute.", -1 );
-	write_file( lang, "ROM_Fake_Players_Log = Atac blocat de ^"Fake-Players^" de la IP : %s .", -1 );
+	write_file( lang, "ROM_Fake_Players_Log = %s : Atac blocat de ^"Fake-Players^" de la IP : %s .", -1 );
 	write_file( lang, "ROM_Plugin_Pause = S-a depistat o incercare a opririi pluginului de protectie. Operatiune oprita.", -1 );
-	write_file( lang, "ROM_Plugin_Pause_Log = S-a depistat o incercare a opririi pluginului de protectie %s. Operatiune oprita.", -1 );
+	write_file( lang, "ROM_Plugin_Pause_Log = %s : S-a depistat o incercare a opririi pluginului de protectie %s. Operatiune oprita.", -1 );
 	write_file( lang, "ROM_Admin_Wrong_Name = Nume incorect.", -1 );
 	write_file( lang, "ROM_Admin_Wrong_Pass = Parola incorecta.", -1 );
 	write_file( lang, "ROM_Admin_Loaded = Admin incarcat.", -1 );
 	write_file( lang, "ROM_Cmd_Bug = Ai incercat sa creezi CMD_BUG. Tentativa blocata.", -1 );
-	write_file( lang, "ROM_Cmd_Bug_Log = %s [ %s | %s ] a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului.", -1 );
+	write_file( lang, "ROM_Cmd_Bug_Log = %s : %s [ %s | %s ] a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului.", -1 );
 	write_file( lang, "ROM_Color_Bug = Ai incercat sa creezi COLOR_BUG. Tentativa blocata.", -1 );
-	write_file( lang, "ROM_Color_Bug_Log = %s [ %s | %s ] a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii.", -1 );
+	write_file( lang, "ROM_Color_Bug_Log = %s : %s [ %s | %s ] a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii.", -1 );
 	write_file( lang, "ROM_Spec_Bug = Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", -1 );
-	write_file( lang, "ROM_Spec_Bug_Log = %s [ %s | %s ] a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului.", -1 );
+	write_file( lang, "ROM_Spec_Bug_Log = %s : %s [ %s | %s ] a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului.", -1 );
 	write_file( lang, "ROM_Admin_Chat_Flood = Ai incercat sa creezi ADMIN_CHAT_FLOOD. Tentativa blocata.", -1 );
-	write_file( lang, "ROM_Admin_Chat_Flood_Log = %s [ %s | %s ] a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa strice buna functionare a serverului.", -1 );	
+	write_file( lang, "ROM_Admin_Chat_Flood_Log = %s : %s [ %s | %s ] a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa strice buna functionare a serverului.", -1 );	
 	write_file( lang, "ROM_File_Not_Found = Fisierul %s nu exista.", -1 );	
-	write_file( lang, "ROM_Admin_Debug = %s - %s - %s - %s", -1 );	
+	write_file( lang, "ROM_Admin_Debug = Nume : %s - Parola : %s - Acces : %s - Flag : %s", -1 );	
 	write_file( lang, "ROM_Motdfile = Ai incercat sa furi informatii din acest server, comanda ta a fost blocata.", -1 );	
-	write_file( lang, "ROM_Motdfile_Log = %s [ %s | %s ] a incercat sa foloseasca cvarul motdfile ca sa fure informatii din acest server.", -1 );	
+	write_file( lang, "ROM_Motdfile_Log = %s : %s [ %s | %s ] a incercat sa foloseasca cvarul motdfile ca sa fure informatii din acest server.", -1 );	
 	
 }
