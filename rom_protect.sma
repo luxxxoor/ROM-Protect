@@ -16,7 +16,7 @@ new sz_MenuText[MAX_PLAYERS][ MAX_PLAYERS],
 	num[MAX_PLAYERS], cnt[MAX_PLAYERS],
 	bool:flood[MAX_PLAYERS], bool:Name[MAX_PLAYERS], bool:Admin[MAX_PLAYERS], g_szFile[128], last_pass[MAX_PLAYERS][MAX_PLAYERS];
 
-static const Version[]   = "1.0.3s",
+static const Version[]   = "1.0.4a",
 			 Built     = 2,
 			 Plugin_name[] = "ROM-Protect",
 			 Terrorist[] = "#Terrorist_Select",
@@ -25,7 +25,7 @@ static const Version[]   = "1.0.3s",
 			 lang[] = "addons/amxmodx/data/lang/rom_protect.txt";
 
 new loginName[1024][MAX_PLAYERS], loginPass[1024][MAX_PLAYERS], loginAccs[1024][MAX_PLAYERS], loginFlag[1024][MAX_PLAYERS];
-new admin_number;
+new admin_number, bool:lang_file;
 
 enum
 {
@@ -123,6 +123,7 @@ public plugin_precache( )
 	
 	set_task(30.0, "CheckCFG");
 	set_task(30.0, "CheckLang");
+	set_task(45.0, "CheckLang_File");
 }
 
 public CheckCFG()
@@ -160,7 +161,6 @@ public CheckLang()
 		WriteLang(false);
 	else
 	{
-		register_dictionary("rom_protect.txt");
 		new file = fopen( lang, "r+" );
 		
 		new text[ 121 ], bool:lang_file, bool:find_search; 
@@ -182,6 +182,12 @@ public CheckLang()
 			server_print( "%L", LANG_SERVER, "ROM_Update_Lang", GetString(g_Cvar[Tag]) );
 		}
 	}
+}
+
+public CheckLang_File()
+{
+	if(!lang_file)
+		register_dictionary("rom_protect.txt");
 }
 
 public plugin_init( )
@@ -948,7 +954,7 @@ WriteCFG( bool:exist )
 	new line[121];
 	write_file( cfg, "// *ROM-Protect" , -1 );
 	write_file( cfg, "// Plugin FREE anti-flood/bug-fix pentru orice server." , -1 );
-	formatex(line, charsmax(line), "// Versiunea %s Bulit %d", Version, Built);
+	formatex(line, charsmax(line), "// Versiunea %s. Bulit %d", Version, Built);
 	write_file( cfg, line , -1 ); 
 	write_file( cfg, "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor" , -1 );
 	write_file( cfg, "// O productie FioriGinal.ro - site : www.fioriginal.ro" , -1 );
@@ -1215,7 +1221,7 @@ WriteLang( bool:exist )
 	new line[121];
 	write_file( lang, "// *ROM-Protect" , -1 );
 	write_file( lang, "// Plugin FREE anti-flood/bug-fix pentru orice server." , -1 );
-	formatex(line, charsmax(line), "// Versiunea %s Bulit %d", Version, Built);
+	formatex(line, charsmax(line), "// Versiunea %s. Bulit %d", Version, Built);
 	write_file( lang, line , -1 ); 
 	write_file( lang, "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor" , -1 );
 	write_file( lang, "// O productie FioriGinal.ro - site : www.fioriginal.ro" , -1 );
@@ -1292,4 +1298,6 @@ WriteLang( bool:exist )
 		write_file( lang, "ROM_Motdfile = %s : Ai incercat sa furi informatii din acest server, comanda ta a fost blocata.", -1 );
 	#endif
 	write_file( lang, "ROM_Motdfile_Log = %s : %s [ %s | %s ] a incercat sa foloseasca cvarul motdfile ca sa fure informatii din acest server.", -1 );	
+	register_dictionary("rom_protect.txt");
+	lang_file = true;
 }
