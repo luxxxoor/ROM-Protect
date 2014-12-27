@@ -17,7 +17,7 @@ new sz_MenuText[MAX_PLAYERS][ MAX_PLAYERS],
 	bool:flood[MAX_PLAYERS], bool:Name[MAX_PLAYERS], bool:Admin[MAX_PLAYERS], g_szFile[128], last_pass[MAX_PLAYERS][MAX_PLAYERS];
 
 static const Version[]   = "1.0.4a",
-			 Built     = 2,
+			 Built     = 4,
 			 Plugin_name[] = "ROM-Protect",
 			 Terrorist[] = "#Terrorist_Select",
 			 CT_Select[] = "#CT_Select",
@@ -216,32 +216,32 @@ public plugin_cfg( )
 	g_Cvar[admin_chat_flood_time] = get_cvar_pointer( "amx_flood_time" );
 	
 	if( !g_Cvar[admin_chat_flood_time] )
-		{
 		g_Cvar[admin_chat_flood_time] = register_cvar( "rom_admin_chat_flood_time", "0.75" );
-	}     
 }
 
 public client_connect( id )
 	{
-	new players[ MAX_PLAYERS -1 ], pnum, address[ MAX_PLAYERS -1 ], address2[ MAX_PLAYERS -1 ], name[ MAX_NAME_LENGTH ];
+	static players[ MAX_PLAYERS -1 ], pnum, address[ MAX_PLAYERS -1 ], address2[ MAX_PLAYERS -1 ], name[ MAX_NAME_LENGTH ];
 	get_players( players, pnum, "ch" );
 	//if( !CheckName(id) )
 	//      set_user_info(id, "name", "*ROM-PROTECT ~ Alt nick.")
 	get_user_name( id, name, charsmax( name ) );
 	if( GetNum( g_Cvar[cmd_bug] )  == 1 )
 		{
-		new s_name[ MAX_NAME_LENGTH ], bool:b_name[ MAX_PLAYERS ];
+		static s_name[MAX_NAME_LENGTH], bool:b_name[MAX_PLAYERS];
 		copy( s_name, charsmax( name ), name );
-		static j;
-		for( new i; i < sizeof( s_name ); ++i )  
+		static j, i;
+		for( i = 0; i < sizeof( s_name ); ++i )  
 			{
-			j = i+1;
-			if( i < 31)
+			if( i < MAX_NAME_LENGTH)
+			{
+				j = i+1;
 				if( (s_name[ i ] == '#' && isalpha(s_name[ j ])) || (s_name[ i ] == '+' && isalpha(s_name[ j ])) )
-					{
+				{
 					s_name[ i ] = ' ';
 					b_name[ id ] = true;
 				}
+			}
 		}
 		
 		if( b_name[ id ] )
@@ -283,10 +283,10 @@ public client_connect( id )
 
 public client_disconnect(id)
 	{
-	cnt[ id ] = 0;
-	if( Admin[ id ] )
-		{
-		Admin[ id ] = false;
+	cnt[id] = 0;
+	if( Admin[id] )
+	{
+		Admin[id] = false;
 		remove_user_flags( id );
 	}
 }
@@ -343,22 +343,22 @@ public client_infochanged( id )
 		{
 		return PLUGIN_CONTINUE;
 	}
-	new newname[ MAX_NAME_LENGTH ], oldname[ MAX_NAME_LENGTH ];
+	static newname[ MAX_NAME_LENGTH ], oldname[ MAX_NAME_LENGTH ];
 	get_user_name( id, oldname, charsmax( oldname ) );
 	get_user_info( id, "name", newname, charsmax( newname ));
 	
 	if( GetNum( g_Cvar[cmd_bug] ) == 1 )
 		{
-		new s_name[ MAX_NAME_LENGTH ], bool:b_name[ MAX_PLAYERS ];
+		static s_name[ MAX_NAME_LENGTH ], bool:b_name[ MAX_PLAYERS ];
 		copy( s_name, charsmax( newname ), newname );
-		static j;
-		for( new i; i < sizeof( s_name ); ++i )  
+		static j, i;
+		for( i = 0 ; i < sizeof( s_name ); ++i )  
 			{
-			j = i+1;
-			if( i < 31)
-				{
+			if( i < MAX_NAME_LENGTH)
+			{
+				j = i+1;
 				if ( (s_name[ i ] == '#' && isalpha(s_name[ j ])) || (s_name[ i ] == '+' && isalpha(s_name[ j ])) )
-					{
+				{
 					s_name[ i ] = ' ';
 					b_name[ id ] = true;
 				}
@@ -546,40 +546,36 @@ public HookChat(id)
 }
 
 public OldStyleMenusTeammenu( msg, des, rec )
-	{
+{
 	if( is_user_connected( rec ) )
-		{
+	{
 		get_msg_arg_string ( 4, sz_MenuText[ rec ], charsmax ( sz_MenuText ) );
 		if( equal( sz_MenuText[rec], Terrorist ) || equal( sz_MenuText[rec], CT_Select ))
-			{
+		{
 			set_task( 0.1, "BlockSpecbugOldStyleMenus", rec );
 		}
 	}
 }
 
 public VGuiTeammenu( msg, des, rec )  
-	{  
+{  
 	if(get_msg_arg_int( 1 ) == 26 || get_msg_arg_int( 1 ) == 27 )
-		{
+	{
 		num[ rec ] = get_msg_arg_int( 1 );
 		set_task( 0.1, "BlockSpecbugVGui", rec );
 	}
 }
 
 public BlockSpecbugOldStyleMenus( id )
-	{
+{
 	if( !is_user_alive( id ) && is_user_connected( id ) && GetNum( g_Cvar[spec_bug] ) == 1 )
-		{
+	{
 		if( fm_get_user_team( id ) == FM_TEAM_SPECTATOR && !is_user_alive(id) )
-			{
+		{
 			if( equal( sz_MenuText[id], Terrorist ) && is_user_connected( id ) )
-				{
 				fm_set_user_team( id, FM_TEAM_T );
-			}
 			if( equal( sz_MenuText[id], CT_Select ) && is_user_connected( id ) )
-				{
 				fm_set_user_team( id, FM_TEAM_CT );
-			}
 			server_print("%L", LANG_SERVER, "ROM_Spec_Bug_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum( g_Cvar[plug_warn] ) )
 				{
@@ -597,25 +593,25 @@ public BlockSpecbugOldStyleMenus( id )
 }
 
 public BlockSpecbugVGui( id )
-	{
+{
 	new bool:bug_log[MAX_PLAYERS] = false;
 	if( !is_user_alive( id ) && is_user_connected( id ) && GetNum( g_Cvar[spec_bug] ) == 1 )
-		{
+	{
 		if(fm_get_user_team( id ) == FM_TEAM_SPECTATOR )
-			{
+		{
 			if(num[ id ] == 26 )
-				{
+			{
 				fm_set_user_team(id, FM_TEAM_T );
 				bug_log[id] = true;
 			}      
 			if(num[ id ] == 27 )
-				{
+			{
 				fm_set_user_team(id, FM_TEAM_CT );
 				bug_log[id] = true;
 			}      
 			server_print("%L", LANG_SERVER, "ROM_Spec_Bug_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum( g_Cvar[plug_warn] ) == 1 && bug_log[id])
-				{
+			{
 				#if AMXX_VERSION_NUM < 183
 					ColorChat( id, GREY, "%L", id, "ROM_Spec_Bug", '^3', GetString(g_Cvar[Tag]), '^4');
 				#else
@@ -623,7 +619,7 @@ public BlockSpecbugVGui( id )
 				#endif
 			}
 			if( GetNum( g_Cvar[plug_log] ) == 1 && bug_log[id])
-				{
+			{
 				LogCommand("%L", LANG_SERVER, "ROM_Spec_Bug_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 				bug_log[id] = false;
 			}
@@ -633,12 +629,12 @@ public BlockSpecbugVGui( id )
 }
 
 public ShowProtection( id )
-	{
+{
 	if( flood[ id ] )
-		{
+	{
 		server_print("%L", LANG_SERVER, "ROM_Admin_Chat_Flood_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 		if( GetNum( g_Cvar[plug_warn] ) == 1 )
-			{
+		{
 			#if AMXX_VERSION_NUM < 183
 				ColorChat( id, GREY, "%L", id, "ROM_Admin_Chat_Flood", '^3', GetString(g_Cvar[Tag]), '^4');
 			#else
@@ -653,7 +649,7 @@ public ShowProtection( id )
 }
 
 public ChatMsgShow( id )
-	{
+{
 	#if AMXX_VERSION_NUM < 183
 		ColorChat( id, GREY, "^3%s :^4 Acest server este protejat de ^3%s^4 versiunea ^3%s^4 .", GetString(g_Cvar[Tag]), Plugin_name, Version );
 	#else
