@@ -566,18 +566,6 @@ public VGuiTeammenu( msg, des, rec )
 	}
 }
 
-public CheckLong( c_szCommand[ ],c_dwLen )
-	{
-	new m_szCommand[ 512 ];
-	while( strlen( m_szCommand ) )
-		{
-		strtok( c_szCommand, m_szCommand, charsmax( m_szCommand ), c_szCommand, c_dwLen , ' ', 1 );
-		if( strlen( m_szCommand ) > 31 )
-			return true;
-	}
-	return false;
-}
-
 public BlockSpecbugOldStyleMenus( id )
 	{
 	if( !is_user_alive( id ) && is_user_connected( id ) && GetNum( g_Cvar[spec_bug] ) == 1 )
