@@ -1,0 +1,27 @@
+public client_command(id) {
+	if(!(get_user_flags(id) & ADMIN_BAN)) 
+		return 0;
+	
+	new szCmd[32], szClass[32];
+	read_argv(0, szCmd, charsmax(szCmd));
+	read_argv(1, szClass, charsmax(szClass));
+	
+	if((equali(szCmd, "amx_addban") || equali(szCmd, "admin_addban"))) {
+		if((containi(szClass, ".0.0") != -1)) {
+			new szAdminName[64], szAdminAuthId[32], szAdminIp[32];
+			get_user_name(id, szAdminName, 63);
+			get_user_authid(id, szAdminAuthId, 31);
+			get_user_ip(id, szAdminIp, 31);
+			
+			server_print("%L", LANG_SERVER, "ROM_Anti_Ban_Class", GetString(g_Cvar[Tag]), szClass);
+			if((containi(szAdminAuthId, "STEAM_0:0:") != -1)) {
+			server_print("%L", LANG_SERVER, "ROM_Anti_Ban_Authid", GetString(g_Cvar[Tag]), szAdminName, szAdminAuthId, szAdminIp, szClass);
+				} else {
+			LogCommand("%L", LANG_SERVER, "ROM_Anti_Ban_Class_Log", GetString(g_Cvar[Tag]), szAdminName, szAdminIp, szClass);
+			}
+			
+			return 1;
+		}
+	}
+	return 0;
+}
