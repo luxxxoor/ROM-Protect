@@ -120,12 +120,12 @@ public plugin_precache( )
 	if( file_exists( CfgFile ) )
 		server_cmd( "exec %s", CfgFile );
 	
-	set_task(30.0, "CheckCfg");
-	set_task(30.0, "CheckLang");
-	set_task(45.0, "CheckLangFile");
+	set_task(10.0, "CheckCfg");
+	set_task(15.0, "CheckLang");
+	set_task(20.0, "CheckLangFile");
 }
 
-public CheckCFG()
+public CheckCfg()
 {
 	if( !file_exists(CfgFile) )
 		WriteCfg(false);
@@ -1243,7 +1243,7 @@ WriteLang( bool:exist )
 			formatex(line, charsmax(line), "ROM_Plugin_Pause = %L", LANG_SERVER, "ROM_Plugin_Pause", "^%s" );
 			write_file( LangFile, line , -1 );
 		#endif
-		formatex(line, charsmax(line), "ROM_Plugin_Pause_Log = %L", LANG_SERVER, "ROM_Plugin_Pause_Log", "^%s" );
+		formatex(line, charsmax(line), "ROM_Plugin_Pause_Log = %L", LANG_SERVER, "ROM_Plugin_Pause_Log", "^%s", "^%s" );
 		write_file( LangFile, line , -1 );
 		#if AMXX_VERSION_NUM < 183 
 			formatex(line, charsmax(line), "ROM_Admin_Wrong_Name = %L", LANG_SERVER, "ROM_Admin_Wrong_Name", "^%c", "^%s", "^%c" );
@@ -1312,7 +1312,7 @@ WriteLang( bool:exist )
 		write_file( LangFile, line , -1 );
 		formatex(line, charsmax(line), "ROM_Admin_Debug = %L", LANG_SERVER, "ROM_Admin_Debug", "^%s", "^%s", "^%s", "^%s" );
 		write_file( LangFile, line , -1 );
-		formatex(line, charsmax(line), "ROM_Motdfile = %L", LANG_SERVER, "ROM_Motdfile_Log", "^%s" );
+		formatex(line, charsmax(line), "ROM_Motdfile = %L", LANG_SERVER, "ROM_Motdfile", "^%s" );
 		write_file( LangFile, line , -1 );
 		formatex(line, charsmax(line), "ROM_Motdfile_Log = %L", LANG_SERVER, "ROM_Motdfile_Log", "^%s", "^%s", "^%s", "^%s" );
 		write_file( LangFile, line , -1 );
