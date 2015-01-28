@@ -11,6 +11,7 @@
 
 #pragma semicolon 1
 
+
 new sz_MenuText[MAX_PLAYERS][ MAX_PLAYERS],
 	num[MAX_PLAYERS], cnt[MAX_PLAYERS],
 	bool:flood[MAX_PLAYERS], bool:Name[MAX_PLAYERS], bool:Admin[MAX_PLAYERS], g_szFile[128], last_pass[MAX_PLAYERS][MAX_PLAYERS];
@@ -100,9 +101,7 @@ public plugin_precache( )
 	format( g_szFile, charsmax ( g_szFile ), "%s/%s", g_szFile, Plugin_name );
 	
 	if( !dir_exists( g_szFile ) )
-		{
 		mkdir( g_szFile );
-	}
 	
 	get_time( "%d-%m-%Y", szCurentDate , charsmax ( szCurentDate ) );      
 	format( g_szFile, charsmax( g_szFile ), "%s/%s_%s.log", g_szFile, Plugin_name, szCurentDate );
@@ -165,16 +164,16 @@ public CheckLang()
 		
 		new Text[ 121 ], bool:find_search; 
 		while ( !feof( File ) )
-			{
+		{
 			fgets( File, Text, charsmax(Text) );
 			
 			if( containi(Text, Version) != -1 )
 				find_search = true;
 			else
-			lang_file = true;			
+				lang_file = true;			
 		}
 		if(lang_file && !find_search)
-			{
+		{
 			register_dictionary("rom_protect.txt");
 			lang_file = false;
 			if( GetNum( g_Cvar[plug_log] ) == 1 )
@@ -187,22 +186,22 @@ public CheckLang()
 
 public CheckLangFile()
 {
-	if(!lang_file) // ?
+	if(!lang_file)
 		register_dictionary("rom_protect.txt");
 }
 
 public plugin_init( )
-	{
+{
 	RegistersInit();
 	
 	if( GetNum(g_Cvar[advertise] ) == 1 )
-		{
+	{
 		new Float:timp = get_pcvar_float(g_Cvar[advertise_time]);
 		set_task(timp, "ChatMsgShow", _, _, _, "b", 0);
 	}
 	
 	if( GetNum( g_Cvar[ utf8_bom ] ) == 1 )
-		{
+	{
 		g_tDefaultRes = TrieCreate();
 		TrieSetCell( g_tDefaultRes , "de_storm.res", 1); 
 		TrieSetCell( g_tDefaultRes , "default.res", 1); 
@@ -213,7 +212,7 @@ public plugin_init( )
 }
 
 public plugin_cfg( )
-	{   
+{   
 	g_Cvar[admin_chat_flood_time] = get_cvar_pointer( "amx_flood_time" );
 	
 	if( !g_Cvar[admin_chat_flood_time] )
@@ -221,49 +220,29 @@ public plugin_cfg( )
 }
 
 public client_connect( id )
-	{
-	static players[ MAX_PLAYERS -1 ], pnum, address[ MAX_PLAYERS -1 ], address2[ MAX_PLAYERS -1 ], name[ MAX_NAME_LENGTH ];
+{
+	new players[ MAX_PLAYERS -1 ], pnum, address[ MAX_PLAYERS -1 ], address2[ MAX_PLAYERS -1 ], name[ MAX_NAME_LENGTH ];
 	get_players( players, pnum, "c" );
 	//if( !CheckName(id) )
 	//      set_user_info(id, "name", "*ROM-PROTECT ~ Alt nick.")
 	get_user_name( id, name, charsmax( name ) );
 	if( GetNum( g_Cvar[cmd_bug] )  == 1 )
-		{
-		static s_name[MAX_NAME_LENGTH], bool:b_name[MAX_PLAYERS];
-		copy( s_name, charsmax( name ), name );
-		static j, i;
-		for( i = 0; i < sizeof( s_name ); ++i )  
-			{
-			if( i < MAX_NAME_LENGTH)
-			{
-				j = i+1;
-				if( (s_name[ i ] == '#' && isalpha(s_name[ j ])) || (s_name[ i ] == '+' && isalpha(s_name[ j ])) )
-				{
-					s_name[ i ] = ' ';
-					b_name[ id ] = true;
-				}
-			}
-		}
-		
-		if( b_name[ id ] )
-			{
-			set_user_info( id, "name", s_name );
-			b_name[ id ] = false;
-		}
+	{
+		nameStringFilter( name, charsmax(name) );
+		set_user_info( id, "name", name );
 	}
 	for( new i; i < pnum; ++i)
-		{
+	{
 		get_user_ip( id, address, charsmax( address ), 1 );
 		get_user_ip( players[ i ], address2, charsmax(address2), 1 );
 		if( equal( address, address2 ) && !is_user_bot( id ) )
+		{
+			if( ++cnt[ id ] > GetNum( g_Cvar[fake_players_limit] ) && GetNum( g_Cvar[fake_players] ) == 1 )
 			{
-			++cnt[ id ];
-			if( cnt[ id ] > GetNum( g_Cvar[fake_players_limit] ) && GetNum( g_Cvar[fake_players] ) == 1 )
-				{
 				server_cmd( "addip ^"30^" ^"%s^";wait;writeip", address );
 				server_print( LangType, LANG_SERVER, "ROM_Fake_Players_Log", GetString(g_Cvar[Tag]), address );
 				if( GetNum( g_Cvar[plug_warn] ) == 1 )
-					{
+				{
 					#if AMXX_VERSION_NUM < 183
 						ColorChat( 0, GREY, LangType, LANG_PLAYER, "ROM_Fake_Players", '^3', GetString(g_Cvar[Tag]), '^4' );
 						ColorChat( 0, GREY, LangType, LANG_PLAYER, "ROM_Fake_Players_Punish", '^3', GetString(g_Cvar[Tag]), '^4', address );
@@ -273,14 +252,14 @@ public client_connect( id )
 					#endif
 				}
 				if( GetNum( g_Cvar[plug_log] ) == 1 )
-					{
 					LogCommand( LangType, LANG_SERVER, "ROM_Fake_Players_Log", GetString(g_Cvar[Tag]), address );
-				}
 				break;
 			}
 		}
 	}
-}      
+}
+
+      
 
 public client_disconnect(id)
 	{
@@ -293,41 +272,41 @@ public client_disconnect(id)
 }
 
 public plugin_end( )
-	{
+{
 	if( GetNum( g_Cvar[delete_vault] ) != 0 )
-		{
+	{
 		new g_baseDir[ 128 ];
 		new text[ 200 ];
 		get_basedir( g_baseDir,127 );
 		format( g_baseDir,127, "%s/data/vault.ini", g_baseDir );
 		if( file_exists( g_baseDir ) )
-			{
+		{
 			delete_file( g_baseDir );
 			if( GetNum( g_Cvar[delete_vault] ) == 2 )
-				{
+			{
 				format( text, 199, "server_language ro", g_baseDir);
 				write_file( g_baseDir, text , -1 );
 			}
 			if( GetNum( g_Cvar[delete_vault] ) == 1 )
-				{
+			{
 				format( text, 199, "server_language en", g_baseDir );
 				write_file( g_baseDir, text, -1) ;
 			}
 		}
 	}
 	if( GetNum( g_Cvar[delete_custom_hpk] ) == 1 )
-		{
+	{
 		new szDir[] = "/", DirPointer, szFile[ 32 ];
 		
 		DirPointer = open_dir( szDir, "", 0 );
 		
 		while( next_file( DirPointer, szFile, charsmax (szFile) ) )
-			{
+		{
 			if(szFile[ 0 ] == '.')
 				continue;
 			
 			if( containi( szFile, "custom.hpk" ) != -1 )
-				{
+			{
 				delete_file( szFile );
 				break;
 			}
@@ -339,42 +318,22 @@ public plugin_end( )
 
 
 public client_infochanged( id )
-	{
+{
 	if ( !is_user_connected( id ) )
-		{
 		return PLUGIN_CONTINUE;
-	}
+		
 	static newname[ MAX_NAME_LENGTH ], oldname[ MAX_NAME_LENGTH ];
 	get_user_name( id, oldname, charsmax( oldname ) );
 	get_user_info( id, "name", newname, charsmax( newname ));
 	
-	if( GetNum( g_Cvar[cmd_bug] ) == 1 )
-		{
-		static s_name[ MAX_NAME_LENGTH ], bool:b_name[ MAX_PLAYERS ];
-		copy( s_name, charsmax( newname ), newname );
-		static j, i;
-		for( i = 0 ; i < sizeof( s_name ); ++i )  
-			{
-			if( i < MAX_NAME_LENGTH)
-			{
-				j = i+1;
-				if ( (s_name[ i ] == '#' && isalpha(s_name[ j ])) || (s_name[ i ] == '+' && isalpha(s_name[ j ])) )
-				{
-					s_name[ i ] = ' ';
-					b_name[ id ] = true;
-				}
-			}
-		}
-		
-		if( b_name[ id ] )
-			{
-			set_user_info( id, "name", s_name );
-			b_name[ id ] = false;
-		}
+	if( GetNum( g_Cvar[cmd_bug] )  == 1 )
+	{
+		nameStringFilter( newname, charsmax(newname) );
+		set_user_info( id, "name", newname );
 	}
 	
 	if ( !equal( newname, oldname ) && Admin[ id ] )
-		{
+	{
 		Admin[ id ] = false;
 		remove_user_flags( id );
 	}
@@ -388,7 +347,7 @@ public plugin_pause()
 	{
 		server_print(LangType, LANG_SERVER, "ROM_Plugin_Pause_Log", GetString(g_Cvar[Tag]) );
 		if ( GetNum(g_Cvar[plug_warn]) == 1)
-			{
+		{
 			#if AMXX_VERSION_NUM < 183
 				ColorChat( 0, GREY, LangType, LANG_PLAYER, "ROM_Plugin_Pause", '^3', GetString(g_Cvar[Tag]), '^4' );
 			#else
@@ -402,7 +361,7 @@ public plugin_pause()
 }
 
 public CmdPass( id )
-	{
+{
 	if( GetNum( g_Cvar[admin_login] ) == 0)
 		return PLUGIN_HANDLED;
 	new name[ MAX_NAME_LENGTH ], pass[ 32 ];
@@ -414,9 +373,9 @@ public CmdPass( id )
 	GetAccess( id, pass );
 	
 	if(!Admin[ id ])
-		{
+	{
 		if(!Name[ id ])
-			{
+		{
 			#if AMXX_VERSION_NUM < 183
 				ColorChat( id, GREY, LangType, id, "ROM_Admin_Wrong_Name", '^3', GetString(g_Cvar[Tag]), '^4');
 			#else
@@ -448,28 +407,26 @@ public CmdPass( id )
 }
 
 public HookChat(id)
-	{
+{
 	new said[ 192 ];
 	read_args( said, charsmax( said ) );
 	
 	if( GetNum( g_Cvar[color_bug] )  == 1 || GetNum( g_Cvar[cmd_bug] ) == 1 )
-		{
+	{
 		new s_said[ 192 ], bool:b_said_cmd_bug[ MAX_PLAYERS ], bool:b_said_color_bug[ MAX_PLAYERS ];
 		copy( s_said, charsmax( said ), said );
-		static j;
 		for( new i = 0; i < sizeof( s_said ); ++i )
+		{
+			new j = i+1;
+			if( GetNum( g_Cvar[cmd_bug] ) == 1 && ( s_said[ i ] == '#' && isalpha(s_said[ j ]) ) || ( s_said[ i ] == '%' && s_said[ j ] == 's' ) )
 			{
-			j = i+1;
-			if( GetNum( g_Cvar[cmd_bug] ) == 1 )
-				if( s_said[ i ] == '#' && isalpha(s_said[ j ]) || s_said[ i ] == '%' && s_said[ j ] == 's' )
-				{
 				b_said_cmd_bug[ id ] = true;
 				break;
 			}
-			if( GetNum( g_Cvar[color_bug] ) == 1)
-				{
+			if( GetNum( g_Cvar[color_bug] ) == 1 )
+			{
 				if ( s_said[i] == '' || s_said[i] == '' || s_said[i] == '' )
-					{
+				{
 					b_said_color_bug[ id ] = true;
 					break;
 				}
@@ -477,10 +434,10 @@ public HookChat(id)
 		}
 		
 		if(b_said_cmd_bug[ id ])
-			{
+		{
 			server_print(LangType, LANG_SERVER, "ROM_Cmd_Bug_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum(g_Cvar[plug_warn]) == 1)
-				{
+			{
 				#if AMXX_VERSION_NUM < 183
 					ColorChat( id, GREY, LangType, id, "ROM_Cmd_Bug", '^3', GetString(g_Cvar[Tag]), '^4');
 				#else
@@ -493,10 +450,10 @@ public HookChat(id)
 			return PLUGIN_HANDLED;
 		}
 		if(b_said_color_bug[ id ])
-			{
+		{
 			server_print(LangType, LANG_SERVER, "ROM_Color_Bug_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 			if( GetNum(g_Cvar[plug_warn]) == 1)
-				{
+			{
 				#if AMXX_VERSION_NUM < 183
 					ColorChat( id, GREY, LangType, id, "ROM_Color_Bug", '^3', GetString(g_Cvar[Tag]), '^4');
 				#else
@@ -519,13 +476,13 @@ public HookChat(id)
 	new Float:maxChat = get_pcvar_float( g_Cvar[admin_chat_flood_time] );
 	
 	if ( maxChat && GetNum( g_Cvar[admin_chat_flood] ) == 1 )
-		{
+	{
 		new Float:nexTime = get_gametime( );
 		
 		if ( g_Flooding[ id ] > nexTime )
-			{
+		{
 			if  (g_Flood[ id ] >= 3 )
-				{
+			{
 				flood[ id ] = true;
 				set_task( 1.0, "ShowProtection", id );
 				g_Flooding[ id ] = nexTime + maxChat + 3.0;
@@ -536,9 +493,7 @@ public HookChat(id)
 		else
 		{
 			if ( g_Flood[ id ] )
-				{
 				--g_Flood[id];
-			}
 		}
 		g_Flooding[ id ] = nexTime + maxChat;
 	}
@@ -552,9 +507,7 @@ public OldStyleMenusTeammenu( msg, des, rec )
 	{
 		get_msg_arg_string ( 4, sz_MenuText[ rec ], charsmax ( sz_MenuText ) );
 		if( equal( sz_MenuText[rec], Terrorist ) || equal( sz_MenuText[rec], CT_Select ))
-		{
 			set_task( 0.1, "BlockSpecbugOldStyleMenus", rec );
-		}
 	}
 }
 
@@ -666,20 +619,16 @@ public CleanResFiles()
 	new dp = open_dir(szMapsFolder, szResFile, charsmax(szResFile)); 
 	
 	if( !dp ) 
-		{ 
 		return; 
-	} 
 	
 	new szFullPathFileName[128]; 
 	do 
 	{ 
 		iLen = strlen(szResFile);
 		if( iLen > 4 && equali(szResFile[iLen-4], szResExt) ) 
-			{ 
+		{ 
 			if( TrieKeyExists(g_tDefaultRes, szResFile) ) 
-				{ 
 				continue;
-			} 
 			
 			formatex(szFullPathFileName, charsmax(szFullPathFileName), "%s/%s", szMapsFolder, szResFile); 
 			write_file(szFullPathFileName, "/////////////////////////////////////////////////////////////^n", 0); 
@@ -714,14 +663,10 @@ LoadAdminLogin( )
 		trim( text );
 		
 		if( ( text[ 0 ] == ';' ) || !strlen( text ) || ( text[ 0 ] == '/' ) )
-			{
 			continue;
-		}
 		
 		if( parse( text, name, charsmax( name ), pass, charsmax( pass ), acc, charsmax( acc ), flags, charsmax( flags ) ) != 4 )
-			{
 			continue;
-		}
 		
 		copy( loginName[ admin_number ], charsmax( loginName[ ] ),  name );
 		copy( loginPass[ admin_number ], charsmax( loginPass[ ] ),  pass );
@@ -740,17 +685,17 @@ GetAccess( const id, const userPass[] )
 	get_user_info( id, "name", userName, charsmax( userName ) );
 	if( !(get_user_flags( id ) & ADMIN_CHAT ) )
 		remove_user_flags( id );
-	copy(last_pass[id], charsmax(last_pass[ ]), userPass);
+	copy( last_pass[id], charsmax(last_pass[]), userPass );
 	for( new i = 1; i <= admin_number; ++i )
-		{
+	{
 		if(  equali( loginName[ i ], userName ) )
 			Name[ id ] = true;
 		else
 			Name[ id ] = false;
 		if( equal( loginFlag[ i ], "f" ) && Name[ id ] )
-			{
+		{
 			if( equal( loginPass[ i ], userPass ) || Admin[ id ] )
-				{
+			{
 				Admin[ id ] = true;
 				acces = read_flags( loginAccs[ i ] );
 				set_user_flags( id, acces );
@@ -762,10 +707,12 @@ GetAccess( const id, const userPass[] )
 
 
 public ReloadLogin(id, level, cid) 
+{
 	set_task(1.0, "reloadDelay");
+}
 
 public reloadDelay()
-	{
+{
 	new players[ MAX_PLAYERS -1 ], pnum;
 	get_players( players, pnum, "ch" );
 	for( new i; i < pnum; ++i )
@@ -774,17 +721,17 @@ public reloadDelay()
 }
 
 public CvarFunc(id, level, cid) 
-	{ 
+{ 
 	if( GetNum( g_Cvar[ motdfile ] ) == 1 )
-		{
+	{
 		new arg[32], arg2[32]; 
 		
 		read_argv(1, arg, charsmax(arg));
 		read_argv(2, arg2, charsmax(arg2));
 		
 		if( equali(arg, "motdfile") && contain(arg2, ".ini") != -1 ) 
-			{
-			server_print(LangType, LANG_SERVER, "ROM_Motdfile_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
+		{
+			server_print(LangType, LANG_SERVER, "ROM_Motdfile_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
 			console_print(id, LangType, id, "ROM_Motdfile", GetString(g_Cvar[Tag]) );
 			if( GetNum( g_Cvar[plug_log] ) == 1 )
 				LogCommand( LangType, LANG_SERVER, "ROM_Motdfile_Log", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
@@ -806,7 +753,7 @@ LogCommand( const szMsg[ ], any:... )
 }
 
 GetInfo( id, const iInfo )
-	{
+{
 	new szInfoToReturn[ 64 ];
 	
 	switch( iInfo )
@@ -837,7 +784,7 @@ GetInfo( id, const iInfo )
 }
 
 GetTime( )
-	{
+{
 	static szTime[ 32 ];
 	get_time( " %H:%M:%S ", szTime ,charsmax( szTime ) );
 	
@@ -845,7 +792,7 @@ GetTime( )
 }
 
 GetString( text )
-	{
+{
 	static File[32]; 
 	get_pcvar_string( text, File, charsmax( File ) );
 	
@@ -853,7 +800,7 @@ GetString( text )
 }
 
 GetNum( text )
-	{
+{
 	static num;
 	num = get_pcvar_num(text);
 	return num;
@@ -865,7 +812,7 @@ RegistersPrecache()
 	g_Cvar[spec_bug]              = register_cvar("rom_spec-bug", "1");
 	g_Cvar[admin_chat_flood]      = register_cvar("rom_admin_chat_flood", "1");
 	g_Cvar[fake_players]          = register_cvar("rom_fake-players", "1");
-	g_Cvar[fake_players_limit]    = register_cvar("rom_fake-players_limit", "3");
+	g_Cvar[fake_players_limit]    = register_cvar("rom_fake-players_limit", "5");
 	g_Cvar[delete_custom_hpk]     = register_cvar("rom_delete_custom_hpk", "1");
 	g_Cvar[delete_vault]          = register_cvar("rom_delete_vault", "1");
 	g_Cvar[cmd_bug]               = register_cvar("rom_cmd-bug", "1");
@@ -895,6 +842,22 @@ RegistersInit()
 	register_clcmd("login", "CmdPass" );
 	register_concmd("amx_cvar", "CvarFunc");
 	register_concmd("amx_reloadadmins", "ReloadLogin");
+}
+
+public nameStringFilter( string[], len )
+{
+	for( new i; i <= len; ++i )
+		if( i < MAX_NAME_LENGTH)
+		{
+			new j = i+1;
+			if( ( string[ i ] == '#' && isalpha(string[ j ]) ) || ( string[ i ] == '+' && isalpha(string[ j ]) ) )
+				string[ i ] = ' ';
+		}
+}
+
+simpleStringFilter( string[], len )
+{
+
 }
 
 stock bool:CheckName( id )
@@ -1016,7 +979,7 @@ WriteCfg( bool:exist )
 		write_file( CfgFile, line , -1 );
 	}
 	else
-	write_file( CfgFile, "rom_fake-players_limit ^"1^"" , -1 );
+	write_file( CfgFile, "rom_fake-players_limit ^"5^"" , -1 );
 	write_file( CfgFile, " " , -1 );
 	write_file( CfgFile, "// Cvar      : rom_delete_custom_hpk" , -1 );
 	write_file( CfgFile, "// Scop      : La finalul fiecarei harti, se va sterge fisierul custom.hpk." , -1 );
@@ -1347,7 +1310,7 @@ WriteLang( bool:exist )
 		#else
 			write_file( LangFile, "ROM_Admin_Wrong_Pass = ^^3%s : ^^4Parola incorecta.", -1 );
 		#endif
-		write_file( LangFile, "ROM_Admin_Wrong_Pass_Print = %s : Nume incorect.", -1 );
+		write_file( LangFile, "ROM_Admin_Wrong_Pass_Print = %s : Parola incorecta.", -1 );
 		#if AMXX_VERSION_NUM < 183
 			write_file( LangFile, "ROM_Admin_Loaded = %c%s : %cAdmin incarcat.", -1 );
 		#else
