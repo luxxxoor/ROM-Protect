@@ -17,7 +17,7 @@ new sz_MenuText[MAX_PLAYERS][ MAX_PLAYERS],
 	bool:flood[MAX_PLAYERS], bool:Name[MAX_PLAYERS], bool:Admin[MAX_PLAYERS], g_szFile[128], last_pass[MAX_PLAYERS][MAX_PLAYERS];
 
 static const Version[]   = "1.0.4a-rev",
-			 Built     = 18,
+			 Built     = 19,
 			 Plugin_name[] = "ROM-Protect",
 			 Terrorist[] = "#Terrorist_Select",
 			 CT_Select[] = "#CT_Select",
@@ -120,9 +120,9 @@ public plugin_precache( )
 	if( file_exists( CfgFile ) )
 		server_cmd( "exec %s", CfgFile );
 	
-	set_task(10.0, "CheckCfg");
-	set_task(15.0, "CheckLang");
-	set_task(20.0, "CheckLangFile");
+	set_task(10.0, "CheckLang");
+	set_task(15.0, "CheckLangFile");
+	set_task(20.0, "CheckCfg");
 }
 
 public CheckCfg()
