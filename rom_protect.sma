@@ -160,6 +160,7 @@ public CheckLang()
 		WriteLang(false);
 	else
 	{
+		lang_file = false;
 		new File = fopen( LangFile, "r+" );
 		
 		new Text[ 121 ], bool:find_search; 
@@ -169,13 +170,12 @@ public CheckLang()
 			
 			if( containi(Text, Version) != -1 )
 				find_search = true;
-			else
-				lang_file = true;			
+				
 		}
-		if(lang_file && !find_search)
+		if(!find_search)
 		{
 			register_dictionary("rom_protect.txt");
-			lang_file = false;
+			lang_file = true;
 			if( GetNum( g_Cvar[plug_log] ) == 1 )
 				LogCommand( LangType, LANG_SERVER, "ROM_Update_Lang", GetString(g_Cvar[Tag]) );
 			server_print( LangType, LANG_SERVER, "ROM_Update_Lang", GetString(g_Cvar[Tag]) );
