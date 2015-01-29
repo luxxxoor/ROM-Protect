@@ -16,8 +16,8 @@ new sz_MenuText[MAX_PLAYERS][ MAX_PLAYERS],
 	num[MAX_PLAYERS], cnt[MAX_PLAYERS],
 	bool:flood[MAX_PLAYERS], bool:Name[MAX_PLAYERS], bool:Admin[MAX_PLAYERS], g_szFile[128], last_pass[MAX_PLAYERS][MAX_PLAYERS];
 
-static const Version[]   = "1.0.4a",
-			 Built     = 4,
+static const Version[]   = "1.0.4a-rev",
+			 Built     = 17,
 			 Plugin_name[] = "ROM-Protect",
 			 Terrorist[] = "#Terrorist_Select",
 			 CT_Select[] = "#CT_Select",
@@ -605,9 +605,9 @@ public ShowProtection( id )
 public ChatMsgShow( id )
 {
 	#if AMXX_VERSION_NUM < 183
-		ColorChat( id, GREY, "^3%s :^4 Acest server este protejat de ^3%s^4 versiunea ^3%s^4 .", GetString(g_Cvar[Tag]), Plugin_name, Version );
+		ColorChat( id, GREY, LangType, id, "ROM_Advertise", '^3', GetString(g_Cvar[Tag]), '^4', '^3', Plugin_name, '^4', '^3', Version, '^4');
 	#else
-		client_print_color( id, print_team_grey, "^3%s :^4 Acest server este protejat de ^3%s^4 versiunea ^3%s^4 .", GetString(g_Cvar[Tag]), Plugin_name, Version );
+		client_print_color( id, print_team_grey, LangType, id, "ROM_Advertise", GetString(g_Cvar[Tag]), Plugin_name, Version );
 	#endif
 }
 
@@ -912,7 +912,7 @@ WriteCfg( bool:exist )
 	write_file( CfgFile, " " , -1 );
 	write_file( CfgFile, " " , -1 );
 	write_file( CfgFile, "// Verificare daca CFG-ul a fost executat cu succes." , -1 );
-	write_file( CfgFile, "echo ^"*ROM-Protect : Fisierul rom_protect.CfgFile a fost gasit. Incep protejarea serverului.^"" , -1 );
+	write_file( CfgFile, "echo ^"*ROM-Protect : Fisierul rom_protect.cfg a fost gasit. Incep protejarea serverului.^"" , -1 );
 	write_file( CfgFile, "// Cvar      : rom_cmd-bug" , -1 );
 	write_file( CfgFile, "// Scop      : Urmareste chatul si opeste bugurile de tip ^"%s^"/^"%s0^" care dau pluginurile peste cap." , -1 );
 	write_file( CfgFile, "// Impact    : Serverul nu pateste nimic, insa playerii acestuia primesc ^"quit^" indiferent de ce client folosesc, iar serverul ramane gol." , -1 );
@@ -1280,6 +1280,13 @@ WriteLang( bool:exist )
 		write_file( LangFile, line , -1 );
 		formatex(line, charsmax(line), "ROM_Motdfile_Log = %L", LANG_SERVER, "ROM_Motdfile_Log", "^%s", "^%s", "^%s", "^%s" );
 		write_file( LangFile, line , -1 );
+		#if AMXX_VERSION_NUM < 183
+			formatex(line, charsmax(line), "ROM_Advertise = %L", LANG_SERVER, "ROM_Advertise", "^%c", "^%s", "^%c", "^%c", "^%s", "^%c", "^%c", "^%s", "^%c" );
+			write_file( LangFile, line , -1 );
+		#else
+			formatex(line, charsmax(line), "ROM_Admin_Chat_Flood = %L", LANG_SERVER, "ROM_Admin_Chat_Flood", "^%s", "^%s", "^%s" );
+			write_file( LangFile, line , -1 );
+		#endif
 	}
 	else
 	{
@@ -1345,6 +1352,11 @@ WriteLang( bool:exist )
 		write_file( LangFile, "ROM_Admin_Debug = Nume : %s - Parola : %s - Acces : %s - Flag : %s", -1 );
 		write_file( LangFile, "ROM_Motdfile = %s : Ai incercat sa furi informatii din acest server, comanda ta a fost blocata.", -1 );	
 		write_file( LangFile, "ROM_Motdfile_Log = %s : %s [ %s | %s ] a incercat sa foloseasca cvarul motdfile ca sa fure informatii din acest server.", -1 );	
+		#if AMXX_VERSION_NUM < 183
+			write_file( LangFile, "ROM_Advertise = %c%s :%c Acest server este protejat de %c%s%c versiunea %c%s%c .", -1 );
+		#else
+			write_file( LangFile, "ROM_Advertise = ^^3%s :^^4 Acest server este protejat de ^^3%s^^4 versiunea ^^3%s^^4 .", -1 );
+		#endif
 	}
 	register_dictionary("rom_protect.txt");
 	lang_file = true;
