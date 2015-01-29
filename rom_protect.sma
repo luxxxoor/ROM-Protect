@@ -17,7 +17,7 @@ new sz_MenuText[MAX_PLAYERS][ MAX_PLAYERS],
 	bool:flood[MAX_PLAYERS], bool:Name[MAX_PLAYERS], bool:Admin[MAX_PLAYERS], g_szFile[128], last_pass[MAX_PLAYERS][MAX_PLAYERS];
 
 static const Version[]   = "1.0.4a-rev",
-			 Built     = 19,
+			 Built     = 20,
 			 Plugin_name[] = "ROM-Protect",
 			 Terrorist[] = "#Terrorist_Select",
 			 CT_Select[] = "#CT_Select",
@@ -1290,72 +1290,72 @@ WriteLang( bool:exist )
 	}
 	else
 	{
-		write_file( LangFile, "ROM_UPDATE_CFG = %s : Am actualizat fisierul configurator : rom_protect.cfg.", -1 );
+		write_file( LangFile, "ROM_UPDATE_CFG = %s : Am actualizat fisierul CFG : rom_protect.cfg.", -1 );
 		write_file( LangFile, "ROM_UPDATE_LANG = %s : Am actualizat fisierul LANG : rom_protect.txt.", -1 );
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_FAKE_PLAYERS = %c%s : %cS-a observat un atac de Fake-Players. Tentativa blocata.", -1 );
-			write_file( LangFile, "ROM_FAKE_PLAYERS_PUNISH = %c%s : %cAtac identificat cu IP : %s. IP banat 30 minute.", -1 );
+			write_file( LangFile, "ROM_FAKE_PLAYERS = %c%s : %cS-a observat un numar prea mare de persoane de pe ip-ul : %s .", -1 );
+			write_file( LangFile, "ROM_FAKE_PLAYERS_PUNISH = %c%s : %cIp-ul a primit ban 30 minute pentru a nu afecta jocul.", -1 );
 		#else
-			write_file( LangFile, "ROM_FAKE_PLAYERS = ^^3%s : ^^4S-a observat un atac de Fake-Players. Tentativa blocata.", -1 );
-			write_file( LangFile, "ROM_FAKE_PLAYERS_PUNISH = ^^3%s : ^^4Atac identificat cu IP : %s. IP banat 30 minute.", -1 );
+			write_file( LangFile, "ROM_FAKE_PLAYERS = ^^3%s : ^^4S-a observat un numar prea mare de persoane de pe ip-ul : %s .", -1 );
+			write_file( LangFile, "ROM_FAKE_PLAYERS_PUNISH = ^^3%s : ^^4 Ip-ul a primit ban 30 minute pentru a nu afecta jocul.", -1 );
 		#endif
-		write_file( LangFile, "ROM_FAKE_PLAYERS_LOG = %s : Atac blocat de ^"Fake-Players^" de la IP : %s .", -1 );
+		write_file( LangFile, "ROM_FAKE_PLAYERS_LOG = %s : S-a depistat un atac de ^"xFake-Players^" de la IP-ul : %s .", -1 );
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_PLUGIN_PAUSE = %c%s : %cS-a depistat o incercare a opririi pluginului de protectie. Operatiune oprita.", -1 );
+			write_file( LangFile, "ROM_PLUGIN_PAUSE = %c%s : %cNe pare rau, dar din anumite motive, acest plugin nu poate fi pus pe pauza.", -1 );
 		#else
-			write_file( LangFile, "ROM_PLUGIN_PAUSE = ^^3%s : ^^4S-a depistat o incercare a opririi pluginului de protectie. Operatiune oprita.", -1 );
+			write_file( LangFile, "ROM_PLUGIN_PAUSE = ^^3%s : ^^4Ne pare rau, dar din anumite motive, acest plugin nu poate fi pus pe pauza.", -1 );
 		#endif
-		write_file( LangFile, "ROM_PLUGIN_PAUSE_LOG = %s : S-a depistat o incercare a opririi pluginului de protectie %s. Operatiune oprita.", -1 );
+		write_file( LangFile, "ROM_PLUGIN_PAUSE_LOG = %s : S-a depistat o incercare a opririi pluginului de protectie %s. Operatiune a fost blocata.", -1 );
 		#if AMXX_VERSION_NUM < 183 
-			write_file( LangFile, "ROM_ADMIN_WRONG_NAME = %c%s : %cNume incorect.", -1 );
+			write_file( LangFile, "ROM_ADMIN_WRONG_NAME = %c%s : %cNu s-a gasit nici un admin care sa poarte acest nickname.", -1 );
 		#else
-			write_file( LangFile, "ROM_ADMIN_WRONG_NAME = ^^3%s : ^^4Nume incorect.", -1 );
+			write_file( LangFile, "ROM_ADMIN_WRONG_NAME = ^^3%s : ^^4Nu s-a gasit nici un admin care sa poarte acest nickname.", -1 );
 		#endif
-		write_file( LangFile, "ROM_ADMIN_WRONG_NAME_PRINT = %s : Nume incorect.", -1 );
+		write_file( LangFile, "ROM_ADMIN_WRONG_NAME_PRINT = %s : Nu s-a gasit nici un admin care sa poarte acest nickname.", -1 );
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_ADMIN_WRONG_PASS = %c%s : %cParola incorecta.", -1 );
+			write_file( LangFile, "ROM_ADMIN_WRONG_PASS = %c%s : %cParola introdusa de tine este incorecta.", -1 );
 		#else
-			write_file( LangFile, "ROM_ADMIN_WRONG_PASS = ^^3%s : ^^4Parola incorecta.", -1 );
+			write_file( LangFile, "ROM_ADMIN_WRONG_PASS = ^^3%s : ^^4Parola introdusa de tine este incorecta.", -1 );
 		#endif
-		write_file( LangFile, "ROM_ADMIN_WRONG_PASS_PRINT = %s : Parola incorecta.", -1 );
+		write_file( LangFile, "ROM_ADMIN_WRONG_PASS_PRINT = %s : Parola introdusa de tine este incorecta.", -1 );
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_ADMIN_LOADED = %c%s : %cAdmin incarcat.", -1 );
+			write_file( LangFile, "ROM_ADMIN_LOADED = %c%s : %cAdmin-ul tau a fost incarcat.", -1 );
 		#else
-			write_file( LangFile, "ROM_ADMIN_LOADED = ^^3%s : ^^4Admin incarcat.", -1 );
+			write_file( LangFile, "ROM_ADMIN_LOADED = ^^3%s : ^^4Admin-ul tau a fost incarcat.", -1 );
 		#endif
-		write_file( LangFile, "ROM_ADMIN_LOADED_PRINT = %s : Admin incarcat.", -1 );
+		write_file( LangFile, "ROM_ADMIN_LOADED_PRINT = %s : Admin-ul tau a fost incarcat.", -1 );
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_CMD_BUG = %c%s : %cAi incercat sa creezi CMD_BUG. Tentativa blocata.", -1 );
+			write_file( LangFile, "ROM_CMD_BUG = %c%s : %cS-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.", -1 );
 		#else
-			write_file( LangFile, "ROM_CMD_BUG = ^^3%s : ^^4Ai incercat sa creezi CMD_BUG. Tentativa blocata.", -1 );
+			write_file( LangFile, "ROM_CMD_BUG = ^^3%s : ^^4S-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.", -1 );
 		#endif
-		write_file( LangFile, "ROM_CMD_BUG_LOG = %s : %s [ %s | %s ] a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului.", -1 );
+		write_file( LangFile, "ROM_CMD_BUG_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului.", -1 );
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_COLOR_BUG = %c%s : %cAi incercat sa creezi COLOR_BUG. Tentativa blocata.", -1 );
+			write_file( LangFile, "ROM_COLOR_BUG = %c%s : %cS-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.", -1 );
 		#else
-			write_file( LangFile, "ROM_COLOR_BUG = ^^3%s : ^^4Ai incercat sa creezi COLOR_BUG. Tentativa blocata.", -1 );
+			write_file( LangFile, "ROM_COLOR_BUG = ^^3%s : ^^4S-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.", -1 );
 		#endif
-		write_file( LangFile, "ROM_COLOR_BUG_LOG = %s : %s [ %s | %s ] a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii.", -1 );
+		write_file( LangFile, "ROM_COLOR_BUG_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii.", -1 );
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_SPEC_BUG = %c%s : %cAi incercat sa creezi SPEC_BUG. Tentativa blocata.", -1 );
+			write_file( LangFile, "ROM_SPEC_BUG = %c%s : %cAi facut o miscare suspecta asa ca te-am mutat la echipa precedenta.", -1 );
 		#else
-			write_file( LangFile, "ROM_SPEC_BUG = ^^3%s : ^^4Ai incercat sa creezi SPEC_BUG. Tentativa blocata.", -1 );
+			write_file( LangFile, "ROM_SPEC_BUG = ^^3%s : ^^4Ai facut o miscare suspecta asa ca te-am mutat la echipa precedenta.", -1 );
 		#endif
-		write_file( LangFile, "ROM_SPEC_BUG_LOG = %s : %s [ %s | %s ] a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului.", -1 );
+		write_file( LangFile, "ROM_SPEC_BUG_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului.", -1 );
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_ADMIN_CHAT_FLOOD = %c%s : %cAi incercat sa creezi ADMIN_CHAT_FLOOD. Tentativa blocata.", -1 );
+			write_file( LangFile, "ROM_ADMIN_CHAT_FLOOD = %c%s : %cS-a observat un mic flood la chat primit din partea ta. Mesajele trimise de tine vor fi filtrate.", -1 );
 		#else
-			write_file( LangFile, "ROM_ADMIN_CHAT_FLOOD = ^^3%s : ^^4Ai incercat sa creezi ADMIN_CHAT_FLOOD. Tentativa blocata.", -1 );
+			write_file( LangFile, "ROM_ADMIN_CHAT_FLOOD = ^^3%s : ^^4S-a observat un mic flood la chat primit din partea ta. Mesajele trimise de tine vor fi filtrate.", -1 );
 		#endif
-		write_file( LangFile, "ROM_ADMIN_CHAT_FLOOD_LOG = %s : %s [ %s | %s ] a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa strice buna functionare a serverului.", -1 );	
+		write_file( LangFile, "ROM_ADMIN_CHAT_FLOOD_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa dea kick adminilor de pe server.", -1 );	
 		write_file( LangFile, "ROM_FILE_NOT_FOUND = %s : Fisierul %s nu exista.", -1 );
 		write_file( LangFile, "ROM_ADMIN_DEBUG = Nume : %s - Parola : %s - Acces : %s - Flag : %s", -1 );
-		write_file( LangFile, "ROM_MOTDFILE = %s : Ai incercat sa furi informatii din acest server, comanda ta a fost blocata.", -1 );	
-		write_file( LangFile, "ROM_MOTDFILE_LOG = %s : %s [ %s | %s ] a incercat sa foloseasca cvarul motdfile ca sa fure informatii din acest server.", -1 );	
+		write_file( LangFile, "ROM_MOTDFILE = %s : S-a detectat o miscare suspecta din partea ta, comanda ta a fost blocata.", -1 );
+		write_file( LangFile, "ROM_MOTDFILE_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca cvar-ul ^"motdfile^" ca sa fure informatii din acest server.", -1 );	
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_ADVERTISE = %c%s :%c Acest server este protejat de %c%s%c versiunea %c%s%c .", -1 );
+			write_file( LangFile, "ROM_ADVERTISE = %c%s :%c Acest server este supravegheat de pluginul de protectie %c%s%c versiunea %c%s%c .", -1 );
 		#else
-			write_file( LangFile, "ROM_ADVERTISE = ^^3%s :^^4 Acest server este protejat de ^^3%s^^4 versiunea ^^3%s^^4 .", -1 );
+			write_file( LangFile, "ROM_ADVERTISE = ^^3%s :^^4 Acest server este supravegheat de pluginul de protectie ^^3%s^^4 versiunea ^^3%s^^4 .", -1 );
 		#endif
 	}
 	register_dictionary("rom_protect.txt");
