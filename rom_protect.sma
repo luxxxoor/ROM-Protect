@@ -17,7 +17,7 @@ new sz_MenuText[MAX_PLAYERS][ MAX_PLAYERS],
 	bool:flood[MAX_PLAYERS], bool:Name[MAX_PLAYERS], bool:Admin[MAX_PLAYERS], g_szFile[128], last_pass[MAX_PLAYERS][MAX_PLAYERS];
 
 static const Version[]   = "1.0.4a-rev",
-			 Built     = 20,
+			 Built     = 21,
 			 Plugin_name[] = "ROM-Protect",
 			 Terrorist[] = "#Terrorist_Select",
 			 CT_Select[] = "#CT_Select",
@@ -826,7 +826,7 @@ RegistersPrecache()
 	g_Cvar[admin_login_debug]     = register_cvar("rom_admin_login_debug", "0");
 	g_Cvar[utf8_bom]              = register_cvar("rom_utf8-bom", "1");
 	g_Cvar[motdfile]              = register_cvar("rom_motdfile", "1");
-	g_Cvar[anti_pause]            = register_cvar("rom_anti-pause", "1");
+	g_Cvar[anti_pause]            = register_cvar("rom_anti-pause", "1"); 
 }
 
 RegistersInit()
@@ -1361,3 +1361,9 @@ WriteLang( bool:exist )
 	register_dictionary("rom_protect.txt");
 	lang_file = true;
 }
+
+/*
+*	 Contribuitori :
+* SkillartzHD : -  Metoda anti-pause plugin.
+* COOPER : - Idee adaugare LANG si ajutor la introducerea acesteia in plugin.
+*/
