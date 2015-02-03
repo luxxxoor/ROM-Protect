@@ -247,11 +247,11 @@ public client_connect( id )
 					if( GetNum( g_Cvar[plug_warn] ) == 1 )
 					{
 						#if AMXX_VERSION_NUM < 183
-							ColorChat( 0, GREY, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS", '^3', GetString(g_Cvar[Tag]), '^4' );
-							ColorChat( 0, GREY, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", '^3', GetString(g_Cvar[Tag]), '^4', address );
+							ColorChat( 0, GREY, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS", '^3', GetString(g_Cvar[Tag]), '^4', address );
+							ColorChat( 0, GREY, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", '^3', GetString(g_Cvar[Tag]), '^4');
 						#else
-							client_print_color( 0, print_team_grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS", GetString(g_Cvar[Tag]) );
-							client_print_color( 0, print_team_grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", GetString(g_Cvar[Tag]), address );
+							client_print_color( 0, print_team_grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS", GetString(g_Cvar[Tag]), address );
+							client_print_color( 0, print_team_grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", GetString(g_Cvar[Tag]));
 						#endif
 					}
 					if( GetNum( g_Cvar[plug_log] ) == 1 )
