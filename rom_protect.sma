@@ -17,7 +17,7 @@ new sz_MenuText[MAX_PLAYERS][ MAX_PLAYERS],
 	bool:flood[MAX_PLAYERS], bool:Name[MAX_PLAYERS], bool:Admin[MAX_PLAYERS], g_szFile[128], last_pass[MAX_PLAYERS][MAX_PLAYERS];
 
 static const Version[]     = "1.0.4a-rev",
-			 Built         = 22,
+			 Built         = 23,
 			 Plugin_name[] = "ROM-Protect",
 			 Terrorist[]   = "#Terrorist_Select",
 			 CT_Select[]   = "#CT_Select",
@@ -95,7 +95,7 @@ enum
 
 public plugin_precache( )
 	{	
-	RegistersPrecache();
+	registersPrecache();
 	
 	new szCurentDate[ 15 ];
 	get_localinfo( "amxx_configsdir", g_szFile, charsmax ( g_szFile ) );
@@ -193,7 +193,7 @@ public CheckLangFile()
 
 public plugin_init( )
 {
-	RegistersInit();
+	registersInit();
 	
 	if( GetNum(g_Cvar[advertise] ) == 1 )
 	{
@@ -248,10 +248,10 @@ public client_connect( id )
 					{
 						#if AMXX_VERSION_NUM < 183
 							ColorChat( 0, GREY, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS", '^3', GetString(g_Cvar[Tag]), '^4', address );
-							ColorChat( 0, GREY, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", '^3', GetString(g_Cvar[Tag]), '^4');
+							ColorChat( 0, GREY, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", '^3', GetString(g_Cvar[Tag]), '^4' );
 						#else
 							client_print_color( 0, print_team_grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS", GetString(g_Cvar[Tag]), address );
-							client_print_color( 0, print_team_grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", GetString(g_Cvar[Tag]));
+							client_print_color( 0, print_team_grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", GetString(g_Cvar[Tag]) );
 						#endif
 					}
 					if( GetNum( g_Cvar[plug_log] ) == 1 )
@@ -602,7 +602,6 @@ public ShowProtection( id )
 		if( GetNum( g_Cvar[plug_log] ) == 1 )
 			LogCommand( LangType, LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD_LOG", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ));
 		flood[ id ] = false;
-		
 	}
 }
 
@@ -642,6 +641,54 @@ public CleanResFiles()
 	
 	close_dir(dp);
 } 
+
+
+public ReloadLogin(id, level, cid) 
+{
+	set_task(1.0, "reloadDelay");
+}
+
+public reloadDelay()
+{
+	new players[ MAX_PLAYERS -1 ], pnum;
+	get_players( players, pnum, "ch" );
+	for( new i; i < pnum; ++i )
+		if( Admin[ players[i] ] )
+			GetAccess( players[i], last_pass[ players[i] ]);
+}
+
+public CvarFunc(id, level, cid) 
+{ 
+	if( GetNum( g_Cvar[ motdfile ] ) == 1 )
+	{
+		new arg[32], arg2[32]; 
+		
+		read_argv(1, arg, charsmax(arg));
+		read_argv(2, arg2, charsmax(arg2));
+		
+		if( equali(arg, "motdfile") && contain(arg2, ".ini") != -1 ) 
+		{
+			server_print(LangType, LANG_SERVER, "ROM_MOTDFILE_LOG", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+			console_print(id, LangType, id, "ROM_MOTDFILE", GetString(g_Cvar[Tag]) );
+			if( GetNum( g_Cvar[plug_log] ) == 1 )
+				LogCommand( LangType, LANG_SERVER, "ROM_MOTDFILE_LOG", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+			return PLUGIN_HANDLED; 
+		}
+	} 
+	
+	return PLUGIN_CONTINUE; 
+}
+
+public checkBot( id,const szVar[], const szValue[] )
+{
+    if( equal(szVar, "fps_max") && szValue[0] == 'B' )
+    {
+		if( GetNum( g_Cvar[plug_log] ) == 1 )
+				LogCommand( LangType, LANG_SERVER, "ROM_FAKE_PLAYERS_DETECT_LOG", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
+		console_print(id, LangType, id, "ROM_FAKE_PLAYERS_DETECT", GetString(g_Cvar[Tag]) );
+		server_cmd("kick #%d ^"You got kicked. Check console.^"",get_user_userid(id));
+    }
+}
 
 LoadAdminLogin( )
 {
@@ -709,54 +756,6 @@ GetAccess( const id, const userPass[] )
 	}
 }
 
-
-public ReloadLogin(id, level, cid) 
-{
-	set_task(1.0, "reloadDelay");
-}
-
-public reloadDelay()
-{
-	new players[ MAX_PLAYERS -1 ], pnum;
-	get_players( players, pnum, "ch" );
-	for( new i; i < pnum; ++i )
-		if( Admin[i] )
-		GetAccess(i, last_pass[i]);
-}
-
-public CvarFunc(id, level, cid) 
-{ 
-	if( GetNum( g_Cvar[ motdfile ] ) == 1 )
-	{
-		new arg[32], arg2[32]; 
-		
-		read_argv(1, arg, charsmax(arg));
-		read_argv(2, arg2, charsmax(arg2));
-		
-		if( equali(arg, "motdfile") && contain(arg2, ".ini") != -1 ) 
-		{
-			server_print(LangType, LANG_SERVER, "ROM_MOTDFILE_LOG", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
-			console_print(id, LangType, id, "ROM_MOTDFILE", GetString(g_Cvar[Tag]) );
-			if( GetNum( g_Cvar[plug_log] ) == 1 )
-				LogCommand( LangType, LANG_SERVER, "ROM_MOTDFILE_LOG", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
-			return PLUGIN_HANDLED; 
-		}
-	} 
-	
-	return PLUGIN_CONTINUE; 
-}
-
-public checkBot( id,const szVar[], const szValue[] )
-{
-    if( equal(szVar, "fps_max") && szValue[0] == 'B' )
-    {
-		if( GetNum( g_Cvar[plug_log] ) == 1 )
-				LogCommand( LangType, LANG_SERVER, "ROM_FAKE_PLAYERS_DETECT_LOG", GetString(g_Cvar[Tag]), GetInfo( id, INFO_NAME ), GetInfo( id, INFO_AUTHID ), GetInfo( id, INFO_IP ) );
-		console_print(id, LangType, id, "ROM_FAKE_PLAYERS_DETECT", GetString(g_Cvar[Tag]) );
-		server_cmd("kick #%d ^"You got kicked. Check console.^"",get_user_userid(id));
-    }
-}
-
 LogCommand( const szMsg[ ], any:... )
 {
 	new szMessage[ 256 ], szLogMessage[ 256 ];
@@ -821,7 +820,7 @@ GetNum( text )
 	return num;
 }
 
-RegistersPrecache()
+registersPrecache()
 {
 	g_Cvar[Tag]                   = register_cvar("rom_tag", "*ROM-Protect");
 	g_Cvar[spec_bug]              = register_cvar("rom_spec-bug", "1");
@@ -844,7 +843,7 @@ RegistersPrecache()
 	g_Cvar[anti_pause]            = register_cvar("rom_anti-pause", "1"); 
 }
 
-RegistersInit()
+registersInit()
 {
 	register_plugin( Plugin_name, Version, "FioriGinal.Ro" );
 	register_cvar("rom_protect", Version, FCVAR_SERVER | FCVAR_SPONLY);
@@ -1505,4 +1504,5 @@ WriteLang( bool:exist )
 * SkillartzHD : -  Metoda anti-pause plugin.
 *               -  Metoda anti-xfake-player si anti-xspammer.
 * COOPER :      -  Idee adaugare LANG si ajutor la introducerea acesteia in plugin.
+* StefaN@CSX :  -  Gasire si reparare eroare parametrii la functia anti-xFake-Players.
 */
