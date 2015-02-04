@@ -288,13 +288,13 @@ public plugin_end( )
 			delete_file( g_baseDir );
 			if( GetNum( g_Cvar[delete_vault] ) == 2 )
 			{
-				format( text, 199, "server_language ro", g_baseDir);
+				formatex( text, charsmax(text) , "server_language ro", g_baseDir);
 				write_file( g_baseDir, text , newLine );
 			}
 			if( GetNum( g_Cvar[delete_vault] ) == 1 )
 			{
-				format( text, 199, "server_language en", g_baseDir );
-				write_file( g_baseDir, text, -1) ;
+				formatex( text, charsmax(text), "server_language en", g_baseDir );
+				write_file( g_baseDir, text, newLine ) ;
 			}
 		}
 	}
