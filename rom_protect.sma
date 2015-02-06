@@ -5,18 +5,22 @@
 
 #if AMXX_VERSION_NUM < 183
 	#include <ColorChat>
-	#define MAX_PLAYERS 33
+	#define MAX_PLAYERS 32
 	#define MAX_NAME_LENGTH 32
+#else
+	#if MAX_PLAYERS > 32
+		#define MAX_PLAYERS 32
+	#endif
 #endif
 
 #pragma semicolon 1
 
 
-new sz_MenuText[MAX_PLAYERS][ MAX_PLAYERS],
-	num[MAX_PLAYERS], cnt[MAX_PLAYERS],
-	bool:flood[MAX_PLAYERS], bool:Name[MAX_PLAYERS], bool:Admin[MAX_PLAYERS], g_szFile[128], last_pass[MAX_PLAYERS][MAX_PLAYERS];
+new sz_MenuText[MAX_PLAYERS + 1][ MAX_PLAYERS],
+	num[MAX_PLAYERS + 1], cnt[MAX_PLAYERS + 1],
+	bool:flood[MAX_PLAYERS + 1], bool:Name[MAX_PLAYERS + 1], bool:Admin[MAX_PLAYERS + 1], g_szFile[128], last_pass[MAX_PLAYERS + 1][MAX_PLAYERS];
 
-static const Version[]     = "1.0.4a-rev",
+static const Version[]     = "1.0.4b-dev",
 			 Built         = 25,
 			 pluginName[] = "ROM-Protect",
 			 Terrorist[]   = "#Terrorist_Select",
@@ -26,7 +30,7 @@ static const Version[]     = "1.0.4a-rev",
 			 langType[]    = "%L",
 			 newLine       = -1;
 
-new loginName[1024][MAX_PLAYERS], loginPass[1024][MAX_PLAYERS], loginAccs[1024][MAX_PLAYERS], loginFlag[1024][MAX_PLAYERS];
+new loginName[1024][MAX_PLAYERS + 1], loginPass[1024][MAX_PLAYERS + 1], loginAccs[1024][MAX_PLAYERS + 1], loginFlag[1024][MAX_PLAYERS + 1];
 new admin_number, bool:lang_file;
 
 enum
@@ -66,8 +70,8 @@ enum _:g_Cvars
 };
 new g_Cvar[g_Cvars];
 
-new Float:g_Flooding[ MAX_PLAYERS ] = {0.0, ...},
-	g_Flood[ MAX_PLAYERS ] = {0, ...};
+new Float:g_Flooding[ MAX_PLAYERS + 1 ] = {0.0, ...},
+	g_Flood[ MAX_PLAYERS + 1 ] = {0, ...};
 
 new Trie:g_tDefaultRes;
 
@@ -231,7 +235,7 @@ public client_connect( id )
 	}
 	if ( getNum( g_Cvar[fake_players] ) == 1 )
 	{
-		new players[ MAX_PLAYERS -1 ], pnum, address[ MAX_PLAYERS -1 ], address2[ MAX_PLAYERS -1 ];
+		new players[ MAX_PLAYERS ], pnum, address[ MAX_PLAYERS ], address2[ MAX_PLAYERS ];
 		if(	is_user_steam(id) )
 			query_client_cvar( id, "fps_max", "checkBot" );
 		get_players( players, pnum, "c" );
@@ -418,7 +422,7 @@ public hookChat(id)
 	
 	if( getNum( g_Cvar[color_bug] )  == 1 || getNum( g_Cvar[cmd_bug] ) == 1 )
 	{
-		new s_said[ 192 ], bool:b_said_cmd_bug[ MAX_PLAYERS ], bool:b_said_color_bug[ MAX_PLAYERS ];
+		new s_said[ 192 ], bool:b_said_cmd_bug[ MAX_PLAYERS + 1 ], bool:b_said_color_bug[ MAX_PLAYERS + 1 ];
 		copy( s_said, charsmax( said ), said );
 		for( new i = 0; i < sizeof( s_said ); ++i )
 		{
@@ -553,7 +557,7 @@ public blockSpecbugOldStyleMenus( id )
 
 public blockSpecbugVGui( id )
 {
-	new bool:bug_log[MAX_PLAYERS] = false;
+	new bool:bug_log[MAX_PLAYERS + 1];
 	if( !is_user_alive( id ) && is_user_connected( id ) && getNum( g_Cvar[spec_bug] ) == 1 )
 	{
 		if(fm_get_user_team( id ) == FM_TEAM_SPECTATOR )
@@ -651,7 +655,7 @@ public reloadLogin(id, level, cid)
 
 public reloadDelay()
 {
-	new players[ MAX_PLAYERS -1 ], pnum;
+	new players[ MAX_PLAYERS ], pnum;
 	get_players( players, pnum, "ch" );
 	for( new i; i < pnum; ++i )
 		if( Admin[ players[i] ] )
@@ -1513,5 +1517,4 @@ WriteLang( bool:exist )
 *               -  Metoda anti-xfake-player si anti-xspammer.
 * COOPER :      -  Idee adaugare LANG si ajutor la introducerea acesteia in plugin.
 * StefaN@CSX :  -  Gasire si reparare eroare parametrii la functia anti-xFake-Players.
-*               -  Reparare compatibilitate intre functie si protocol 47.
 */
