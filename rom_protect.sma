@@ -21,7 +21,7 @@ new sz_MenuText[MAX_PLAYERS + 1][ MAX_PLAYERS],
 	bool:flood[MAX_PLAYERS + 1], bool:Name[MAX_PLAYERS + 1], bool:Admin[MAX_PLAYERS + 1], g_szFile[128], last_pass[MAX_PLAYERS + 1][MAX_PLAYERS];
 
 static const Version[]     = "1.0.4b-dev",
-			 Built         = 26,
+			 Built         = 27,
 			 pluginName[] = "ROM-Protect",
 			 Terrorist[]   = "#Terrorist_Select",
 			 CT_Select[]   = "#CT_Select",
@@ -31,7 +31,7 @@ static const Version[]     = "1.0.4b-dev",
 			 newLine       = -1;
 
 new loginName[1024][MAX_PLAYERS + 1], loginPass[1024][MAX_PLAYERS + 1], loginAccs[1024][MAX_PLAYERS + 1], loginFlag[1024][MAX_PLAYERS + 1];
-new admin_number, bool:lang_file;
+new admin_number, bool:isLangUsed;
 
 enum
 {
@@ -43,6 +43,11 @@ enum
 #define OFFSET_TEAM  114 
 #define fm_set_user_team(%1,%2)  set_pdata_int( %1, OFFSET_TEAM, %2 )
 #define fm_get_user_team(%1)     get_pdata_int( %1, OFFSET_TEAM ) 
+
+new const allBasicOnChatCommads[][] =
+{
+	"amx_say", "amx_csay", "amx_psay", "amx_tsay", "amx_chat", "say_team", "say"
+};
 
 enum _:allCvars
 {
@@ -69,9 +74,52 @@ enum _:allCvars
 	
 };
 
-new const allBasicOnChatCommads[][] =
+new const cvarName[allCvars][] = 
 {
-	"amx_say", "amx_csay", "amx_psay", "amx_tsay", "amx_chat", "say_team", "say"
+	"rom_tag",
+	"rom_cmd-bug",
+	"rom_spec-bug",
+	"rom_fake-players",
+	"rom_fake-players_limit",
+	"rom_admin_chat_flood",
+	"rom_admin_chat_flood_time",
+	"rom_advertise",
+	"rom_advertise_time",
+	"rom_delete_custom_hpk",
+	"rom_delete_vault",
+	"rom_warn",
+	"rom_log",
+	"rom_admin_login",
+	"rom_admin_login_file",
+	"rom_admin_login_debug",
+	"rom_utf8-bom",
+	"rom_color-bug",
+	"rom_motdfile",
+	"rom_anti-pause"
+};
+
+new const cvarValue[allCvars][] =
+{
+	"*ROM-Protect",
+	"1",
+	"1",
+	"1",
+	"5",
+	"1",
+	"0.75",
+	"1",
+	"120",
+	"1",
+	"1",
+	"1",
+	"1",
+	"1",
+	"users_login.ini",
+	"0",
+	"1",
+	"1",
+	"1",
+	"1"
 };
 
 new plugCvar[allCvars];
@@ -171,33 +219,32 @@ public CheckLang()
 		WriteLang(false);
 	else
 	{
-		lang_file = false;
+		isLangUsed = false;
 		new File = fopen( langFile, "r+" );
 		
-		new Text[ 121 ], bool:find_search; 
-		while ( !feof( File ) )
+		new Text[ 121 ], bool:isCurrentVersionUsed;
+		while (!feof(File))
 		{
-			fgets( File, Text, charsmax(Text) );
+			fgets(File, Text, charsmax(Text));
 			
-			if( containi(Text, Version) != -1 )
-				find_search = true;
-				
+			if (containi(Text, Version) != -1)
+				isCurrentVersionUsed = true;
 		}
-		if(!find_search)
+		if(!isCurrentVersionUsed)
 		{
 			register_dictionary("rom_protect.txt");
-			lang_file = true;
-			if( getNum( plugCvar[plug_log] ) == 1 )
-				logCommand( langType, LANG_SERVER, "ROM_UPDATE_LANG", getString(plugCvar[Tag]) );
-			server_print( langType, LANG_SERVER, "ROM_UPDATE_LANG", getString(plugCvar[Tag]) );
-			WriteLang( true );
+			isLangUsed = true;
+			if (getNum(plugCvar[plug_log]) == 1)
+				logCommand(langType, LANG_SERVER, "ROM_UPDATE_LANG", getString(plugCvar[Tag]));
+			server_print(langType, LANG_SERVER, "ROM_UPDATE_LANG", getString(plugCvar[Tag]));
+			WriteLang(true);
 		}
 	}
 }
 
 public CheckLangFile()
 {
-	if(!lang_file)
+	if(!isLangUsed)
 		register_dictionary("rom_protect.txt");
 }
 
@@ -222,15 +269,7 @@ public plugin_init( )
 	
 }
 
-public plugin_cfg( )
-{   
-	plugCvar[admin_chat_flood_time] = get_cvar_pointer( "amx_flood_time" );
-	
-	if( !plugCvar[admin_chat_flood_time] )
-		plugCvar[admin_chat_flood_time] = register_cvar( "rom_admin_chat_flood_time", "0.75" );
-}
-
-public client_connect( id )
+public client_connect(id)
 {
 	if (getNum(plugCvar[cmd_bug]) == 1)
 	{
@@ -239,13 +278,13 @@ public client_connect( id )
 		stringFilter(name, charsmax(name));
 		set_user_info(id, "name", name);
 	}
-	if (getNum( plugCvar[fake_players] ) == 1)
+	if (getNum(plugCvar[fake_players]) == 1)
 	{
 		new players[MAX_PLAYERS], pnum, address[32], address2[32];
-		if(is_user_steam(id))
+		if(clientUseSteamid(id))
 			query_client_cvar(id, "fps_max", "checkBot");
-		get_players( players, pnum, "c" );
-		for( new i; i < pnum; ++i)
+		get_players(players, pnum, "c");
+		for (new i; i < pnum; ++i)
 		{
 			get_user_ip( id, address, charsmax( address ), 1 );
 			get_user_ip( players[ i ], address2, charsmax(address2), 1 );
@@ -813,19 +852,17 @@ getInfo( id, const iInfo )
 	return szInfoToReturn;
 }
 
-getTime( )
+getTime()
 {
 	static szTime[ 32 ];
-	get_time( " %H:%M:%S ", szTime ,charsmax( szTime ) );
-	
+	get_time(" %H:%M:%S ", szTime, charsmax(szTime));
 	return szTime;
 }
 
 getString( text )
 {
 	static File[32]; 
-	get_pcvar_string( text, File, charsmax( File ) );
-	
+	get_pcvar_string(text, File, charsmax(File));
 	return File;
 }
 
@@ -836,27 +873,16 @@ getNum( text )
 	return num;
 }
 
+Float:getFloat(text)
+{
+	new Float:float = get_pcvar_float(text);
+	return float;
+} 
+
 registersPrecache()
 {
-	plugCvar[Tag]                   = register_cvar("rom_tag", "*ROM-Protect");
-	plugCvar[spec_bug]              = register_cvar("rom_spec-bug", "1");
-	plugCvar[admin_chat_flood]      = register_cvar("rom_admin_chat_flood", "1");
-	plugCvar[fake_players]          = register_cvar("rom_fake-players", "1");
-	plugCvar[fake_players_limit]    = register_cvar("rom_fake-players_limit", "5");
-	plugCvar[delete_custom_hpk]     = register_cvar("rom_delete_custom_hpk", "1");
-	plugCvar[delete_vault]          = register_cvar("rom_delete_vault", "1");
-	plugCvar[cmd_bug]               = register_cvar("rom_cmd-bug", "1");
-	plugCvar[advertise]             = register_cvar("rom_advertise","1");
-	plugCvar[advertise_time]        = register_cvar("rom_advertise_time", "120");
-	plugCvar[plug_warn]             = register_cvar("rom_warn", "1");
-	plugCvar[plug_log]              = register_cvar("rom_log", "1");
-	plugCvar[color_bug]             = register_cvar("rom_color-bug", "1");
-	plugCvar[admin_login]           = register_cvar("rom_admin_login", "1");
-	plugCvar[admin_login_file]      = register_cvar("rom_admin_login_file", "users_login.ini");
-	plugCvar[admin_login_debug]     = register_cvar("rom_admin_login_debug", "0");
-	plugCvar[utf8_bom]              = register_cvar("rom_utf8-bom", "1");
-	plugCvar[motdfile]              = register_cvar("rom_motdfile", "1");
-	plugCvar[anti_pause]            = register_cvar("rom_anti-pause", "1"); 
+	for (new i; i < allCvars; i++)
+		plugCvar[i] = register_cvar(cvarName[i] , cvarValue[i]);
 }
 
 registersInit()
@@ -886,7 +912,7 @@ public stringFilter( string[], len )
 		}
 }
 
-bool:is_user_steam(id) 
+bool:clientUseSteamid(id) 
 {	
 	new authid[35];  
 	get_user_authid(id, authid, charsmax(authid) );
@@ -989,7 +1015,17 @@ WriteCfg( bool:exist )
 		write_file( cfgFile, line , newLine );
 	}
 	else
-		write_file( cfgFile, "rom_admin_chat_flood ^"1^"" , newLine );
+		write_file( cfgFile, "rom_admin_chat_flood ^"1^"" , newLine );  
+	write_file( cfgFile, " " , newLine );
+	write_file( cfgFile, "// Cvar      : rom_admin_chat_flood_time ( Activat numai in cazul in care cvarul ^"rom_admin_chat_flood^" este setat pe 1 )" , newLine );
+	write_file( cfgFile, "// Utilizare : Limiteaza numarul maxim de mesaje trimise de acelasi cleint in chatul adminilor, blocand astfel atacurile tip overflow." , newLine );
+	if(exist)
+	{
+		formatex(line, charsmax(line), "rom_admin_chat_flood_time ^"%.2f^"", getFloat(plugCvar[admin_chat_flood_time]));
+		write_file( cfgFile, line , newLine );
+	}
+	else
+		write_file( cfgFile, "rom_admin_chat_flood_time ^"0.75^"" , newLine );
 	write_file( cfgFile, "" , newLine );
 	write_file( cfgFile, "// Cvar      : rom_fake-players" , newLine );
 	write_file( cfgFile, "// Scop      : Urmareste persoanele conectate pe server si baneaza atunci cand numarul persoanelor cu acelasi ip il depaseste pe cel setat in cvarul rom_fake-players_limit." , newLine );
@@ -1528,7 +1564,7 @@ WriteLang( bool:exist )
 		#endif
 	}
 	register_dictionary("rom_protect.txt");
-	lang_file = true;
+	isLangUsed = true;
 }
 
 /*
@@ -1537,4 +1573,5 @@ WriteLang( bool:exist )
 *               -  Metoda anti-xfake-player si anti-xspammer.
 * COOPER :      -  Idee adaugare LANG si ajutor la introducerea acesteia in plugin.
 * StefaN@CSX :  -  Gasire si reparare eroare parametrii la functia anti-xFake-Players.
+* eNd :         -  Ajustat cod cu o noua metoda de inregistrare a cvarurilor.
 */
