@@ -7,6 +7,9 @@
 	#include <ColorChat>
 	#define MAX_PLAYERS 32
 	#define MAX_NAME_LENGTH 32
+	new bool:flood[MAX_PLAYERS + 1];
+	new Float:g_Flooding[MAX_PLAYERS + 1] = {0.0, ...},
+	g_Flood[MAX_PLAYERS + 1] = {0, ...};
 #else
 	#if MAX_PLAYERS > 32
 		#define MAX_PLAYERS 32
@@ -18,10 +21,10 @@
 
 new sz_MenuText[MAX_PLAYERS + 1][ MAX_PLAYERS],
 	num[MAX_PLAYERS + 1], cnt[MAX_PLAYERS + 1],
-	bool:flood[MAX_PLAYERS + 1], bool:Name[MAX_PLAYERS + 1], bool:Admin[MAX_PLAYERS + 1], g_szFile[128], last_pass[MAX_PLAYERS + 1][MAX_PLAYERS];
+	bool:Name[MAX_PLAYERS + 1], bool:Admin[MAX_PLAYERS + 1], g_szFile[128], last_pass[MAX_PLAYERS + 1][MAX_PLAYERS];
 
 static const Version[]     = "1.0.4b-dev",
-			 Built         = 27,
+			 Built         = 28,
 			 pluginName[] = "ROM-Protect",
 			 Terrorist[]   = "#Terrorist_Select",
 			 CT_Select[]   = "#CT_Select",
@@ -56,8 +59,10 @@ enum _:allCvars
 	spec_bug,
 	fake_players,
 	fake_players_limit,
+#if AMXX_VERSION_NUM < 183
 	admin_chat_flood,
 	admin_chat_flood_time,
+#endif
 	advertise,
 	advertise_time,
 	delete_custom_hpk,
@@ -81,8 +86,10 @@ new const cvarName[allCvars][] =
 	"rom_spec-bug",
 	"rom_fake-players",
 	"rom_fake-players_limit",
+#if AMXX_VERSION_NUM < 183
 	"rom_admin_chat_flood",
 	"rom_admin_chat_flood_time",
+#endif
 	"rom_advertise",
 	"rom_advertise_time",
 	"rom_delete_custom_hpk",
@@ -105,8 +112,10 @@ new const cvarValue[allCvars][] =
 	"1",
 	"1",
 	"5",
+#if AMXX_VERSION_NUM < 183
 	"1",
 	"0.75",
+#endif
 	"1",
 	"120",
 	"1",
@@ -123,9 +132,6 @@ new const cvarValue[allCvars][] =
 };
 
 new plugCvar[allCvars];
-
-new Float:g_Flooding[MAX_PLAYERS + 1] = {0.0, ...},
-	g_Flood[MAX_PLAYERS + 1] = {0, ...};
 
 new Trie:g_tDefaultRes;
 
@@ -311,9 +317,7 @@ public client_connect(id)
 			}
 		}
 	}
-}
-
-      
+} 
 
 public client_disconnect(id)
 	{
@@ -459,42 +463,43 @@ public cmdPass( id )
 	
 	return PLUGIN_CONTINUE;
 }
-
-public hookAdminChat(id)
-{
-	new said[ 2 ];
-	read_argv(1, said, charsmax(said));
-	
-	if (said[0] != '@')
-		return PLUGIN_CONTINUE;
-	
-	new Float:maxChat = get_pcvar_float(plugCvar[admin_chat_flood_time]);
-	
-	if (maxChat && getNum(plugCvar[admin_chat_flood]) == 1)
+#if AMXX_VERSION_NUM < 183
+	public hookAdminChat(id)
 	{
-		new Float:nexTime = get_gametime();
-		
-		if (g_Flooding[id] > nexTime)
+		new said[ 2 ];
+		read_argv(1, said, charsmax(said));
+
+		if (said[0] != '@')
+			return PLUGIN_CONTINUE;
+
+		new Float:maxChat = get_pcvar_float(plugCvar[admin_chat_flood_time]);
+
+		if (maxChat && getNum(plugCvar[admin_chat_flood]) == 1)
 		{
-			if (g_Flood[id] >= 3)
+			new Float:nexTime = get_gametime();
+
+			if (g_Flooding[id] > nexTime)
 			{
-				flood[id] = true;
-				set_task( 1.0, "showAdminChatFloodWarning", id );
-				g_Flooding[ id ] = nexTime + maxChat + 3.0;
-				return PLUGIN_HANDLED;
+				if (g_Flood[id] >= 3)
+				{
+					flood[id] = true;
+					set_task( 1.0, "showAdminChatFloodWarning", id );
+					g_Flooding[ id ] = nexTime + maxChat + 3.0;
+					return PLUGIN_HANDLED;
+				}
+				++g_Flood[id];
 			}
-			++g_Flood[id];
+			else
+			{
+				if (g_Flood[id])
+					--g_Flood[id];
+			}
+			g_Flooding[id] = nexTime + maxChat;
 		}
-		else
-		{
-			if (g_Flood[id])
-				--g_Flood[id];
-		}
-		g_Flooding[id] = nexTime + maxChat;
+
+		return PLUGIN_CONTINUE;
 	}
-	
-	return PLUGIN_CONTINUE;
-}
+#endif
 
 public oldStyleMenusTeammenu( msg, des, rec )
 {
@@ -576,25 +581,20 @@ public blockSpecbugVGui( id )
 		set_task( 0.1, "blockSpecbugVGui", id );    
 	}
 }
-
-public showAdminChatFloodWarning( id )
-{
-	if( flood[ id ] )
+#if AMXX_VERSION_NUM < 183
+	public showAdminChatFloodWarning(id)
 	{
-		server_print(langType, LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD_LOG", getString(plugCvar[Tag]), getInfo( id, INFO_NAME ), getInfo( id, INFO_AUTHID ), getInfo( id, INFO_IP ));
-		if( getNum( plugCvar[plug_warn] ) == 1 )
+		if (flood[id])
 		{
-			#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, langType, id, "ROM_ADMIN_CHAT_FLOOD", '^3', getString(plugCvar[Tag]), '^4');
-			#else
-				client_print_color( id, print_team_grey, langType, id, "ROM_ADMIN_CHAT_FLOOD", getString(plugCvar[Tag]) );
-			#endif
+			server_print(langType, LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD_LOG", getString(plugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP));
+			if (getNum(plugCvar[plug_warn]) == 1)
+					ColorChat(id, GREY, langType, id, "ROM_ADMIN_CHAT_FLOOD", '^3', getString(plugCvar[Tag]), '^4');
+			if (getNum(plugCvar[plug_log]) == 1)
+				logCommand(langType, LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD_LOG", getString(plugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP));
+			flood[id] = false;
 		}
-		if( getNum( plugCvar[plug_log] ) == 1 )
-			logCommand( langType, LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD_LOG", getString(plugCvar[Tag]), getInfo( id, INFO_NAME ), getInfo( id, INFO_AUTHID ), getInfo( id, INFO_IP ));
-		flood[ id ] = false;
 	}
-}
+#endif
 
 public showAdvertise( id )
 {
@@ -872,12 +872,13 @@ getNum( text )
 	num = get_pcvar_num(text);
 	return num;
 }
-
-Float:getFloat(text)
-{
-	new Float:float = get_pcvar_float(text);
-	return float;
-} 
+#if AMXX_VERSION_NUM < 183
+	Float:getFloat(text)
+	{
+		new Float:float = get_pcvar_float(text);
+		return float;
+	} 
+#endif
 
 registersPrecache()
 {
@@ -895,7 +896,9 @@ registersInit()
 	
 	for(new i; i < sizeof allBasicOnChatCommads; ++i)
 		register_concmd(allBasicOnChatCommads[i], "hookBasicOnChatCommand");
-	register_clcmd("say_team", "hookAdminChat");
+	#if AMXX_VERSION_NUM < 183
+		register_clcmd("say_team", "hookAdminChat");
+	#endif
 	register_clcmd("login", "cmdPass");
 	register_concmd("amx_cvar", "cvarFunc");
 	register_concmd("amx_reloadadmins", "reloadLogin");
@@ -956,7 +959,7 @@ stock bool:CheckName( id )
 
 WriteCfg( bool:exist )
 {
-	if(exist)
+	if (exist)
 		delete_file(cfgFile);
 	new line[121];
 	write_file(cfgFile, "// *ROM-Protect" , newLine);
@@ -967,9 +970,11 @@ WriteCfg( bool:exist )
 	write_file(cfgFile, "// O productie FioriGinal.ro - site : www.fioriginal.ro" , newLine );
 	write_file(cfgFile, "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html" , newLine);
 	write_file(cfgFile, "// Link sursa : https://github.com/luxxxoor/ROM-Protect", newLine);
+	
 	write_file(cfgFile, " " , newLine);
 	write_file(cfgFile, " " , newLine);
 	write_file(cfgFile, " " , newLine);
+	
 	write_file(cfgFile, "// Verificare daca CFG-ul a fost executat cu succes." , newLine);
 	write_file(cfgFile, "echo ^"*ROM-Protect : Fisierul rom_protect.cfg a fost gasit. Incep protejarea serverului.^"" , newLine);
 	write_file(cfgFile, "// Cvar      : rom_cmd-bug" , newLine);
@@ -989,6 +994,7 @@ WriteCfg( bool:exist )
 	else
 		write_file(cfgFile, "rom_cmd-bug ^"1^"" , newLine);
 	write_file( cfgFile, " " , newLine );
+	
 	write_file( cfgFile, "// Cvar      : rom_spec-bug" , newLine );
 	write_file( cfgFile, "// Scop      : Urmareste activitatea playerilor si opreste schimbarea echipei, pentru a opri specbug." , newLine );
 	write_file( cfgFile, "// Impact    : Serverul primeste crash in momentul in care se apeleaza la acest bug." , newLine );
@@ -1003,30 +1009,34 @@ WriteCfg( bool:exist )
 	else
 		write_file( cfgFile, "rom_spec-bug ^"1^"" , newLine );
 	write_file( cfgFile, " " , newLine );
-	write_file( cfgFile, "// Cvar      : rom_admin_chat_flood" , newLine );
-	write_file( cfgFile, "// Scop      : Urmareste activitatea playerilor care folosesc chat-ul adminilor, daca persoanele incearca sa floodeze acest chat sunt opriti fortat." , newLine );
-	write_file( cfgFile, "// Impact    : Serverul nu pateste nimic, insa adminii primesc kick cu motivul : ^"reliable channel overflowed^"." , newLine );
-	write_file( cfgFile, "// Nota      : -" , newLine );
-	write_file( cfgFile, "// Valoarea 0: Functia este dezactivata." , newLine );
-	write_file( cfgFile, "// Valoarea 1: Atacul este blocat. [Default]" , newLine );
-	if(exist)
-	{
-		formatex(line, charsmax(line), "rom_admin_chat_flood ^"%d^"", getNum( plugCvar [ admin_chat_flood ] ));
-		write_file( cfgFile, line , newLine );
-	}
-	else
-		write_file( cfgFile, "rom_admin_chat_flood ^"1^"" , newLine );  
-	write_file( cfgFile, " " , newLine );
-	write_file( cfgFile, "// Cvar      : rom_admin_chat_flood_time ( Activat numai in cazul in care cvarul ^"rom_admin_chat_flood^" este setat pe 1 )" , newLine );
-	write_file( cfgFile, "// Utilizare : Limiteaza numarul maxim de mesaje trimise de acelasi cleint in chatul adminilor, blocand astfel atacurile tip overflow." , newLine );
-	if(exist)
-	{
-		formatex(line, charsmax(line), "rom_admin_chat_flood_time ^"%.2f^"", getFloat(plugCvar[admin_chat_flood_time]));
-		write_file( cfgFile, line , newLine );
-	}
-	else
-		write_file( cfgFile, "rom_admin_chat_flood_time ^"0.75^"" , newLine );
-	write_file( cfgFile, "" , newLine );
+
+	#if AMXX_VERSION_NUM < 183
+		write_file( cfgFile, "// Cvar      : rom_admin_chat_flood" , newLine );
+		write_file( cfgFile, "// Scop      : Urmareste activitatea playerilor care folosesc chat-ul adminilor, daca persoanele incearca sa floodeze acest chat sunt opriti fortat." , newLine );
+		write_file( cfgFile, "// Impact    : Serverul nu pateste nimic, insa adminii primesc kick cu motivul : ^"reliable channel overflowed^"." , newLine );
+		write_file( cfgFile, "// Nota      : -" , newLine );
+		write_file( cfgFile, "// Valoarea 0: Functia este dezactivata." , newLine );
+		write_file( cfgFile, "// Valoarea 1: Atacul este blocat. [Default]" , newLine );
+		if(exist)
+		{
+			formatex(line, charsmax(line), "rom_admin_chat_flood ^"%d^"", getNum( plugCvar [ admin_chat_flood ] ));
+			write_file( cfgFile, line , newLine );
+		}
+		else
+			write_file( cfgFile, "rom_admin_chat_flood ^"1^"" , newLine );  
+		write_file( cfgFile, " " , newLine );
+
+		write_file( cfgFile, "// Cvar      : rom_admin_chat_flood_time ( Activat numai in cazul in care cvarul ^"rom_admin_chat_flood^" este setat pe 1 )" , newLine );
+		write_file( cfgFile, "// Utilizare : Limiteaza numarul maxim de mesaje trimise de acelasi cleint in chatul adminilor, blocand astfel atacurile tip overflow." , newLine );
+		if(exist)
+		{
+			formatex(line, charsmax(line), "rom_admin_chat_flood_time ^"%.2f^"", getFloat(plugCvar[admin_chat_flood_time]));
+			write_file( cfgFile, line , newLine );
+		}
+		else
+			write_file( cfgFile, "rom_admin_chat_flood_time ^"0.75^"" , newLine );
+		write_file( cfgFile, "" , newLine );
+	#endif
 	write_file( cfgFile, "// Cvar      : rom_fake-players" , newLine );
 	write_file( cfgFile, "// Scop      : Urmareste persoanele conectate pe server si baneaza atunci cand numarul persoanelor cu acelasi ip il depaseste pe cel setat in cvarul rom_fake-players_limit." , newLine );
 	write_file( cfgFile, "// Impact    : Serverul experimenteaza lag peste 200+ la orice jucator prezent pe server, cateodata chiar crash." , newLine );
@@ -1041,6 +1051,7 @@ WriteCfg( bool:exist )
 	else
 		write_file( cfgFile, "rom_fake-players ^"1^"" , newLine );
 	write_file( cfgFile, " " , newLine );
+	
 	write_file( cfgFile, "// Cvar      : rom_fake-players_limit ( Activat numai in cazul in care cvarul ^"rom_fake-players^" este setat pe 1 )" , newLine );
 	write_file( cfgFile, "// Utilizare : Limiteaza numarul maxim de persoane de pe acelasi IP, blocand astfel atacurile tip fake-player." , newLine );
 	if(exist)
@@ -1050,7 +1061,8 @@ WriteCfg( bool:exist )
 	}
 	else
 		write_file( cfgFile, "rom_fake-players_limit ^"5^"" , newLine );
-	write_file( cfgFile, " " , newLine );
+	write_file( cfgFile, " " , newLine );	
+	
 	write_file( cfgFile, "// Cvar      : rom_delete_custom_hpk" , newLine );
 	write_file( cfgFile, "// Scop      : La finalul fiecarei harti, se va sterge fisierul custom.hpk." , newLine );
 	write_file( cfgFile, "// Impact    : Serverul experimenteaza probleme la schimbarea hartii, aceasta putand sa dureze si pana la 60secunde." , newLine );
@@ -1065,6 +1077,7 @@ WriteCfg( bool:exist )
 	else
 		write_file( cfgFile, "rom_delete_custom_hpk ^"1^"" , newLine );
 	write_file( cfgFile, " " , newLine );
+	
 	write_file( cfgFile, "// Cvar      : rom_delete_vault " , newLine );
 	write_file( cfgFile, "// Scop      : La finalul fiecarei harti, se va sterge fisierul vault.ini." , newLine );
 	write_file( cfgFile, "// Impact    : Serverul experimenteaza probleme la schimbarea hartii, aceasta putand sa dureze si pana la 60secunde." , newLine );
@@ -1079,7 +1092,8 @@ WriteCfg( bool:exist )
 	}
 	else
 		write_file( cfgFile, "rom_delete_vault ^"1^"" , newLine );
-	write_file( cfgFile, " " , newLine );
+	write_file( cfgFile, " " , newLine );	
+	
 	write_file( cfgFile, "// Cvar      : rom_advertise" , newLine );
 	write_file( cfgFile, "// Efect     : Afiseaza un mesaj prin care anunta clientii ca serverul este protejat de *ROM-Protect." , newLine );
 	write_file( cfgFile, "// Valoarea 0: Mesajele sunt dezactivate." , newLine );
@@ -1091,7 +1105,8 @@ WriteCfg( bool:exist )
 	}
 	else
 		write_file( cfgFile, "rom_advertise ^"1^"" , newLine );
-	write_file( cfgFile, " " , newLine );
+	write_file( cfgFile, " " , newLine );	
+
 	write_file( cfgFile, "// Cvar      : rom_advertise_time ( Activat numai in cazul in care cvarul ^"rom_advertise^" este setat pe 1 )" , newLine );
 	write_file( cfgFile, "// Utilizare : Seteaza ca mesajul sa apara o data la (cat este setat cvarul) secunda/secunde. " , newLine );
 	if(exist)
@@ -1102,6 +1117,7 @@ WriteCfg( bool:exist )
 	else
 		write_file( cfgFile, "rom_advertise_time ^"120^"" , newLine );
 	write_file( cfgFile, " " , newLine );
+	
 	write_file( cfgFile, "// Cvar      : rom_warn " , newLine );
 	write_file( cfgFile, "// Efect     : Afiseaza mesaje prin care anunta clientii care incearca sa distube activitatea normala a serverului. " , newLine );
 	write_file( cfgFile, "// Valoarea 0: Mesajele sunt dezactivate." , newLine );
@@ -1114,18 +1130,20 @@ WriteCfg( bool:exist )
 	else
 		write_file( cfgFile, "rom_warn ^"1^"" , newLine );
 	write_file( cfgFile, " " , newLine );
+	
 	write_file( cfgFile, "// Cvar  : rom_log" , newLine );
 	write_file( cfgFile, "// Efect : Permite sau nu plugin-ului sa ne creeze fisiere.log." , newLine );
 	write_file( cfgFile, "// Valoarea 0: Functia este dezactivata." , newLine );
 	write_file( cfgFile, "// Valoarea 1: Functia este activata." , newLine );
 	if(exist)
-		{
+	{
 		formatex(line, charsmax(line), "rom_log ^"%d^"", getNum( plugCvar [ plug_log ] ));
 		write_file( cfgFile, line , newLine );
 	}
 	else
 		write_file( cfgFile, "rom_log ^"1^"" , newLine );
 	write_file( cfgFile, " " , newLine );
+	
 	write_file( cfgFile, "// Cvar      : rom_admin_login" , newLine );
 	write_file( cfgFile, "// Scop      : Permite autentificarea adminilor prin comanda ^"login parola^" in consola (nu necesita setinfo)" , newLine );
 	write_file( cfgFile, "// Impact    : Parolele adminilor sunt foarte usor de furat in ziua de astazi, e destul doar sa intri pe un server iar parola ta dispare." , newLine );
@@ -1134,35 +1152,38 @@ WriteCfg( bool:exist )
 	write_file( cfgFile, "// Valoarea 0: Functie este dezactivata." , newLine );
 	write_file( cfgFile, "// Valoarea 1: Adminele sunt protejate. [Default]" , newLine );
 	if(exist)
-		{
+	{
 		formatex(line, charsmax(line), "rom_admin_login ^"%d^"", getNum( plugCvar [ admin_login ] ));
 		write_file( cfgFile, line , newLine );
 	}
 	else
 		write_file( cfgFile, "rom_admin_login ^"1^"" , newLine );
-	write_file( cfgFile, " " , newLine );
+	write_file( cfgFile, " " , newLine );	
+	
 	write_file( cfgFile, "// Cvar  : rom_admin_login_file ( Activat numai in cazul in care cvarul ^"rom_admin_login^" este setat pe 1 )" , newLine );
 	write_file( cfgFile, "// Efect : Selecteaza fisierul de unde sa fie citite adminele cu flag ^"f^"" , newLine );
 	if(exist)
-		{
+	{
 		formatex(line, charsmax(line), "rom_admin_login_file ^"%s^"", getString( plugCvar [ admin_login_file ] ));
 		write_file( cfgFile, line , newLine );
 	}
 	else
 		write_file( cfgFile, "rom_admin_login_file ^"users_login.ini^"" , newLine );
-	write_file( cfgFile, " " , newLine );
+	write_file( cfgFile, " " , newLine );	
+	
 	write_file( cfgFile, "// Cvar  : rom_admin_login_debug ( Activat numai in cazul in care cvarul ^"rom_admin_login^" este setat pe 1 )" , newLine );
 	write_file( cfgFile, "// Efect : In cazul in care adminele nu se incarca corect acesta va printa in consola serverului argumentele citite (nume - parola - acces - flag)" , newLine );
 	write_file( cfgFile, "// Valoarea 0: Functie este dezactivata. [Default]" , newLine );
 	write_file( cfgFile, "// Valoarea 1: Argumentele sunt printate in consola. " , newLine );
 	if(exist)
-		{
+	{
 		formatex(line, charsmax(line), "rom_admin_login_debug ^"%d^"", getNum( plugCvar [ admin_login_debug ] ));
 		write_file( cfgFile, line , newLine );
 	}
 	else
 		write_file( cfgFile, "rom_admin_login_debug ^"0^"" , newLine );
-	write_file( cfgFile, " " , newLine );
+	write_file( cfgFile, " " , newLine );	
+	
 	write_file( cfgFile, "// Cvar      : rom_utf8-bom" , newLine );
 	write_file( cfgFile, "// Scop      : Verifica fiecare fisier .res in maps, si daca descopera caractere UTF8-BOM le elimina." , newLine );
 	write_file( cfgFile, "// Impact    : Serverul da crash cu eroarea : Host_Error: PF_precache_generic_I: Bad string." , newLine );
@@ -1170,24 +1191,26 @@ WriteCfg( bool:exist )
 	write_file( cfgFile, "// Valoarea 0: Functie este dezactivata." , newLine );
 	write_file( cfgFile, "// Valoarea 1: Fisierul este decontaminat. [Default]" , newLine );
 	if(exist)
-		{
+	{
 		formatex(line, charsmax(line), "rom_utf8-bom ^"%d^"", getNum( plugCvar [ utf8_bom ] ));
 		write_file( cfgFile, line , newLine );
 	}
 	else
 		write_file( cfgFile, "rom_utf8-bom ^"1^"" , newLine );
 	write_file( cfgFile, " " , newLine );
+	
 	write_file( cfgFile, "// Cvar      : rom_tag " , newLine );
 	write_file( cfgFile, "// Utilizare : Seteaza tag-ul pluginului. (Numele acestuia)" , newLine );
 	write_file( cfgFile, "// Nota      : Incepand de la versiunea 1.0.2s, pluginul *ROM-Protect devine mult mai primitor si te lasa chiar sa ii schimbi numele." , newLine );
 	if(exist)
-		{
+	{
 		formatex(line, charsmax(line), "rom_tag ^"%s^"", getString( plugCvar [ Tag ] ));
 		write_file( cfgFile, line , newLine );
 	}
 	else
-		write_file( cfgFile, "rom_tag ^"*ROM-Protect^"" , newLine );
+		write_file( cfgFile, "rom_tag ^"*ROM-Protect^"" , newLine );	
 	write_file( cfgFile, " " , newLine );
+	
 	write_file( cfgFile, "// Cvar      : rom_color-bug " , newLine );
 	write_file( cfgFile, "// Scop      : Urmareste chatul si opeste bugurile de tip color-bug care alerteaza playerii si adminii." , newLine );
 	write_file( cfgFile, "// Impact    : Serverul nu pateste nimic, insa playerii sau adminii vor fi alertati de culorile folosite de unul din clienti." , newLine );
@@ -1195,13 +1218,14 @@ WriteCfg( bool:exist )
 	write_file( cfgFile, "// Valoarea 0: Functia este dezactivata." , newLine );
 	write_file( cfgFile, "// Valoarea 1: Bug-ul este blocat. [Default]" , newLine );
 	if(exist)
-		{
+	{
 		formatex(line, charsmax(line), "rom_color-bug ^"%d^"", getNum( plugCvar [ color_bug ] ));
 		write_file( cfgFile, line , newLine );
 	}
 	else
 		write_file( cfgFile, "rom_color-bug ^"1^"" , newLine );
 	write_file( cfgFile, " " , newLine );
+	
 	write_file( cfgFile, "// Cvar      : rom_motdfile " , newLine );
 	write_file( cfgFile, "// Scop      : Urmareste activitatea adminilor prin comanda amx_cvar si incearca sa opreasca modificare cvarului motdfile intr-un fisier .ini." , newLine );
 	write_file( cfgFile, "// Impact    : Serverul nu pateste nimic, insa adminul care foloseste acest exploit poate fura date importante din server, precum lista de admini, lista de pluginuri etc ." , newLine );
@@ -1209,13 +1233,14 @@ WriteCfg( bool:exist )
 	write_file( cfgFile, "// Valoarea 0: Functia este dezactivata." , newLine );
 	write_file( cfgFile, "// Valoarea 1: Bug-ul este blocat. [Default]" , newLine );
 	if(exist)
-		{
+	{
 		formatex(line, charsmax(line), "rom_motdfile ^"%d^"", getNum( plugCvar [ motdfile ] ));
 		write_file( cfgFile, line , newLine );
 	}
 	else
-		write_file( cfgFile, "rom_motdfile ^"1^"" , newLine );
+		write_file( cfgFile, "rom_motdfile ^"1^"" , newLine );	
 	write_file( cfgFile, " " , newLine );
+	
 	write_file( cfgFile, "// Cvar      : rom_anti-pause " , newLine );
 	write_file( cfgFile, "// Scop      : Urmareste ca pluginul de protectie ^"ROM-Protect^" sa nu poata fi pus pe pauza de catre un raufacator." , newLine );
 	write_file( cfgFile, "// Impact    : Serverul nu mai este protejat de plugin, acesta fiind expus la mai multe exploituri." , newLine );
@@ -1223,7 +1248,7 @@ WriteCfg( bool:exist )
 	write_file( cfgFile, "// Valoarea 0: Functia este dezactivata." , newLine );
 	write_file( cfgFile, "// Valoarea 1: Bug-ul este blocat. [Default]" , newLine );
 	if(exist)
-		{
+	{
 		formatex(line, charsmax(line), "rom_anti-pause ^"%d^"", getNum(plugCvar[anti_pause]) );
 		write_file( cfgFile, line , newLine );
 	}
@@ -1234,73 +1259,69 @@ WriteCfg( bool:exist )
 
 WriteLang( bool:exist )
 	{
-	if(exist)
-		delete_file( langFile );
 	new line[121];
-	write_file( langFile, "// *ROM-Protect" , newLine );
-	write_file( langFile, "// Plugin FREE anti-flood/bug-fix pentru orice server." , newLine );
-	formatex(line, charsmax(line), "// Versiunea %s. Bulit %d", Version, Built);
-	write_file( langFile, line , newLine ); 
-	write_file( langFile, "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor" , newLine );
-	write_file( langFile, "// O productie FioriGinal.ro - site : www.fioriginal.ro" , newLine );
-	write_file( langFile, "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html" , newLine );
-	write_file( langFile, "// Link sursa : https://github.com/luxxxoor/ROM-Protect", -1);
-	write_file( langFile, " ", newLine );
-	write_file( langFile, " ", newLine );
-	write_file( langFile, " ", newLine );
-	write_file( langFile, "[en]", newLine );
-	write_file( langFile, " ", newLine );
-	if(exist)
+	if (exist)
 	{
+		delete_file(langFile);
 		const eqSize = 11;
+		
 		formatex(line, charsmax(line), "ROM_UPDATE_CFG = %L", LANG_SERVER, "ROM_UPDATE_CFG", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_UPDATE_CFG = %s : Am actualizat fisierul CFG : rom_protect.cfg.", newLine );
+		
 		formatex(line, charsmax(line), "ROM_UPDATE_LANG = %L", LANG_SERVER, "ROM_UPDATE_LANG", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_UPDATE_LANG = %s : Am actualizat fisierul LANG : rom_protect.txt.", newLine );
+		
 		#if AMXX_VERSION_NUM < 183
 			formatex(line, charsmax(line), "ROM_FAKE_PLAYERS = %L", LANG_SERVER, "ROM_FAKE_PLAYERS", "^%c", "^%s", "^%c", "^%s");
 			if( equal(line, "ML_NOTFOUND" , eqSize) )
 				write_file( langFile, line , newLine );
 			else
 				write_file( langFile, "ROM_FAKE_PLAYERS = %c%s : %cS-a observat un numar prea mare de persoane de pe ip-ul : %s .", newLine );
+			
 			formatex(line, charsmax(line), "ROM_FAKE_PLAYERS_PUNISH = %L", LANG_SERVER, "ROM_FAKE_PLAYERS_PUNISH", "^%c", "^%s", "^%c");
 			if( equal(line, "ML_NOTFOUND" , eqSize) )
 				write_file( langFile, line , newLine );
 			else
 				write_file( langFile, "ROM_FAKE_PLAYERS_PUNISH = %c%s : %cIp-ul a primit ban 30 minute pentru a nu afecta jocul.", newLine );
+				
 		#else
 			formatex(line, charsmax(line), "ROM_FAKE_PLAYERS = %L", LANG_SERVER, "ROM_FAKE_PLAYERS", "^%s", "^%s" );
 			if( equal(line, "ML_NOTFOUND" , eqSize) )
 				write_file( langFile, line , newLine );
 			else
 				write_file( langFile, "ROM_FAKE_PLAYERS = ^^3%s : ^^4S-a observat un numar prea mare de persoane de pe ip-ul : %s .", newLine );
+				
 			formatex(line, charsmax(line), "ROM_FAKE_PLAYERS_PUNISH = %L", LANG_SERVER, "ROM_FAKE_PLAYERS_PUNISH", "^%s");
 			if( equal(line, "ML_NOTFOUND" , eqSize) )
 				write_file( langFile, line , newLine );
 			else
 				write_file( langFile, "ROM_FAKE_PLAYERS_PUNISH = ^^3%s : ^^4 Ip-ul a primit ban 30 minute pentru a nu afecta jocul.", newLine );
+				
 		#endif
 		formatex(line, charsmax(line), "ROM_FAKE_PLAYERS_LOG = %L", LANG_SERVER, "ROM_FAKE_PLAYERS_LOG", "^%s", "^%s"  );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_FAKE_PLAYERS_LOG = %s : S-a depistat un atac de ^"xFake-Players^" de la IP-ul : %s .", newLine );
+			
 		formatex(line, charsmax(line), "ROM_FAKE_PLAYERS_DETECT = %L", LANG_SERVER, "ROM_FAKE_PLAYERS_DETECT", "^%s"  );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_FAKE_PLAYERS_DETECT = %s : Ai primit kick deoarece deoarece esti suspect de fake-client. Te rugam sa folosesti alt client.", newLine );
+			
 		formatex(line, charsmax(line), "ROM_FAKE_PLAYERS_DETECT_LOG = %L", LANG_SERVER, "ROM_FAKE_PLAYERS_DETECT_LOG", "^%s", "^%s", "^%s", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_FAKE_PLAYERS_DETECT_LOG = %s : L-am detectat pe %s [ %s | %s ] ca suspect de ^"xFake-Players^" sau ^"xSpammer^".", newLine );
+			
 		#if AMXX_VERSION_NUM < 183
 			formatex(line, charsmax(line), "ROM_PLUGIN_PAUSE = %L", LANG_SERVER, "ROM_PLUGIN_PAUSE", "^%c", "^%s", "^%c" );
 			if( equal(line, "ML_NOTFOUND" , eqSize) )
@@ -1314,11 +1335,13 @@ WriteLang( bool:exist )
 			else
 				write_file( langFile, "ROM_PLUGIN_PAUSE = ^^3%s : ^^4Ne pare rau, dar din anumite motive, acest plugin nu poate fi pus pe pauza.", newLine );
 		#endif
+		
 		formatex(line, charsmax(line), "ROM_PLUGIN_PAUSE_LOG = %L", LANG_SERVER, "ROM_PLUGIN_PAUSE_LOG", "^%s", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_PLUGIN_PAUSE_LOG = %s : S-a depistat o incercare a opririi pluginului de protectie %s. Operatiune a fost blocata.", newLine );
+			
 		#if AMXX_VERSION_NUM < 183 
 			formatex(line, charsmax(line), "ROM_ADMIN_WRONG_NAME = %L", LANG_SERVER, "ROM_ADMIN_WRONG_NAME", "^%c", "^%s", "^%c" );
 			if( equal(line, "ML_NOTFOUND" , eqSize) )
@@ -1332,11 +1355,13 @@ WriteLang( bool:exist )
 			else
 				write_file( langFile, "ROM_ADMIN_WRONG_NAME = ^^3%s : ^^4Nu s-a gasit nici un admin care sa poarte acest nickname.", newLine );
 		#endif
+		
 		formatex(line, charsmax(line), "ROM_ADMIN_WRONG_NAME_PRINT = %L", LANG_SERVER, "ROM_ADMIN_WRONG_NAME_PRINT", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_ADMIN_WRONG_NAME_PRINT = %s : Nu s-a gasit nici un admin care sa poarte acest nickname.", newLine );
+			
 		#if AMXX_VERSION_NUM < 183
 			formatex(line, charsmax(line), "ROM_ADMIN_WRONG_PASS = %L", LANG_SERVER, "ROM_ADMIN_WRONG_PASS", "^%c", "^%s", "^%c" );
 			if( equal(line, "ML_NOTFOUND" , eqSize) )
@@ -1350,11 +1375,13 @@ WriteLang( bool:exist )
 			else
 				write_file( langFile, "ROM_ADMIN_WRONG_PASS = ^^3%s : ^^4Parola introdusa de tine este incorecta.", newLine );
 		#endif
+		
 		formatex(line, charsmax(line), "ROM_ADMIN_WRONG_PASS_PRINT = %L", LANG_SERVER, "ROM_ADMIN_WRONG_PASS_PRINT", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_ADMIN_WRONG_PASS_PRINT = %s : Parola introdusa de tine este incorecta.", newLine );
+			
 		#if AMXX_VERSION_NUM < 183
 			formatex(line, charsmax(line), "ROM_ADMIN_LOADED = %L", LANG_SERVER, "ROM_ADMIN_LOADED", "^%c", "^%s", "^%c" );
 			if( equal(line, "ML_NOTFOUND" , eqSize) )
@@ -1368,11 +1395,13 @@ WriteLang( bool:exist )
 			else
 				write_file( langFile, "ROM_ADMIN_LOADED = ^^3%s : ^^4Admin-ul tau a fost incarcat.", newLine );
 		#endif
+		
 		formatex(line, charsmax(line), "ROM_ADMIN_LOADED_PRINT = %L", LANG_SERVER, "ROM_ADMIN_LOADED_PRINT", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_ADMIN_LOADED_PRINT = %s : Admin-ul tau a fost incarcat.", newLine );
+			
 		#if AMXX_VERSION_NUM < 183
 			formatex(line, charsmax(line), "ROM_CMD_BUG = %L", LANG_SERVER, "ROM_CMD_BUG", "^%c", "^%s", "^%c" );
 			if( equal(line, "ML_NOTFOUND" , eqSize) )
@@ -1386,16 +1415,19 @@ WriteLang( bool:exist )
 			else
 				write_file( langFile, "ROM_CMD_BUG = ^^3%s : ^^4S-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.", newLine );
 		#endif	 
+		
 		formatex(line, charsmax(line), "ROM_CMD_BUG_LOG = %L", LANG_SERVER, "ROM_CMD_BUG_LOG", "^%s", "^%s", "^%s", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_CMD_BUG_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului.", newLine );
+			
 		formatex(line, charsmax(line), "ROM_CMD_BUG_PRINT = %L", LANG_SERVER, "ROM_CMD_BUG_PRINT", "^%s");
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_CMD_BUG_PRINT = %s : S-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.", newLine );
+	
 		#if AMXX_VERSION_NUM < 183
 			formatex(line, charsmax(line), "ROM_COLOR_BUG = %L", LANG_SERVER, "ROM_COLOR_BUG", "^%c", "^%s", "^%c" );
 			if( equal(line, "ML_NOTFOUND" , eqSize) )
@@ -1409,16 +1441,19 @@ WriteLang( bool:exist )
 			else
 				write_file( langFile, "ROM_COLOR_BUG = ^^3%s : ^^4S-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.", newLine );
 		#endif
+		
 		formatex(line, charsmax(line), "ROM_COLOR_BUG_LOG = %L", LANG_SERVER, "ROM_COLOR_BUG_LOG", "^%s", "^%s", "^%s", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_COLOR_BUG_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii.", newLine );
+			
 		formatex(line, charsmax(line), "ROM_COLOR_BUG_PRINT = %L", LANG_SERVER, "ROM_COLOR_BUG_PRINT", "^%s");
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_COLOR_BUG_PRINT = %s : S-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.", newLine );
+			
 		#if AMXX_VERSION_NUM < 183
 			formatex(line, charsmax(line), "ROM_SPEC_BUG = %L", LANG_SERVER, "ROM_SPEC_BUG", "^%c", "^%s", "^%c" );
 			if( equal(line, "ML_NOTFOUND" , eqSize) )
@@ -1432,49 +1467,50 @@ WriteLang( bool:exist )
 			else
 				write_file( langFile, "ROM_SPEC_BUG = ^^3%s : ^^4Ai facut o miscare suspecta asa ca te-am mutat la echipa precedenta.", newLine );
 		#endif
+		
 		formatex(line, charsmax(line), "ROM_SPEC_BUG_LOG = %L", LANG_SERVER, "ROM_SPEC_BUG_LOG", "^%s", "^%s", "^%s", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_SPEC_BUG_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului.", newLine );
+			
 		#if AMXX_VERSION_NUM < 183
 			formatex(line, charsmax(line), "ROM_ADMIN_CHAT_FLOOD = %L", LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD", "^%c", "^%s", "^%c" );
 			if( equal(line, "ML_NOTFOUND" , eqSize) )
 				write_file( langFile, line , newLine );
 			else
 				write_file( langFile, "ROM_ADMIN_CHAT_FLOOD = %c%s : %cS-a observat un mic flood la chat primit din partea ta. Mesajele trimise de tine vor fi filtrate.", newLine );
-		#else
-			formatex(line, charsmax(line), "ROM_ADMIN_CHAT_FLOOD = %L", LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD", "^%s" );
+
+			formatex(line, charsmax(line), "ROM_ADMIN_CHAT_FLOOD_LOG = %L", LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD_LOG", "^%s", "^%s", "^%s", "^%s" );
 			if( equal(line, "ML_NOTFOUND" , eqSize) )
 				write_file( langFile, line , newLine );
 			else
-				write_file( langFile, "ROM_ADMIN_CHAT_FLOOD = ^^3%s : ^^4S-a observat un mic flood la chat primit din partea ta. Mesajele trimise de tine vor fi filtrate.", newLine );
+				write_file( langFile, "ROM_ADMIN_CHAT_FLOOD_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa dea kick adminilor de pe server.", newLine );	
 		#endif
-		formatex(line, charsmax(line), "ROM_ADMIN_CHAT_FLOOD_LOG = %L", LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD_LOG", "^%s", "^%s", "^%s", "^%s" );
-		if( equal(line, "ML_NOTFOUND" , eqSize) )
-			write_file( langFile, line , newLine );
-		else
-			write_file( langFile, "ROM_ADMIN_CHAT_FLOOD_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa dea kick adminilor de pe server.", newLine );	
 		formatex(line, charsmax(line), "ROM_FILE_NOT_FOUND = %L", LANG_SERVER, "ROM_FILE_NOT_FOUND", "^%s", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_FILE_NOT_FOUND = %s : Fisierul %s nu exista.", newLine );
+			
 		formatex(line, charsmax(line), "ROM_ADMIN_DEBUG = %L", LANG_SERVER, "ROM_ADMIN_DEBUG", "^%s", "^%s", "^%s", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_ADMIN_DEBUG = Nume : %s - Parola : %s - Acces : %s - Flag : %s", newLine );
+			
 		formatex(line, charsmax(line), "ROM_MOTDFILE = %L", LANG_SERVER, "ROM_MOTDFILE", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_MOTDFILE = %s : S-a detectat o miscare suspecta din partea ta, comanda ta a fost blocata.", newLine );
+			
 		formatex(line, charsmax(line), "ROM_MOTDFILE_LOG = %L", LANG_SERVER, "ROM_MOTDFILE_LOG", "^%s", "^%s", "^%s", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_MOTDFILE_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca cvar-ul ^"motdfile^" ca sa fure informatii din acest server.", newLine );	
+			
 		#if AMXX_VERSION_NUM < 183
 			formatex(line, charsmax(line), "ROM_ADVERTISE = %L", LANG_SERVER, "ROM_ADVERTISE", "^%c", "^%s", "^%c", "^%c", "^%s", "^%c", "^%c", "^%s", "^%c" );
 			if( equal(line, "ML_NOTFOUND" , eqSize) )
@@ -1491,8 +1527,22 @@ WriteLang( bool:exist )
 	}
 	else
 	{
+		write_file( langFile, "// *ROM-Protect" , newLine );
+		write_file( langFile, "// Plugin FREE anti-flood/bug-fix pentru orice server." , newLine );
+		formatex(line, charsmax(line), "// Versiunea %s. Bulit %d", Version, Built);
+		write_file( langFile, line , newLine ); 
+		write_file( langFile, "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor" , newLine );
+		write_file( langFile, "// O productie FioriGinal.ro - site : www.fioriginal.ro" , newLine );
+		write_file( langFile, "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html" , newLine );
+		write_file( langFile, "// Link sursa : https://github.com/luxxxoor/ROM-Protect", -1);
+		write_file( langFile, " ", newLine );
+		write_file( langFile, " ", newLine );
+		write_file( langFile, " ", newLine );
+		write_file( langFile, "[en]", newLine );
+		write_file( langFile, " ", newLine );
 		write_file( langFile, "ROM_UPDATE_CFG = %s : Am actualizat fisierul CFG : rom_protect.cfg.", newLine );
 		write_file( langFile, "ROM_UPDATE_LANG = %s : Am actualizat fisierul LANG : rom_protect.txt.", newLine );
+		
 		#if AMXX_VERSION_NUM < 183
 			write_file( langFile, "ROM_FAKE_PLAYERS = %c%s : %cS-a observat un numar prea mare de persoane de pe ip-ul : %s .", newLine );
 			write_file( langFile, "ROM_FAKE_PLAYERS_PUNISH = %c%s : %cIp-ul a primit ban 30 minute pentru a nu afecta jocul.", newLine );
@@ -1500,63 +1550,79 @@ WriteLang( bool:exist )
 			write_file( langFile, "ROM_FAKE_PLAYERS = ^^3%s : ^^4S-a observat un numar prea mare de persoane de pe ip-ul : %s .", newLine );
 			write_file( langFile, "ROM_FAKE_PLAYERS_PUNISH = ^^3%s : ^^4 Ip-ul a primit ban 30 minute pentru a nu afecta jocul.", newLine );
 		#endif
+		
 		write_file( langFile, "ROM_FAKE_PLAYERS_LOG = %s : S-a depistat un atac de ^"xFake-Players^" de la IP-ul : %s .", newLine );
 		write_file( langFile, "ROM_FAKE_PLAYERS_DETECT = %s : Ai primit kick deoarece deoarece esti suspect de fake-client. Te rugam sa folosesti alt client.", newLine );
 		write_file( langFile, "ROM_FAKE_PLAYERS_DETECT_LOG = %s : L-am detectat pe %s [ %s | %s ] ca suspect de ^"xFake-Players^" sau ^"xSpammer^".", newLine );
+		
 		#if AMXX_VERSION_NUM < 183
 			write_file( langFile, "ROM_PLUGIN_PAUSE = %c%s : %cNe pare rau, dar din anumite motive, acest plugin nu poate fi pus pe pauza.", newLine );
 		#else
 			write_file( langFile, "ROM_PLUGIN_PAUSE = ^^3%s : ^^4Ne pare rau, dar din anumite motive, acest plugin nu poate fi pus pe pauza.", newLine );
 		#endif
+		
 		write_file( langFile, "ROM_PLUGIN_PAUSE_LOG = %s : S-a depistat o incercare a opririi pluginului de protectie %s. Operatiune a fost blocata.", newLine );
+		
 		#if AMXX_VERSION_NUM < 183 
 			write_file( langFile, "ROM_ADMIN_WRONG_NAME = %c%s : %cNu s-a gasit nici un admin care sa poarte acest nickname.", newLine );
 		#else
 			write_file( langFile, "ROM_ADMIN_WRONG_NAME = ^^3%s : ^^4Nu s-a gasit nici un admin care sa poarte acest nickname.", newLine );
 		#endif
+		
 		write_file( langFile, "ROM_ADMIN_WRONG_NAME_PRINT = %s : Nu s-a gasit nici un admin care sa poarte acest nickname.", newLine );
+		
 		#if AMXX_VERSION_NUM < 183
 			write_file( langFile, "ROM_ADMIN_WRONG_PASS = %c%s : %cParola introdusa de tine este incorecta.", newLine );
 		#else
 			write_file( langFile, "ROM_ADMIN_WRONG_PASS = ^^3%s : ^^4Parola introdusa de tine este incorecta.", newLine );
 		#endif
+		
 		write_file( langFile, "ROM_ADMIN_WRONG_PASS_PRINT = %s : Parola introdusa de tine este incorecta.", newLine );
+		
 		#if AMXX_VERSION_NUM < 183
 			write_file( langFile, "ROM_ADMIN_LOADED = %c%s : %cAdmin-ul tau a fost incarcat.", newLine );
 		#else
 			write_file( langFile, "ROM_ADMIN_LOADED = ^^3%s : ^^4Admin-ul tau a fost incarcat.", newLine );
 		#endif
+		
 		write_file( langFile, "ROM_ADMIN_LOADED_PRINT = %s : Admin-ul tau a fost incarcat.", newLine );
+		
 		#if AMXX_VERSION_NUM < 183
 			write_file( langFile, "ROM_CMD_BUG = %c%s : %cS-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.", newLine );
 		#else
 			write_file( langFile, "ROM_CMD_BUG = ^^3%s : ^^4S-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.", newLine );
 		#endif
+		
 		write_file(langFile, "ROM_CMD_BUG_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului.", newLine );
 		write_file(langFile, "ROM_CMD_BUG_PRINT = %s : S-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.", newLine);
+		
 		#if AMXX_VERSION_NUM < 183
 			write_file( langFile, "ROM_COLOR_BUG = %c%s : %cS-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.", newLine );
 		#else
 			write_file( langFile, "ROM_COLOR_BUG = ^^3%s : ^^4S-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.", newLine );
 		#endif
+		
 		write_file( langFile, "ROM_COLOR_BUG_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii.", newLine );
 		write_file(langFile, "ROM_COLOR_BUG_PRINT = %s : S-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.", newLine);		
+		
 		#if AMXX_VERSION_NUM < 183
 			write_file( langFile, "ROM_SPEC_BUG = %c%s : %cAi facut o miscare suspecta asa ca te-am mutat la echipa precedenta.", newLine );
 		#else
 			write_file( langFile, "ROM_SPEC_BUG = ^^3%s : ^^4Ai facut o miscare suspecta asa ca te-am mutat la echipa precedenta.", newLine );
 		#endif
+		
 		write_file( langFile, "ROM_SPEC_BUG_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului.", newLine );
+		
 		#if AMXX_VERSION_NUM < 183
 			write_file( langFile, "ROM_ADMIN_CHAT_FLOOD = %c%s : %cS-a observat un mic flood la chat primit din partea ta. Mesajele trimise de tine vor fi filtrate.", newLine );
-		#else
-			write_file( langFile, "ROM_ADMIN_CHAT_FLOOD = ^^3%s : ^^4S-a observat un mic flood la chat primit din partea ta. Mesajele trimise de tine vor fi filtrate.", newLine );
+			write_file( langFile, "ROM_ADMIN_CHAT_FLOOD_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa dea kick adminilor de pe server.", newLine );	
 		#endif
-		write_file( langFile, "ROM_ADMIN_CHAT_FLOOD_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa dea kick adminilor de pe server.", newLine );	
+		
 		write_file( langFile, "ROM_FILE_NOT_FOUND = %s : Fisierul %s nu exista.", newLine );
 		write_file( langFile, "ROM_ADMIN_DEBUG = Nume : %s - Parola : %s - Acces : %s - Flag : %s", newLine );
 		write_file( langFile, "ROM_MOTDFILE = %s : S-a detectat o miscare suspecta din partea ta, comanda ta a fost blocata.", newLine );
 		write_file( langFile, "ROM_MOTDFILE_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca cvar-ul ^"motdfile^" ca sa fure informatii din acest server.", newLine );	
+		
 		#if AMXX_VERSION_NUM < 183
 			write_file( langFile, "ROM_ADVERTISE = %c%s :%c Acest server este supravegheat de pluginul de protectie %c%s%c versiunea %c%s%c .", newLine );
 		#else
