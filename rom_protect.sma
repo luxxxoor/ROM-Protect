@@ -24,7 +24,7 @@ new sz_MenuText[MAX_PLAYERS + 1][ MAX_PLAYERS],
 	bool:Name[MAX_PLAYERS + 1], bool:Admin[MAX_PLAYERS + 1], g_szFile[128], last_pass[MAX_PLAYERS + 1][MAX_PLAYERS];
 
 static const Version[]     = "1.0.4b-dev",
-			 Built         = 28,
+			 Built         = 29,
 			 pluginName[] = "ROM-Protect",
 			 Terrorist[]   = "#Terrorist_Select",
 			 CT_Select[]   = "#CT_Select",
@@ -214,7 +214,6 @@ public CheckCfg()
 			cfg_file = false;
 			if( getNum( plugCvar[plug_log] ) == 1 )
 				logCommand( langType, LANG_SERVER, "ROM_UPDATE_CFG", getString(plugCvar[Tag]) );
-			server_print( langType, LANG_SERVER, "ROM_UPDATE_CFG", getString(plugCvar[Tag]) );
 		}
 	}
 }
@@ -242,7 +241,6 @@ public CheckLang()
 			isLangUsed = true;
 			if (getNum(plugCvar[plug_log]) == 1)
 				logCommand(langType, LANG_SERVER, "ROM_UPDATE_LANG", getString(plugCvar[Tag]));
-			server_print(langType, LANG_SERVER, "ROM_UPDATE_LANG", getString(plugCvar[Tag]));
 			WriteLang(true);
 		}
 	}
@@ -299,7 +297,6 @@ public client_connect(id)
 				if( ++cnt[ id ] > getNum( plugCvar[fake_players_limit] ) )
 				{
 					server_cmd( "addip ^"30^" ^"%s^";wait;writeip", address );
-					server_print( langType, LANG_SERVER, "ROM_FAKE_PLAYERS_LOG", getString(plugCvar[Tag]), address );
 					if( getNum( plugCvar[plug_warn] ) == 1 )
 					{
 						#if AMXX_VERSION_NUM < 183
@@ -329,71 +326,71 @@ public client_disconnect(id)
 	}
 }
 
-public plugin_end( )
+public plugin_end()
 {
-	if( getNum( plugCvar[delete_vault] ) != 0 )
+	if (getNum(plugCvar[delete_vault]) != 0)
 	{
-		new g_baseDir[ 128 ];
-		new text[ 200 ];
-		get_basedir( g_baseDir,127 );
-		format( g_baseDir,127, "%s/data/vault.ini", g_baseDir );
-		if( file_exists( g_baseDir ) )
+		new baseDir[128];
+		new text[200] ;
+		get_basedir(baseDir, charsmax(baseDir));
+		formatex(baseDir, charsmax(baseDir), "%s/data/vault.ini", baseDir);
+		if (file_exists(baseDir))
 		{
-			delete_file( g_baseDir );
-			if( getNum( plugCvar[delete_vault] ) == 2 )
+			delete_file(baseDir);
+			if (getNum( plugCvar[delete_vault]) == 2)
 			{
-				formatex( text, charsmax(text) , "server_language ro", g_baseDir);
-				write_file( g_baseDir, text , newLine );
+				formatex(text, charsmax(text) , "server_language ro", baseDir);
+				write_file(baseDir, text, newLine);
 			}
-			if( getNum( plugCvar[delete_vault] ) == 1 )
+			if (getNum(plugCvar[delete_vault]) == 1)
 			{
-				formatex( text, charsmax(text), "server_language en", g_baseDir );
-				write_file( g_baseDir, text, newLine ) ;
+				formatex(text, charsmax(text), "server_language en", baseDir);
+				write_file( baseDir, text, newLine);
 			}
 		}
 	}
-	if( getNum( plugCvar[delete_custom_hpk] ) == 1 )
+	if (getNum(plugCvar[delete_custom_hpk]) == 1)
 	{
-		new szDir[] = "/", DirPointer, szFile[ 32 ];
+		new baseDir[] = "/", dirPointer, File[ 32 ];
 		
-		DirPointer = open_dir( szDir, "", 0 );
+		dirPointer = open_dir(baseDir, "", 0);
 		
-		while( next_file( DirPointer, szFile, charsmax (szFile) ) )
+		while (next_file(dirPointer, File, charsmax(File)))
 		{
-			if(szFile[ 0 ] == '.')
+			if (File[0] == '.')
 				continue;
 			
-			if( containi( szFile, "custom.hpk" ) != -1 )
+			if (containi( File, "custom.hpk" ) != -1)
 			{
-				delete_file( szFile );
+				delete_file(File);
 				break;
 			}
 		}
-		close_dir( DirPointer );
+		close_dir(dirPointer);
 	}
 	return PLUGIN_CONTINUE;
 }
 
 
-public client_infochanged( id )
+public client_infochanged(id)
 {
-	if ( !is_user_connected( id ) )
+	if (!is_user_connected(id))
 		return PLUGIN_CONTINUE;
 		
-	static newname[ MAX_NAME_LENGTH ], oldname[ MAX_NAME_LENGTH ];
-	get_user_name( id, oldname, charsmax( oldname ) );
-	get_user_info( id, "name", newname, charsmax( newname ));
+	static newName[MAX_NAME_LENGTH], oldName[MAX_NAME_LENGTH];
+	get_user_name(id, oldName, charsmax(oldName));
+	get_user_info(id, "name", newName, charsmax(newName));
 	
-	if( getNum( plugCvar[cmd_bug] )  == 1 )
+	if (getNum(plugCvar[cmd_bug]) == 1)
 	{
-		stringFilter( newname, charsmax(newname) );
-		set_user_info( id, "name", newname );
+		stringFilter(newName, charsmax(newName));
+		set_user_info(id, "name", newName);
 	}
 	
-	if ( !equal( newname, oldname ) && Admin[ id ] )
+	if (!equali(newName, oldName) && Admin[id])
 	{
-		Admin[ id ] = false;
-		remove_user_flags( id );
+		Admin[id] = false;
+		remove_user_flags(id);
 	}
 	
 	return PLUGIN_CONTINUE;
@@ -401,72 +398,72 @@ public client_infochanged( id )
 
 public plugin_pause()
 {
-	if ( getNum(plugCvar[anti_pause]) == 1 )
+	if (getNum(plugCvar[anti_pause]) == 1)
 	{
-		server_print(langType, LANG_SERVER, "ROM_PLUGIN_PAUSE_LOG", getString(plugCvar[Tag]) );
-		if ( getNum(plugCvar[plug_warn]) == 1)
+		if (getNum(plugCvar[plug_warn]) == 1)
 		{
 			#if AMXX_VERSION_NUM < 183
-				ColorChat( 0, GREY, langType, LANG_PLAYER, "ROM_PLUGIN_PAUSE", '^3', getString(plugCvar[Tag]), '^4' );
+				ColorChat(0, GREY, langType, LANG_PLAYER, "ROM_PLUGIN_PAUSE", '^3', getString(plugCvar[Tag]), '^4');
 			#else
-				client_print_color( 0, print_team_grey, langType, LANG_PLAYER, "ROM_PLUGIN_PAUSE", getString(plugCvar[Tag]) );
+				client_print_color(0, print_team_grey, langType, LANG_PLAYER, "ROM_PLUGIN_PAUSE", getString(plugCvar[Tag]));
 			#endif
 		}
-		if( getNum(plugCvar[plug_log]) == 1)
-				logCommand( langType, LANG_SERVER, "ROM_PLUGIN_PAUSE_LOG", getString(plugCvar[Tag]), getString(plugCvar[Tag]) );
+		if (getNum(plugCvar[plug_log]) == 1)
+				logCommand(langType, LANG_SERVER, "ROM_PLUGIN_PAUSE_LOG", getString(plugCvar[Tag]), getString(plugCvar[Tag]));
 		server_cmd("amxx unpause rom_protect.amxx");
 	}
 }
 
-public cmdPass( id )
+public cmdPass(id)
 {
-	if( getNum( plugCvar[admin_login] ) == 0)
+	if (getNum(plugCvar[admin_login]) == 0)
 		return PLUGIN_HANDLED;
-	new name[ MAX_NAME_LENGTH ], pass[ 32 ];
-	get_user_name( id, name, charsmax( name ) );
-	read_argv( 1, pass, charsmax( pass ) );
-	remove_quotes( pass );
+	new name[MAX_NAME_LENGTH], pass[32];
+	get_user_name(id, name, charsmax(name));
+	read_argv(1, pass, charsmax(pass));
+	remove_quotes(pass);
 	
-	loadAdminLogin( );
-	getAccess( id, pass );
+	loadAdminLogin();
+	getAccess(id, pass);
 	
-	if(!Admin[ id ])
+	if (!Admin[id])
 	{
-		if(!Name[ id ])
+		if (!Name[ id ])
 		{
 			#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, langType, id, "ROM_ADMIN_WRONG_NAME", '^3', getString(plugCvar[Tag]), '^4');
+				ColorChat(id, GREY, langType, id, "ROM_ADMIN_WRONG_NAME", '^3', getString(plugCvar[Tag]), '^4');
 			#else
-				client_print_color( id, print_team_grey, langType, id, "ROM_ADMIN_WRONG_NAME", getString(plugCvar[Tag]) );
+				client_print_color(id, print_team_grey, langType, id, "ROM_ADMIN_WRONG_NAME", getString(plugCvar[Tag]));
 			#endif
-			client_print( id, print_console, langType, id, "ROM_ADMIN_WRONG_NAME_PRINT", getString(plugCvar[Tag]) );
+			client_print(id, print_console, langType, id, "ROM_ADMIN_WRONG_NAME_PRINT", getString(plugCvar[Tag]));
 		}
 		else
 		{
 			#if AMXX_VERSION_NUM < 183
-				ColorChat( id, GREY, langType, id, "ROM_ADMIN_WRONG_PASS", '^3', getString(plugCvar[Tag]), '^4');
+				ColorChat(id, GREY, langType, id, "ROM_ADMIN_WRONG_PASS", '^3', getString(plugCvar[Tag]), '^4');
 			#else
-				client_print_color( id, print_team_grey, langType, id, "ROM_ADMIN_WRONG_PASS", getString(plugCvar[Tag]) );
+				client_print_color(id, print_team_grey, langType, id, "ROM_ADMIN_WRONG_PASS", getString(plugCvar[Tag]));
 			#endif
-			client_print( id, print_console, langType, id, "ROM_ADMIN_WRONG_PASS_PRINT", getString(plugCvar[Tag]) );
+			client_print(id, print_console, langType, id, "ROM_ADMIN_WRONG_PASS_PRINT", getString(plugCvar[Tag]));
 		}
 	}
 	else
 	{
 		#if AMXX_VERSION_NUM < 183
-			ColorChat( id, GREY, langType, id, "ROM_ADMIN_LOADED", '^3', getString(plugCvar[Tag]), '^4');
+			ColorChat(id, GREY, langType, id, "ROM_ADMIN_LOADED", '^3', getString(plugCvar[Tag]), '^4');
 		#else
-			client_print_color( id, print_team_grey, langType, id, "ROM_ADMIN_LOADED", getString(plugCvar[Tag]) );
+			client_print_color(id, print_team_grey, langType, id, "ROM_ADMIN_LOADED", getString(plugCvar[Tag]));
 		#endif
-		client_print( id, print_console, langType, id, "ROM_ADMIN_LOADED_PRINT", getString(plugCvar[Tag]) );
+		client_print(id, print_console, langType, id, "ROM_ADMIN_LOADED_PRINT", getString(plugCvar[Tag]));
 	}
 	
 	return PLUGIN_CONTINUE;
 }
+
 #if AMXX_VERSION_NUM < 183
 	public hookAdminChat(id)
 	{
-		new said[ 2 ];
+		new said[2];
 		read_argv(1, said, charsmax(said));
 
 		if (said[0] != '@')
@@ -483,17 +480,15 @@ public cmdPass( id )
 				if (g_Flood[id] >= 3)
 				{
 					flood[id] = true;
-					set_task( 1.0, "showAdminChatFloodWarning", id );
-					g_Flooding[ id ] = nexTime + maxChat + 3.0;
+					set_task(1.0, "showAdminChatFloodWarning", id);
+					g_Flooding[id] = nexTime + maxChat + 3.0;
 					return PLUGIN_HANDLED;
 				}
 				++g_Flood[id];
 			}
 			else
-			{
 				if (g_Flood[id])
 					--g_Flood[id];
-			}
 			g_Flooding[id] = nexTime + maxChat;
 		}
 
@@ -501,92 +496,90 @@ public cmdPass( id )
 	}
 #endif
 
-public oldStyleMenusTeammenu( msg, des, rec )
+public oldStyleMenusTeammenu(msg, des, rec)
 {
-	if( is_user_connected( rec ) )
+	if (is_user_connected(rec))
 	{
-		get_msg_arg_string ( 4, sz_MenuText[ rec ], charsmax ( sz_MenuText ) );
-		if( equal( sz_MenuText[rec], Terrorist ) || equal( sz_MenuText[rec], CT_Select ))
-			set_task( 0.1, "blockSpecbugOldStyleMenus", rec );
+		get_msg_arg_string(4, sz_MenuText[rec], charsmax(sz_MenuText));
+		if (equal(sz_MenuText[rec], Terrorist) || equal(sz_MenuText[rec], CT_Select))
+			set_task(0.1, "blockSpecbugOldStyleMenus", rec);
 	}
 }
 
-public vGuiTeammenu( msg, des, rec )  
+public vGuiTeammenu(msg, des, rec)  
 {  
-	if(get_msg_arg_int( 1 ) == 26 || get_msg_arg_int( 1 ) == 27 )
+	if (get_msg_arg_int(1) == 26 || get_msg_arg_int(1) == 27)
 	{
-		num[ rec ] = get_msg_arg_int( 1 );
-		set_task( 0.1, "blockSpecbugVGui", rec );
+		num[rec] = get_msg_arg_int(1);
+		set_task(0.1, "blockSpecbugVGui", rec);
 	}
 }
 
-public blockSpecbugOldStyleMenus( id )
+public blockSpecbugOldStyleMenus(id)
 {
-	if( !is_user_alive( id ) && is_user_connected( id ) && getNum( plugCvar[spec_bug] ) == 1 )
+	if (!is_user_alive(id) && is_user_connected(id) && getNum(plugCvar[spec_bug]) == 1)
 	{
-		if( fm_get_user_team( id ) == FM_TEAM_SPECTATOR && !is_user_alive(id) )
+		if (fm_get_user_team(id) == FM_TEAM_SPECTATOR && !is_user_alive(id))
 		{
-			if( equal( sz_MenuText[id], Terrorist ) && is_user_connected( id ) )
-				fm_set_user_team( id, FM_TEAM_T );
-			if( equal( sz_MenuText[id], CT_Select ) && is_user_connected( id ) )
-				fm_set_user_team( id, FM_TEAM_CT );
-			server_print(langType, LANG_SERVER, "ROM_SPEC_BUG_LOG", getString(plugCvar[Tag]), getInfo( id, INFO_NAME ), getInfo( id, INFO_AUTHID ), getInfo( id, INFO_IP ));
-			if( getNum( plugCvar[plug_warn] ) )
-				{
+			if (equal(sz_MenuText[id], Terrorist) && is_user_connected(id))
+				fm_set_user_team(id, FM_TEAM_T);
+			if (equal(sz_MenuText[id], CT_Select) && is_user_connected(id))
+				fm_set_user_team(id, FM_TEAM_CT);
+			if (getNum(plugCvar[plug_warn]))
+			{
 				#if AMXX_VERSION_NUM < 183
-					ColorChat( id, GREY, langType, id, "ROM_SPEC_BUG", '^3', getString(plugCvar[Tag]), '^4');
+					ColorChat(id,GREY, langType, id, "ROM_SPEC_BUG", '^3', getString(plugCvar[Tag]), '^4');
 				#else
-					client_print_color( id, print_team_grey, langType, id, "ROM_SPEC_BUG", getString(plugCvar[Tag]) );
+					client_print_color(id, print_team_grey, langType, id, "ROM_SPEC_BUG", getString(plugCvar[Tag]));
 				#endif
 			}
-			if( getNum( plugCvar[plug_log] ))
-				logCommand(langType, LANG_SERVER, "ROM_SPEC_BUG_LOG", getString(plugCvar[Tag]), getInfo( id, INFO_NAME ), getInfo( id, INFO_AUTHID ), getInfo( id, INFO_IP ));
+			if (getNum(plugCvar[plug_log]))
+				logCommand(langType, LANG_SERVER, "ROM_SPEC_BUG_LOG", getString(plugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP));
 		}
-		set_task( 0.1, "blockSpecbugOldStyleMenus", id );
+		set_task(0.1, "blockSpecbugOldStyleMenus", id);
 	}
 }
 
-public blockSpecbugVGui( id )
+public blockSpecbugVGui(id)
 {
 	new bool:bug_log[MAX_PLAYERS + 1];
-	if( !is_user_alive( id ) && is_user_connected( id ) && getNum( plugCvar[spec_bug] ) == 1 )
+	if (!is_user_alive(id) && is_user_connected(id) && getNum(plugCvar[spec_bug]) == 1)
 	{
-		if(fm_get_user_team( id ) == FM_TEAM_SPECTATOR )
+		if (fm_get_user_team(id) == FM_TEAM_SPECTATOR)
 		{
-			if(num[ id ] == 26 )
+			if (num[id] == 26)
 			{
-				fm_set_user_team(id, FM_TEAM_T );
+				fm_set_user_team(id, FM_TEAM_T);
 				bug_log[id] = true;
 			}      
-			if(num[ id ] == 27 )
+			if (num[id] == 27)
 			{
-				fm_set_user_team(id, FM_TEAM_CT );
+				fm_set_user_team(id, FM_TEAM_CT);
 				bug_log[id] = true;
 			}      
-			server_print(langType, LANG_SERVER, "ROM_SPEC_BUG_LOG", getString(plugCvar[Tag]), getInfo( id, INFO_NAME ), getInfo( id, INFO_AUTHID ), getInfo( id, INFO_IP ));
-			if( getNum( plugCvar[plug_warn] ) == 1 && bug_log[id])
+			if (getNum(plugCvar[plug_warn]) == 1 && bug_log[id])
 			{
 				#if AMXX_VERSION_NUM < 183
-					ColorChat( id, GREY, langType, id, "ROM_SPEC_BUG", '^3', getString(plugCvar[Tag]), '^4');
+					ColorChat(id, GREY, langType, id, "ROM_SPEC_BUG", '^3', getString(plugCvar[Tag]), '^4');
 				#else
-					client_print_color( id, print_team_grey, langType, id, "ROM_SPEC_BUG", getString(plugCvar[Tag]) );
+					client_print_color(id, print_team_grey, langType, id, "ROM_SPEC_BUG", getString(plugCvar[Tag]));
 				#endif
 			}
-			if( getNum( plugCvar[plug_log] ) == 1 && bug_log[id])
+			if (getNum( plugCvar[plug_log]) == 1 && bug_log[id])
 			{
-				logCommand(langType, LANG_SERVER, "ROM_SPEC_BUG_LOG", getString(plugCvar[Tag]), getInfo( id, INFO_NAME ), getInfo( id, INFO_AUTHID ), getInfo( id, INFO_IP ));
+				logCommand(langType, LANG_SERVER, "ROM_SPEC_BUG_LOG", getString(plugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP));
 				bug_log[id] = false;
 			}
 		}
-		set_task( 0.1, "blockSpecbugVGui", id );    
+		set_task(0.1, "blockSpecbugVGui", id);
 	}
 }
+
 #if AMXX_VERSION_NUM < 183
 	public showAdminChatFloodWarning(id)
 	{
 		if (flood[id])
 		{
-			server_print(langType, LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD_LOG", getString(plugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP));
 			if (getNum(plugCvar[plug_warn]) == 1)
 					ColorChat(id, GREY, langType, id, "ROM_ADMIN_CHAT_FLOOD", '^3', getString(plugCvar[Tag]), '^4');
 			if (getNum(plugCvar[plug_log]) == 1)
@@ -596,39 +589,39 @@ public blockSpecbugVGui( id )
 	}
 #endif
 
-public showAdvertise( id )
+public showAdvertise(id)
 {
 	#if AMXX_VERSION_NUM < 183
-		ColorChat( id, GREY, langType, id, "ROM_ADVERTISE", '^3', getString(plugCvar[Tag]), '^4', '^3', pluginName, '^4', '^3', Version, '^4');
+		ColorChat(id, GREY, langType, id, "ROM_ADVERTISE", '^3', getString(plugCvar[Tag]), '^4', '^3', pluginName, '^4', '^3', Version, '^4');
 	#else
-		client_print_color( id, print_team_grey, langType, id, "ROM_ADVERTISE", getString(plugCvar[Tag]), pluginName, Version );
+		client_print_color(id, print_team_grey, langType, id, "ROM_ADVERTISE", getString(plugCvar[Tag]), pluginName, Version);
 	#endif
 }
 
 public cleanResFiles() 
-	{ 
-	new szMapsFolder[] = "maps"; 
-	new const szResExt[] = ".res"; 
-	new szResFile[64], iLen; 
-	new dp = open_dir(szMapsFolder, szResFile, charsmax(szResFile)); 
+{ 
+	new mapsFolder[] = "maps"; 
+	new const resExt[] = ".res"; 
+	new resFile[64], len; 
+	new dp = open_dir(mapsFolder, resFile, charsmax(resFile)); 
 	
-	if( !dp ) 
+	if (!dp) 
 		return; 
 	
-	new szFullPathFileName[128]; 
+	new fullPathFileName[128]; 
 	do 
 	{ 
-		iLen = strlen(szResFile);
-		if( iLen > 4 && equali(szResFile[iLen-4], szResExt) ) 
+		len = strlen(resFile);
+		if(len > 4 && equali(resFile[len-4], resExt)) 
 		{ 
-			if( TrieKeyExists(g_tDefaultRes, szResFile) ) 
+			if(TrieKeyExists(g_tDefaultRes, resFile)) 
 				continue;
 			
-			formatex(szFullPathFileName, charsmax(szFullPathFileName), "%s/%s", szMapsFolder, szResFile); 
-			write_file(szFullPathFileName, "/////////////////////////////////////////////////////////////^n", 0); 
+			formatex(fullPathFileName, charsmax(fullPathFileName), "%s/%s", mapsFolder, resFile); 
+			write_file(fullPathFileName, "/////////////////////////////////////////////////////////////^n", 0); 
 		} 
 	} 
-	while( next_file(dp, szResFile, charsmax(szResFile)) );
+	while(next_file(dp, resFile, charsmax(resFile)));
 	
 	close_dir(dp);
 } 
@@ -641,31 +634,30 @@ public reloadLogin(id, level, cid)
 
 public reloadDelay()
 {
-	new players[ MAX_PLAYERS ], pnum;
-	get_players( players, pnum, "ch" );
-	for( new i; i < pnum; ++i )
-		if( Admin[ players[i] ] )
-			getAccess( players[i], last_pass[ players[i] ]);
+	new players[MAX_PLAYERS], pnum;
+	get_players(players, pnum, "ch");
+	for (new i; i < pnum; ++i)
+		if (Admin[players[i]])
+			getAccess(players[i], last_pass[players[i]]);
 }
 
 public cvarFunc(id, level, cid) 
 { 
-	if( getNum( plugCvar[ motdfile ] ) == 1 )
+	if (getNum(plugCvar[motdfile]) == 1)
 	{
 		new arg[32], arg2[32]; 
 		
 		read_argv(1, arg, charsmax(arg));
 		read_argv(2, arg2, charsmax(arg2));
 		
-		if( equali(arg, "motdfile") && contain(arg2, ".ini") != -1 ) 
+		if (equali(arg, "motdfile") && contain(arg2, ".ini") != -1) 
 		{
-			server_print(langType, LANG_SERVER, "ROM_MOTDFILE_LOG", getString(plugCvar[Tag]), getInfo( id, INFO_NAME ), getInfo( id, INFO_AUTHID ), getInfo( id, INFO_IP ) );
-			console_print(id, langType, id, "ROM_MOTDFILE", getString(plugCvar[Tag]) );
-			if( getNum( plugCvar[plug_log] ) == 1 )
-				logCommand( langType, LANG_SERVER, "ROM_MOTDFILE_LOG", getString(plugCvar[Tag]), getInfo( id, INFO_NAME ), getInfo( id, INFO_AUTHID ), getInfo( id, INFO_IP ) );
+			console_print(id, langType, id, "ROM_MOTDFILE", getString(plugCvar[Tag]));
+			if (getNum(plugCvar[plug_log]) == 1)
+				logCommand(langType, LANG_SERVER, "ROM_MOTDFILE_LOG", getString(plugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP));
 			return PLUGIN_HANDLED; 
 		}
-	} 
+	}
 	
 	return PLUGIN_CONTINUE; 
 }
@@ -678,8 +670,8 @@ public hookBasicOnChatCommand(id)
 		read_args(said, charsmax(said));
 		
 		new s_said[192], bool:b_said_cmd_bug[MAX_PLAYERS + 1], bool:b_said_color_bug[MAX_PLAYERS + 1];
-		copy( s_said, charsmax( said ), said );
-		for( new i; i < sizeof s_said ; ++i )
+		copy(s_said, charsmax( said ), said);
+		for (new i; i < sizeof s_said ; ++i)
 		{
 			new j = i+1;
 			if (getNum(plugCvar[cmd_bug]) == 1 && (s_said[ i ] == '#' && isalpha(s_said[j])) || (s_said[i] == '%' && s_said[j] == 's'))
@@ -699,7 +691,6 @@ public hookBasicOnChatCommand(id)
 		
 		if (b_said_cmd_bug[id])
 		{
-			server_print(langType, LANG_SERVER, "ROM_CMD_BUG_LOG", getString(plugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP));
 			if (getNum(plugCvar[plug_warn]) == 1)
 			{
 				#if AMXX_VERSION_NUM < 183
@@ -716,7 +707,6 @@ public hookBasicOnChatCommand(id)
 		}
 		if (b_said_color_bug[id])
 		{
-			server_print(langType, LANG_SERVER, "ROM_COLOR_BUG_LOG", getString(plugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP));
 			if (getNum(plugCvar[plug_warn]) == 1)
 			{
 				#if AMXX_VERSION_NUM < 183
@@ -734,146 +724,146 @@ public hookBasicOnChatCommand(id)
 	return PLUGIN_CONTINUE;
 }
 
-public checkBot( id,const szVar[], const szValue[] )
+public checkBot(id,const szVar[], const szValue[])
 {
-    if( equal(szVar, "fps_max") && szValue[0] == 'B' )
+    if (equal(szVar, "fps_max") && szValue[0] == 'B')
     {
-		if( getNum( plugCvar[plug_log] ) == 1 )
-				logCommand( langType, LANG_SERVER, "ROM_FAKE_PLAYERS_DETECT_LOG", getString(plugCvar[Tag]), getInfo( id, INFO_NAME ), getInfo( id, INFO_AUTHID ), getInfo( id, INFO_IP ) );
-		console_print(id, langType, id, "ROM_FAKE_PLAYERS_DETECT", getString(plugCvar[Tag]) );
-		server_cmd("kick #%d ^"You got kicked. Check console.^"",get_user_userid(id));
+		if (getNum(plugCvar[plug_log]) == 1)
+				logCommand(langType, LANG_SERVER, "ROM_FAKE_PLAYERS_DETECT_LOG", getString(plugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP));
+		console_print(id, langType, id, "ROM_FAKE_PLAYERS_DETECT", getString(plugCvar[Tag]));
+		server_cmd("kick #%d ^"You got kicked. Check console.^"", get_user_userid(id));
     }
 }
 
-loadAdminLogin( )
+loadAdminLogin()
 {
-	new path[ 64 ];
-	get_localinfo( "amxx_configsdir", path, charsmax( path ) );
-	format( path, charsmax(path), "%s/%s", path, getString( plugCvar [ admin_login_file ] ) );
+	new path[64];
+	get_localinfo("amxx_configsdir", path, charsmax(path));
+	formatex(path, charsmax(path), "%s/%s", path, getString(plugCvar[admin_login_file]));
 	
-	new file = fopen( path, "r+" );
+	new file = fopen(path, "r+");
 	
-	if ( !file )
-		{
-		server_print(langType, LANG_SERVER, "ROM_FILE_NOT_FOUND", getString(plugCvar[Tag]), getString(plugCvar[admin_login_file]) );
-		if( getNum( plugCvar[plug_log] ) == 1 )
-			logCommand( langType, LANG_SERVER, "ROM_FILE_NOT_FOUND", getString(plugCvar[Tag]), getString(plugCvar[admin_login_file]) );
+	if (!file)
+	{
+		if (getNum(plugCvar[plug_log]) == 1)
+			logCommand( langType, LANG_SERVER, "ROM_FILE_NOT_FOUND", getString(plugCvar[Tag]), getString(plugCvar[admin_login_file]));
 		return;
 	}
 	
-	new text[ 121 ], name[ MAX_NAME_LENGTH ], pass[ 32 ], acc[ 26 ], flags[ 6 ];
-	for ( admin_number = 0; !feof( file ); ++admin_number )
-		{
-		fgets( file, text, charsmax( text ) );
+	new text[121], name[MAX_NAME_LENGTH], pass[32], acc[26], flags[6];
+	for (admin_number = 0; !feof( file ); ++admin_number)
+	{
+		fgets(file, text, charsmax(text));
 		
-		trim( text );
+		trim(text);
 		
-		if( ( text[ 0 ] == ';' ) || !strlen( text ) || ( text[ 0 ] == '/' ) )
+		if ((text[0] == ';') || !strlen(text) || (text[0] == '/'))
 			continue;
 		
-		if( parse( text, name, charsmax( name ), pass, charsmax( pass ), acc, charsmax( acc ), flags, charsmax( flags ) ) != 4 )
+		if (parse(text, name, charsmax(name), pass, charsmax(pass), acc, charsmax(acc), flags, charsmax(flags)) != 4)
 			continue;
 		
-		copy( loginName[ admin_number ], charsmax( loginName[ ] ),  name );
-		copy( loginPass[ admin_number ], charsmax( loginPass[ ] ),  pass );
-		copy( loginAccs[ admin_number ], charsmax( loginAccs[ ] ),  acc );
-		copy( loginFlag[ admin_number ], charsmax( loginFlag[ ] ),  flags );
+		copy(loginName[admin_number], charsmax(loginName[]),  name);
+		copy(loginPass[admin_number], charsmax(loginPass[]),  pass);
+		copy(loginAccs[admin_number], charsmax(loginAccs[]),  acc);
+		copy(loginFlag[admin_number], charsmax(loginFlag[]),  flags);
 		
-		if( getNum( plugCvar[admin_login_debug] ) == 1 )
-			server_print( langType, LANG_SERVER, "ROM_ADMIN_DEBUG", loginName[ admin_number ], loginPass[ admin_number ], loginAccs[ admin_number ], loginFlag[ admin_number ] );              
+		if (getNum(plugCvar[admin_login_debug]) == 1)
+			server_print(langType, LANG_SERVER, "ROM_ADMIN_DEBUG", loginName[admin_number], loginPass[admin_number], loginAccs[admin_number], loginFlag[admin_number]);
 	}
-	fclose( file );
+	fclose(file);
 }
 
-getAccess( const id, const userPass[] )
+getAccess (const id, const userPass[])
 {
-	static userName[ MAX_NAME_LENGTH ], acces;
-	get_user_info( id, "name", userName, charsmax( userName ) );
-	if( !(get_user_flags( id ) & ADMIN_CHAT ) )
-		remove_user_flags( id );
-	copy( last_pass[id], charsmax(last_pass[]), userPass );
-	for( new i = 1; i <= admin_number; ++i )
+	static userName[MAX_NAME_LENGTH], acces;
+	get_user_info(id, "name", userName, charsmax(userName));
+	if (!(get_user_flags(id) & ADMIN_CHAT))
+		remove_user_flags(id);
+	copy(last_pass[id], charsmax(last_pass[]), userPass);
+	for (new i = 1; i <= admin_number; ++i)
 	{
-		if(  equali( loginName[ i ], userName ) )
-			Name[ id ] = true;
+		if (equali(loginName[i], userName))
+			Name[id] = true;
 		else
-			Name[ id ] = false;
-		if( equal( loginFlag[ i ], "f" ) && Name[ id ] )
+			Name[id] = false;
+		if (equal(loginFlag[i], "f") && Name[id])
 		{
-			if( equal( loginPass[ i ], userPass ) || Admin[ id ] )
+			if (equal(loginPass[i], userPass) || Admin[id])
 			{
-				Admin[ id ] = true;
-				acces = read_flags( loginAccs[ i ] );
-				set_user_flags( id, acces );
+				Admin[id] = true;
+				acces = read_flags(loginAccs[i]);
+				set_user_flags(id, acces);
 			}
 			break;
 		}
 	}
 }
 
-logCommand( const szMsg[ ], any:... )
+logCommand (const szMsg[ ], any:...)
 {
-	new szMessage[ 256 ], szLogMessage[ 256 ];
-	vformat( szMessage, charsmax( szMessage ), szMsg , 2 );
+	new szMessage[256], szLogMessage[256];
+	vformat(szMessage, charsmax(szMessage), szMsg , 2);
 	
-	formatex( szLogMessage, charsmax( szLogMessage ), "L %s%s", getTime( ), szMessage );
+	formatex(szLogMessage, charsmax(szLogMessage), "L %s%s", getTime(), szMessage);
 	
-	write_file( g_szFile, szLogMessage, newLine );
+	server_print(szLogMessage);
+	write_file(g_szFile, szLogMessage, newLine);
 }
 
-getInfo( id, const iInfo )
+getInfo (id, const iInfo)
 {
-	new szInfoToReturn[ 64 ];
+	new szInfoToReturn[64];
 	
-	switch( iInfo )
+	switch(iInfo)
 	{
 		case INFO_NAME:
 		{
-			static szName[ 32 ];
-			get_user_name( id, szName, charsmax( szName ) );
+			static szName[32];
+			get_user_name(id, szName, charsmax(szName));
 			
-			copy( szInfoToReturn, charsmax( szInfoToReturn ), szName );
+			copy(szInfoToReturn, charsmax(szInfoToReturn), szName);
 		}
 		case INFO_IP:
 		{
-			static szIp[ 32 ];
-			get_user_ip( id, szIp, charsmax( szIp ), 1 );
+			static szIp[32];
+			get_user_ip(id, szIp, charsmax(szIp), 1);
 			
-			copy( szInfoToReturn, charsmax( szInfoToReturn ), szIp );
+			copy(szInfoToReturn, charsmax(szInfoToReturn), szIp);
 		}
 		case INFO_AUTHID:
 		{
-			static szAuthId[ 35 ];
-			get_user_authid( id, szAuthId, charsmax( szAuthId ) );
+			static szAuthId[35];
+			get_user_authid(id, szAuthId, charsmax(szAuthId));
 			
-			copy( szInfoToReturn, charsmax( szInfoToReturn ), szAuthId );
+			copy(szInfoToReturn, charsmax(szInfoToReturn), szAuthId);
 		}
 	}
 	return szInfoToReturn;
 }
 
-getTime()
+getTime ()
 {
-	static szTime[ 32 ];
+	static szTime[32];
 	get_time(" %H:%M:%S ", szTime, charsmax(szTime));
 	return szTime;
 }
 
-getString( text )
+getString (text)
 {
 	static File[32]; 
 	get_pcvar_string(text, File, charsmax(File));
 	return File;
 }
 
-getNum( text )
+getNum (text)
 {
 	static num;
 	num = get_pcvar_num(text);
 	return num;
 }
 #if AMXX_VERSION_NUM < 183
-	Float:getFloat(text)
+	Float:getFloat (text)
 	{
 		new Float:float = get_pcvar_float(text);
 		return float;
@@ -888,7 +878,7 @@ registersPrecache()
 
 registersInit()
 {
-	register_plugin( pluginName, Version, "FioriGinal.Ro" );
+	register_plugin(pluginName, Version, "FioriGinal.Ro");
 	register_cvar("rom_protect", Version, FCVAR_SERVER | FCVAR_SPONLY);
 	
 	register_message(get_user_msgid( "ShowMenu" ), "oldStyleMenusTeammenu");
@@ -904,14 +894,14 @@ registersInit()
 	register_concmd("amx_reloadadmins", "reloadLogin");
 }
 
-public stringFilter( string[], len )
+public stringFilter(string[], len)
 {
-	for( new i; i <= len; ++i )
-		if( i < MAX_NAME_LENGTH)
+	for (new i; i <= len; ++i)
+		if (i < MAX_NAME_LENGTH)
 		{
 			new j = i+1;
-			if( ( string[ i ] == '#' && isalpha(string[ j ]) ) || ( string[ i ] == '+' && isalpha(string[ j ]) ) )
-				string[ i ] = ' ';
+			if ((string[i] == '#' && isalpha(string[j])) || (string[i] == '+' && isalpha(string[j])))
+				string[i] = ' ';
 		}
 }
 
