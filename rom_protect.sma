@@ -23,8 +23,8 @@ new sz_MenuText[MAX_PLAYERS + 1][ MAX_PLAYERS],
 	num[MAX_PLAYERS + 1], cnt[MAX_PLAYERS + 1],
 	bool:Name[MAX_PLAYERS + 1], bool:Admin[MAX_PLAYERS + 1], g_szFile[128], last_pass[MAX_PLAYERS + 1][MAX_PLAYERS];
 
-static const Version[]     = "1.0.4b-dev",
-			 Built         = 29,
+static const Version[]     = "1.0.4b",
+			 Built         = 30,
 			 pluginName[] = "ROM-Protect",
 			 Terrorist[]   = "#Terrorist_Select",
 			 CT_Select[]   = "#CT_Select",
@@ -257,10 +257,7 @@ public plugin_init( )
 	registersInit();
 	
 	if( getNum(plugCvar[advertise] ) == 1 )
-	{
-		new Float:timp = get_pcvar_float(plugCvar[advertise_time]);
-		set_task(timp, "showAdvertise", _, _, _, "b", 0);
-	}
+		set_task(getFloat(plugCvar[advertise_time]), "showAdvertise", _, _, _, "b", 0);
 	
 	if( getNum( plugCvar[ utf8_bom ] ) == 1 )
 	{
@@ -589,12 +586,12 @@ public blockSpecbugVGui(id)
 	}
 #endif
 
-public showAdvertise(id)
+public showAdvertise()
 {
 	#if AMXX_VERSION_NUM < 183
-		ColorChat(id, GREY, langType, id, "ROM_ADVERTISE", '^3', getString(plugCvar[Tag]), '^4', '^3', pluginName, '^4', '^3', Version, '^4');
+		ColorChat(0, GREY, langType, LANG_PLAYER, "ROM_ADVERTISE", '^3', getString(plugCvar[Tag]), '^4', '^3', pluginName, '^4', '^3', Version, '^4');
 	#else
-		client_print_color(id, print_team_grey, langType, id, "ROM_ADVERTISE", getString(plugCvar[Tag]), pluginName, Version);
+		client_print_color(0, print_team_grey, langType, LANG_PLAYER, "ROM_ADVERTISE", getString(plugCvar[Tag]), pluginName, Version);
 	#endif
 }
 
@@ -774,7 +771,7 @@ loadAdminLogin()
 	fclose(file);
 }
 
-getAccess (const id, const userPass[])
+getAccess(const id, const userPass[])
 {
 	static userName[MAX_NAME_LENGTH], acces;
 	get_user_info(id, "name", userName, charsmax(userName));
@@ -800,7 +797,7 @@ getAccess (const id, const userPass[])
 	}
 }
 
-logCommand (const szMsg[ ], any:...)
+logCommand(const szMsg[ ], any:...)
 {
 	new szMessage[256], szLogMessage[256];
 	vformat(szMessage, charsmax(szMessage), szMsg , 2);
@@ -811,7 +808,7 @@ logCommand (const szMsg[ ], any:...)
 	write_file(g_szFile, szLogMessage, newLine);
 }
 
-getInfo (id, const iInfo)
+getInfo(id, const iInfo)
 {
 	new szInfoToReturn[64];
 	
@@ -842,33 +839,32 @@ getInfo (id, const iInfo)
 	return szInfoToReturn;
 }
 
-getTime ()
+getTime()
 {
 	static szTime[32];
 	get_time(" %H:%M:%S ", szTime, charsmax(szTime));
 	return szTime;
 }
 
-getString (text)
+getString(text)
 {
 	static File[32]; 
 	get_pcvar_string(text, File, charsmax(File));
 	return File;
 }
 
-getNum (text)
+getNum(text)
 {
 	static num;
 	num = get_pcvar_num(text);
 	return num;
 }
-#if AMXX_VERSION_NUM < 183
-	Float:getFloat (text)
-	{
-		new Float:float = get_pcvar_float(text);
-		return float;
-	} 
-#endif
+
+Float:getFloat(text)
+{
+	new Float:float = get_pcvar_float(text);
+	return float;
+} 
 
 registersPrecache()
 {
