@@ -23,8 +23,8 @@ new sz_MenuText[MAX_PLAYERS + 1][ MAX_PLAYERS],
 	num[MAX_PLAYERS + 1], cnt[MAX_PLAYERS + 1],
 	bool:Name[MAX_PLAYERS + 1], bool:Admin[MAX_PLAYERS + 1], g_szFile[128], last_pass[MAX_PLAYERS + 1][MAX_PLAYERS];
 
-static const Version[]     = "1.0.4b",
-			 Built         = 30,
+static const Version[]     = "1.0.4f-dev",
+			 Built         = 31,
 			 pluginName[] = "ROM-Protect",
 			 Terrorist[]   = "#Terrorist_Select",
 			 CT_Select[]   = "#CT_Select",
@@ -196,24 +196,24 @@ public CheckCfg()
 		WriteCfg(false);
 	else
 	{
-		new File = fopen( cfgFile, "r+" );
+		new File = fopen(cfgFile, "r+");
 		
-		new Text[ 121 ], bool:cfg_file, bool:find_search; 
-		while ( !feof( File ) )
+		new Text[121], bool:cfg_file, bool:find_search; 
+		while (!feof(File))
 		{
-			fgets( File, Text, charsmax( Text ) );
+			fgets(File, Text, charsmax(Text));
 			
-			if( containi(Text, Version) != -1 )
+			if (containi(Text, Version) != -1)
 				find_search = true;
 			else
-			cfg_file = true;			
+				cfg_file = true;	
 		}
-		if(cfg_file && !find_search)
+		if (cfg_file && !find_search)
 		{
-			WriteCfg( true );
+			WriteCfg(true);
 			cfg_file = false;
-			if( getNum( plugCvar[plug_log] ) == 1 )
-				logCommand( langType, LANG_SERVER, "ROM_UPDATE_CFG", getString(plugCvar[Tag]) );
+			if (getNum(plugCvar[plug_log]) == 1)
+				logCommand(langType, LANG_SERVER, "ROM_UPDATE_CFG", getString(plugCvar[Tag]));
 		}
 	}
 }
@@ -670,8 +670,7 @@ public hookBasicOnChatCommand(id)
 		copy(s_said, charsmax( said ), said);
 		for (new i; i < sizeof s_said ; ++i)
 		{
-			new j = i+1;
-			if (getNum(plugCvar[cmd_bug]) == 1 && (s_said[ i ] == '#' && isalpha(s_said[j])) || (s_said[i] == '%' && s_said[j] == 's'))
+			if (getNum(plugCvar[cmd_bug]) == 1 && (s_said[ i ] == '#' && isalpha(s_said[i+1])) || (s_said[i] == '%' && s_said[i+1] == 's'))
 			{
 				b_said_cmd_bug[id] = true;
 				break;
@@ -797,7 +796,7 @@ getAccess(const id, const userPass[])
 	}
 }
 
-logCommand(const szMsg[ ], any:...)
+logCommand(const szMsg[], any:...)
 {
 	new szMessage[256], szLogMessage[256];
 	vformat(szMessage, charsmax(szMessage), szMsg , 2);
@@ -894,11 +893,8 @@ public stringFilter(string[], len)
 {
 	for (new i; i <= len; ++i)
 		if (i < MAX_NAME_LENGTH)
-		{
-			new j = i+1;
-			if ((string[i] == '#' && isalpha(string[j])) || (string[i] == '+' && isalpha(string[j])))
+			if ((string[i] == '#' && isalpha(string[i+1])) || (string[i] == '+' && isalpha(string[i+1])))
 				string[i] = ' ';
-		}
 }
 
 bool:clientUseSteamid(id) 
@@ -948,18 +944,8 @@ WriteCfg( bool:exist )
 	if (exist)
 		delete_file(cfgFile);
 	new line[121];
-	write_file(cfgFile, "// *ROM-Protect" , newLine);
-	write_file(cfgFile, "// Plugin FREE anti-flood/bug-fix pentru orice server." , newLine);
-	formatex(line, charsmax(line), "// Versiunea %s. Bulit %d", Version, Built);
-	write_file(cfgFile, line , newLine); 
-	write_file(cfgFile, "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor" , newLine);
-	write_file(cfgFile, "// O productie FioriGinal.ro - site : www.fioriginal.ro" , newLine );
-	write_file(cfgFile, "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html" , newLine);
-	write_file(cfgFile, "// Link sursa : https://github.com/luxxxoor/ROM-Protect", newLine);
 	
-	write_file(cfgFile, " " , newLine);
-	write_file(cfgFile, " " , newLine);
-	write_file(cfgFile, " " , newLine);
+	writeSignature(langFile);
 	
 	write_file(cfgFile, "// Verificare daca CFG-ul a fost executat cu succes." , newLine);
 	write_file(cfgFile, "echo ^"*ROM-Protect : Fisierul rom_protect.cfg a fost gasit. Incep protejarea serverului.^"" , newLine);
@@ -1251,6 +1237,11 @@ WriteLang( bool:exist )
 		delete_file(langFile);
 		const eqSize = 11;
 		
+		
+		writeSignature(langFile);
+		write_file( langFile, "[en]", newLine );
+		write_file( langFile, " ", newLine );
+		
 		formatex(line, charsmax(line), "ROM_UPDATE_CFG = %L", LANG_SERVER, "ROM_UPDATE_CFG", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
@@ -1513,17 +1504,7 @@ WriteLang( bool:exist )
 	}
 	else
 	{
-		write_file( langFile, "// *ROM-Protect" , newLine );
-		write_file( langFile, "// Plugin FREE anti-flood/bug-fix pentru orice server." , newLine );
-		formatex(line, charsmax(line), "// Versiunea %s. Bulit %d", Version, Built);
-		write_file( langFile, line , newLine ); 
-		write_file( langFile, "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor" , newLine );
-		write_file( langFile, "// O productie FioriGinal.ro - site : www.fioriginal.ro" , newLine );
-		write_file( langFile, "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html" , newLine );
-		write_file( langFile, "// Link sursa : https://github.com/luxxxoor/ROM-Protect", -1);
-		write_file( langFile, " ", newLine );
-		write_file( langFile, " ", newLine );
-		write_file( langFile, " ", newLine );
+		writeSignature(langFile);
 		write_file( langFile, "[en]", newLine );
 		write_file( langFile, " ", newLine );
 		write_file( langFile, "ROM_UPDATE_CFG = %s : Am actualizat fisierul CFG : rom_protect.cfg.", newLine );
@@ -1617,6 +1598,23 @@ WriteLang( bool:exist )
 	}
 	register_dictionary("rom_protect.txt");
 	isLangUsed = true;
+}
+
+writeSignature(const file[])
+{
+	new line[121];
+	
+	write_file( file, "// *ROM-Protect" , newLine );
+	write_file( file, "// Plugin FREE anti-flood/bug-fix pentru orice server." , newLine );
+	formatex(line, charsmax(line), "// Versiunea %s. Bulit %d", Version, Built);
+	write_file( file, line , newLine ); 
+	write_file( file, "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor" , newLine );
+	write_file( file, "// O productie FioriGinal.ro - site : www.fioriginal.ro" , newLine );
+	write_file( file, "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html" , newLine );
+	write_file( file, "// Link sursa : https://github.com/luxxxoor/ROM-Protect", -1);
+	write_file( file, " ", newLine );
+	write_file( file, " ", newLine );
+	write_file( file, " ", newLine );
 }
 
 /*
