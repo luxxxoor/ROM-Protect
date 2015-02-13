@@ -21,10 +21,10 @@
 
 new sz_MenuText[MAX_PLAYERS + 1][ MAX_PLAYERS],
 	num[MAX_PLAYERS + 1], cnt[MAX_PLAYERS + 1],
-	bool:Name[MAX_PLAYERS + 1], bool:Admin[MAX_PLAYERS + 1], g_szFile[128], last_pass[MAX_PLAYERS + 1][MAX_PLAYERS];
+	bool:Name[MAX_PLAYERS + 1], bool:Admin[MAX_PLAYERS + 1], g_szFile[128], LastPass[MAX_PLAYERS + 1][MAX_PLAYERS];
 
 static const Version[]     = "1.0.4f-dev",
-			 Built         = 31,
+			 Built         = 32,
 			 pluginName[] = "ROM-Protect",
 			 Terrorist[]   = "#Terrorist_Select",
 			 CT_Select[]   = "#CT_Select",
@@ -33,8 +33,8 @@ static const Version[]     = "1.0.4f-dev",
 			 langType[]    = "%L",
 			 newLine       = -1;
 
-new loginName[1024][MAX_PLAYERS + 1], loginPass[1024][MAX_PLAYERS + 1], loginAccs[1024][MAX_PLAYERS + 1], loginFlag[1024][MAX_PLAYERS + 1];
-new admin_number, bool:isLangUsed;
+new LoginName[1024][MAX_PLAYERS + 1], LoginPass[1024][MAX_PLAYERS + 1], LoginAccess[1024][MAX_PLAYERS + 1], LoginFlag[1024][MAX_PLAYERS + 1];
+new admin_number, bool:IsLangUsed;
 
 enum
 {
@@ -163,13 +163,13 @@ public plugin_precache( )
 	
 	new szCurentDate[ 15 ];
 	get_localinfo( "amxx_configsdir", g_szFile, charsmax ( g_szFile ) );
-	format( g_szFile, charsmax ( g_szFile ), "%s/%s", g_szFile, pluginName );
+	format(ex g_szFile, charsmax ( g_szFile ), "%s/%s", g_szFile, pluginName );
 	
 	if( !dir_exists( g_szFile ) )
 		mkdir( g_szFile );
 	
 	get_time( "%d-%m-%Y", szCurentDate , charsmax ( szCurentDate ) );      
-	format( g_szFile, charsmax( g_szFile ), "%s/%s_%s.log", g_szFile, pluginName, szCurentDate );
+	formatex( g_szFile, charsmax( g_szFile ), "%s/%s_%s.log", g_szFile, pluginName, szCurentDate );
 	
 	if( !file_exists( g_szFile ) )
 		{
@@ -198,20 +198,17 @@ public CheckCfg()
 	{
 		new File = fopen(cfgFile, "r+");
 		
-		new Text[121], bool:cfg_file, bool:find_search; 
+		new Text[121], bool:FindVersion; 
 		while (!feof(File))
 		{
 			fgets(File, Text, charsmax(Text));
 			
 			if (containi(Text, Version) != -1)
-				find_search = true;
-			else
-				cfg_file = true;	
+				FindVersion = true;
 		}
-		if (cfg_file && !find_search)
+		if (!FindVersion)
 		{
 			WriteCfg(true);
-			cfg_file = false;
 			if (getNum(plugCvar[plug_log]) == 1)
 				logCommand(langType, LANG_SERVER, "ROM_UPDATE_CFG", getString(plugCvar[Tag]));
 		}
@@ -224,10 +221,10 @@ public CheckLang()
 		WriteLang(false);
 	else
 	{
-		isLangUsed = false;
+		IsLangUsed = false;
 		new File = fopen( langFile, "r+" );
 		
-		new Text[ 121 ], bool:isCurrentVersionUsed;
+		new Text[121], bool:isCurrentVersionUsed;
 		while (!feof(File))
 		{
 			fgets(File, Text, charsmax(Text));
@@ -235,10 +232,10 @@ public CheckLang()
 			if (containi(Text, Version) != -1)
 				isCurrentVersionUsed = true;
 		}
-		if(!isCurrentVersionUsed)
+		if (!isCurrentVersionUsed)
 		{
 			register_dictionary("rom_protect.txt");
-			isLangUsed = true;
+			IsLangUsed = true;
 			if (getNum(plugCvar[plug_log]) == 1)
 				logCommand(langType, LANG_SERVER, "ROM_UPDATE_LANG", getString(plugCvar[Tag]));
 			WriteLang(true);
@@ -248,7 +245,7 @@ public CheckLang()
 
 public CheckLangFile()
 {
-	if(!isLangUsed)
+	if(!IsLangUsed)
 		register_dictionary("rom_protect.txt");
 }
 
@@ -635,7 +632,7 @@ public reloadDelay()
 	get_players(players, pnum, "ch");
 	for (new i; i < pnum; ++i)
 		if (Admin[players[i]])
-			getAccess(players[i], last_pass[players[i]]);
+			getAccess(players[i], LastPass[players[i]]);
 }
 
 public cvarFunc(id, level, cid) 
@@ -759,13 +756,13 @@ loadAdminLogin()
 		if (parse(text, name, charsmax(name), pass, charsmax(pass), acc, charsmax(acc), flags, charsmax(flags)) != 4)
 			continue;
 		
-		copy(loginName[admin_number], charsmax(loginName[]),  name);
-		copy(loginPass[admin_number], charsmax(loginPass[]),  pass);
-		copy(loginAccs[admin_number], charsmax(loginAccs[]),  acc);
-		copy(loginFlag[admin_number], charsmax(loginFlag[]),  flags);
+		copy(LoginName[admin_number], charsmax(LoginName[]),  name);
+		copy(LoginPass[admin_number], charsmax(LoginPass[]),  pass);
+		copy(LoginAccess[admin_number], charsmax(LoginAccess[]),  acc);
+		copy(LoginFlag[admin_number], charsmax(LoginFlag[]),  flags);
 		
 		if (getNum(plugCvar[admin_login_debug]) == 1)
-			server_print(langType, LANG_SERVER, "ROM_ADMIN_DEBUG", loginName[admin_number], loginPass[admin_number], loginAccs[admin_number], loginFlag[admin_number]);
+			server_print(langType, LANG_SERVER, "ROM_ADMIN_DEBUG", LoginName[admin_number], LoginPass[admin_number], LoginAccess[admin_number], LoginFlag[admin_number]);
 	}
 	fclose(file);
 }
@@ -776,19 +773,19 @@ getAccess(const id, const userPass[])
 	get_user_info(id, "name", userName, charsmax(userName));
 	if (!(get_user_flags(id) & ADMIN_CHAT))
 		remove_user_flags(id);
-	copy(last_pass[id], charsmax(last_pass[]), userPass);
+	copy(LastPass[id], charsmax(LastPass[]), userPass);
 	for (new i = 1; i <= admin_number; ++i)
 	{
-		if (equali(loginName[i], userName))
+		if (equali(LoginName[i], userName))
 			Name[id] = true;
 		else
 			Name[id] = false;
-		if (equal(loginFlag[i], "f") && Name[id])
+		if (equal(LoginFlag[i], "f") && Name[id])
 		{
-			if (equal(loginPass[i], userPass) || Admin[id])
+			if (equal(LoginPass[i], userPass) || Admin[id])
 			{
 				Admin[id] = true;
-				acces = read_flags(loginAccs[i]);
+				acces = read_flags(LoginAccess[i]);
 				set_user_flags(id, acces);
 			}
 			break;
@@ -945,7 +942,7 @@ WriteCfg( bool:exist )
 		delete_file(cfgFile);
 	new line[121];
 	
-	writeSignature(langFile);
+	writeSignature(cfgFile);
 	
 	write_file(cfgFile, "// Verificare daca CFG-ul a fost executat cu succes." , newLine);
 	write_file(cfgFile, "echo ^"*ROM-Protect : Fisierul rom_protect.cfg a fost gasit. Incep protejarea serverului.^"" , newLine);
@@ -1597,7 +1594,7 @@ WriteLang( bool:exist )
 		#endif
 	}
 	register_dictionary("rom_protect.txt");
-	isLangUsed = true;
+	IsLangUsed = true;
 }
 
 writeSignature(const file[])
