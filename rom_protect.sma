@@ -161,29 +161,29 @@ public plugin_precache( )
 	{	
 	registersPrecache();
 	
-	new szCurentDate[ 15 ];
-	get_localinfo( "amxx_configsdir", g_szFile, charsmax ( g_szFile ) );
-	format(ex g_szFile, charsmax ( g_szFile ), "%s/%s", g_szFile, pluginName );
+	new szCurentDate[15];
+	get_localinfo("amxx_configsdir", g_szFile, charsmax(g_szFile));
+	formatex(g_szFile, charsmax ( g_szFile ), "%s/%s", g_szFile, pluginName);
 	
-	if( !dir_exists( g_szFile ) )
-		mkdir( g_szFile );
+	if (!dir_exists(g_szFile))
+		mkdir(g_szFile);
 	
-	get_time( "%d-%m-%Y", szCurentDate , charsmax ( szCurentDate ) );      
-	formatex( g_szFile, charsmax( g_szFile ), "%s/%s_%s.log", g_szFile, pluginName, szCurentDate );
+	get_time("%d-%m-%Y", szCurentDate, charsmax(szCurentDate));
+	formatex(g_szFile, charsmax( g_szFile ), "%s/%s_%s.log", g_szFile, pluginName, szCurentDate);
 	
 	if( !file_exists( g_szFile ) )
 		{
-		write_file( g_szFile, "*Aici este salvata activitatea suspecta a fiecarui jucator. ", newLine );
-		write_file( g_szFile, " ", newLine );
-		write_file( g_szFile, " ", newLine );
+		write_file(g_szFile, "*Aici este salvata activitatea suspecta a fiecarui jucator. ", newLine);
+		write_file(g_szFile, " ", newLine);
+		write_file(g_szFile, " ", newLine);
 	}
 	/*
 	get_mapname( g_szMapName, charsmax( g_szMapName ) );
 	format( g_szMapName, charsmax( g_szMapName ) , "*Harta: %s|", g_szMapName );
 	*/
 	
-	if( file_exists( cfgFile ) )
-		server_cmd( "exec %s", cfgFile );
+	if (file_exists(cfgFile))
+		server_cmd("exec %s", cfgFile);
 	
 	set_task(10.0, "CheckLang");
 	set_task(15.0, "CheckLangFile");
@@ -204,7 +204,10 @@ public CheckCfg()
 			fgets(File, Text, charsmax(Text));
 			
 			if (containi(Text, Version) != -1)
+			{
 				FindVersion = true;
+				break;
+			}
 		}
 		if (!FindVersion)
 		{
@@ -217,12 +220,12 @@ public CheckCfg()
 
 public CheckLang()
 {
-	if( !file_exists(langFile) )
+	if (!file_exists(langFile))
 		WriteLang(false);
 	else
 	{
 		IsLangUsed = false;
-		new File = fopen( langFile, "r+" );
+		new File = fopen(langFile, "r+");
 		
 		new Text[121], bool:isCurrentVersionUsed;
 		while (!feof(File))
@@ -230,7 +233,10 @@ public CheckLang()
 			fgets(File, Text, charsmax(Text));
 			
 			if (containi(Text, Version) != -1)
+			{
 				isCurrentVersionUsed = true;
+				break;
+			}
 		}
 		if (!isCurrentVersionUsed)
 		{
