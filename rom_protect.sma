@@ -49,7 +49,8 @@ enum
 
 new const AllBasicOnChatCommads[][] =
 {
-	"amx_say", "amx_csay", "amx_psay", "amx_tsay", "amx_chat", "say_team", "say"
+	"amx_say", "amx_csay", "amx_psay", "amx_tsay", "amx_chat", "say_team", 
+	"say", "amx_gag", "amx_kick", amx_ban", "amx_banip", "amx_nick", "amx_rcon"
 };
 
 enum _:AllCvars
@@ -76,7 +77,6 @@ enum _:AllCvars
 	color_bug,
 	motdfile,
 	anti_pause
-	
 };
 
 new const CvarName[AllCvars][] = 
