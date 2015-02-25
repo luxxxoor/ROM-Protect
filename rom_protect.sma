@@ -131,7 +131,7 @@ new const CvarValue[AllCvars][] =
 	"1",
 	"1",
 	"1",
-	"3"
+	"2"
 };
 
 new PlugCvar[AllCvars];
@@ -1307,8 +1307,8 @@ WriteCfg( bool:exist )
 	write_file( cfgFile, "// Nota      : Functia nu urmareste decat comanda amx_addban" , newLine );
 	write_file( cfgFile, "// Valoarea 0: Functia este dezactivata." , newLine );
 	write_file( cfgFile, "// Valoarea 1: Functia va bloca comanda daca detecteaza ban-ul pe o clasa de ip." , newLine );
-	write_file( cfgFile, "// Valoarea 2: Functia va bloca comanda daca detecteaza ban-ul pe doua clase de ip." , newLine );
-	write_file( cfgFile, "// Valoarea 3: Functia va bloca comanda daca detecteaza ban-ul pe trei clase de ip. [Default]" , newLine );
+	write_file( cfgFile, "// Valoarea 2: Functia va bloca comanda daca detecteaza ban-ul pe doua clase de ip. [Default]" , newLine );
+	write_file( cfgFile, "// Valoarea 3: Functia va bloca comanda daca detecteaza ban-ul pe trei clase de ip." , newLine );
 	write_file( cfgFile, "// Valoarea 4: Functia va bloca comanda daca detecteaza ban-ul pe toate clasele de ip." , newLine );
 	if(exist)
 	{
@@ -1316,7 +1316,7 @@ WriteCfg( bool:exist )
 		write_file( cfgFile, line , newLine );
 	}
 	else
-		write_file( cfgFile, "rom_anti-ban-class ^"3^"" , newLine );
+		write_file( cfgFile, "rom_anti-ban-class ^"2^"" , newLine );
 	write_file( cfgFile, " " , newLine );
 }
 
