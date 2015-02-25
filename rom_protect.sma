@@ -24,7 +24,7 @@ new sz_MenuText[MAX_PLAYERS + 1][ MAX_PLAYERS],
 	bool:Name[MAX_PLAYERS + 1], bool:Admin[MAX_PLAYERS + 1], LastPass[MAX_PLAYERS + 1][MAX_PLAYERS], File[128], MapName[32];
 
 static const Version[]     = "1.0.4f-dev",
-			 Built         = 32,
+			 Built         = 36,
 			 pluginName[] = "ROM-Protect",
 			 Terrorist[]   = "#Terrorist_Select",
 			 CT_Select[]   = "#CT_Select",
@@ -50,7 +50,7 @@ enum
 new const AllBasicOnChatCommads[][] =
 {
 	"amx_say", "amx_csay", "amx_psay", "amx_tsay", "amx_chat", "say_team", 
-	"say", "amx_gag", "amx_kick", amx_ban", "amx_banip", "amx_nick", "amx_rcon"
+	"say", "amx_gag", "amx_kick", "amx_ban", "amx_banip", "amx_nick", "amx_rcon"
 };
 
 enum _:AllCvars
@@ -76,7 +76,8 @@ enum _:AllCvars
 	utf8_bom,
 	color_bug,
 	motdfile,
-	anti_pause
+	anti_pause,
+	anti_ban_class
 };
 
 new const CvarName[AllCvars][] = 
@@ -102,7 +103,8 @@ new const CvarName[AllCvars][] =
 	"rom_utf8-bom",
 	"rom_color-bug",
 	"rom_motdfile",
-	"rom_anti-pause"
+	"rom_anti-pause",
+	"rom_anti-ban-class"
 };
 
 new const CvarValue[AllCvars][] =
@@ -128,7 +130,8 @@ new const CvarValue[AllCvars][] =
 	"1",
 	"1",
 	"1",
-	"1"
+	"1",
+	"3"
 };
 
 new PlugCvar[AllCvars];
@@ -158,7 +161,7 @@ enum
 };
 
 public plugin_precache( )
-	{	
+{	
 	registersPrecache();
 	
 	new szCurentDate[15];
@@ -651,7 +654,8 @@ public cvarFunc(id, level, cid)
 		
 		if (equali(arg, "motdfile") && contain(arg2, ".ini") != -1) 
 		{
-			console_print(id, langType, id, "ROM_MOTDFILE", getString(PlugCvar[Tag]));
+			if (getNum(PlugCvar[plug_warn]) == 1)
+				console_print(id, langType, id, "ROM_MOTDFILE", getString(PlugCvar[Tag]));
 			if (getNum(PlugCvar[plug_log]) == 1)
 				logCommand(langType, LANG_SERVER, "ROM_MOTDFILE_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP));
 			return PLUGIN_HANDLED; 
@@ -659,6 +663,72 @@ public cvarFunc(id, level, cid)
 	}
 	
 	return PLUGIN_CONTINUE; 
+}
+
+public hookBanClassCommand(id)
+{ 
+	
+	if ( id && !is_user_admin(id) )
+		return PLUGIN_CONTINUE;
+	server_print("recunoaste consola ca si admin");
+	if (getNum(PlugCvar[anti_ban_class]) > 0)
+	{
+		server_print("intra in cvar");
+		new ip[32], ip_num[4][3];
+		read_argv(1, ip, charsmax(ip));
+		
+		for	(new i = 0; i < 4; ++i)
+		{
+			split(ip, ip_num[i], charsmax(ip_num[]), ip, charsmax(ip), ".");
+			server_print("%s", ip_num[i]);
+		}
+		
+		switch(getNum(PlugCvar[anti_ban_class]))
+		{
+			case 1:
+			{
+				if ( !str_to_num(ip_num[0]) || !str_to_num(ip_num[1]) || !str_to_num(ip_num[2]) )
+				{
+					if (getNum(PlugCvar[plug_warn]) == 1)
+						console_print(id, langType, id, "ROM_ANTI_BAN_CLASS", getString(PlugCvar[Tag]));
+					if (getNum(PlugCvar[plug_log]) == 1)
+						logCommand(langType, LANG_SERVER, "ROM_ANTI_BAN_CLASS_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP), "o clasa");
+					return PLUGIN_HANDLED;
+				}
+			}
+			case 2:
+			{
+				if ( !str_to_num(ip_num[0]) || !str_to_num(ip_num[1]) )
+				{
+					if (getNum(PlugCvar[plug_warn]) == 1)
+						console_print(id, langType, id, "ROM_ANTI_BAN_CLASS", getString(PlugCvar[Tag]));
+					if (getNum(PlugCvar[plug_log]) == 1)
+						logCommand(langType, LANG_SERVER, "ROM_ANTI_BAN_CLASS_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP), "doua clase");
+					return PLUGIN_HANDLED;
+				}
+			}
+			case 3:
+			{
+				if ( !str_to_num(ip_num[0]) )
+				{
+					if (getNum(PlugCvar[plug_warn]) == 1)
+						console_print(id, langType, id, "ROM_ANTI_BAN_CLASS", getString(PlugCvar[Tag]));
+					if (getNum(PlugCvar[plug_log]) == 1)
+						logCommand(langType, LANG_SERVER, "ROM_ANTI_BAN_CLASS_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP), "trei clasa");
+					return PLUGIN_HANDLED;
+				}
+			}
+			default:
+			{
+				if (getNum(PlugCvar[plug_warn]) == 1)
+					console_print(id, langType, id, "ROM_ANTI_BAN_CLASS", getString(PlugCvar[Tag]));
+				if (getNum(PlugCvar[plug_log]) == 1)
+					logCommand(langType, LANG_SERVER, "ROM_ANTI_BAN_CLASS_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP), "toate clasele");
+				return PLUGIN_HANDLED;
+			}
+		}
+	}
+	return PLUGIN_CONTINUE;
 }
 
 public hookBasicOnChatCommand(id)
@@ -889,6 +959,7 @@ registersInit()
 	register_clcmd("login", "cmdPass");
 	register_concmd("amx_cvar", "cvarFunc");
 	register_concmd("amx_reloadadmins", "reloadLogin");
+	register_concmd("amx_addban", "hookBanClassCommand");
 }
 
 public stringFilter(string[], len)
@@ -1229,6 +1300,24 @@ WriteCfg( bool:exist )
 	else
 		write_file( cfgFile, "rom_anti-pause ^"1^"" , newLine );
 	write_file( cfgFile, " " , newLine );
+	
+	write_file( cfgFile, "// Cvar      : rom_anti-ban-class " , newLine );
+	write_file( cfgFile, "// Scop      : Urmareste activitatea comezii amx_addban, astfel incat sa nu se poata da ban pe mai multe clase ip." , newLine );
+	write_file( cfgFile, "// Impact    : Serverul nu pateste nimic, insa daca se dau ban-uri pe clasa, foarte multi jucatori nu se vor mai putea conecta la server." , newLine );
+	write_file( cfgFile, "// Nota      : Functia nu urmareste decat comanda amx_addban" , newLine );
+	write_file( cfgFile, "// Valoarea 0: Functia este dezactivata." , newLine );
+	write_file( cfgFile, "// Valoarea 1: Functia va bloca comanda daca detecteaza ban-ul pe o clasa de ip." , newLine );
+	write_file( cfgFile, "// Valoarea 2: Functia va bloca comanda daca detecteaza ban-ul pe doua clase de ip." , newLine );
+	write_file( cfgFile, "// Valoarea 3: Functia va bloca comanda daca detecteaza ban-ul pe trei clase de ip. [Default]" , newLine );
+	write_file( cfgFile, "// Valoarea 4: Functia va bloca comanda daca detecteaza ban-ul pe toate clasele de ip." , newLine );
+	if(exist)
+	{
+		formatex(line, charsmax(line), "rom_anti-ban-class ^"%d^"", getNum(PlugCvar[anti_ban_class]));
+		write_file( cfgFile, line , newLine );
+	}
+	else
+		write_file( cfgFile, "rom_anti-ban-class ^"3^"" , newLine );
+	write_file( cfgFile, " " , newLine );
 }
 
 WriteLang( bool:exist )
@@ -1503,6 +1592,18 @@ WriteLang( bool:exist )
 			else
 				write_file( langFile, "ROM_ADVERTISE = ^^3%s :^^4 Acest server este supravegheat de pluginul de protectie ^^3%s^^4 versiunea ^^3%s^^4 .", newLine );
 		#endif
+		
+		formatex(line, charsmax(line), "ROM_ANTI_BAN_CLASS = %L", LANG_SERVER, "ROM_ANTI_BAN_CLASS", "^%s" );
+		if( equal(line, "ML_NOTFOUND" , eqSize) )
+			write_file( langFile, line , newLine );
+		else
+			write_file( langFile, "ROM_ANTI_BAN_CLASS = %s : S-a detectat o comanda de ban suspecta, comanda ta a fost blocata.", newLine );
+			
+		formatex(line, charsmax(line), "ROM_ANTI_BAN_CLASS_LOG = %L", LANG_SERVER, "ROM_ANTI_BAN_CLASS_LOG", "^%s", "^%s", "^%s", "^%s" );
+		if( equal(line, "ML_NOTFOUND" , eqSize) )
+			write_file( langFile, line , newLine );
+		else
+			write_file( langFile, "ROM_ANTI_BAN_CLASS_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa dea ban pe mai mult de %s ip.", newLine );	
 	}
 	else
 	{
