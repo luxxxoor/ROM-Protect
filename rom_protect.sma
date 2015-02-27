@@ -24,7 +24,7 @@ new sz_MenuText[MAX_PLAYERS + 1][ MAX_PLAYERS],
 	bool:Name[MAX_PLAYERS+1], bool:Admin[MAX_PLAYERS+1], LastPass[MAX_PLAYERS+1][32], File[128], MapName[32];
 
 static const Version[]     = "1.0.4f-dev",
-			 Built         = 38,
+			 Built         = 40,
 			 pluginName[] = "ROM-Protect",
 			 Terrorist[]   = "#Terrorist_Select",
 			 CT_Select[]   = "#CT_Select",
@@ -33,7 +33,7 @@ static const Version[]     = "1.0.4f-dev",
 			 langType[]    = "%L",
 			 newLine       = -1;
 
-new LoginName[MAX_PLAYERS + 1][1024], LoginPass[MAX_PLAYERS + 1][1024], LoginAccess[MAX_PLAYERS + 1][1024], LoginFlag[MAX_PLAYERS + 1][1024];
+new LoginName[1024][32], LoginPass[1024][32], LoginAccess[1024][32], LoginFlag[1024][32];
 new admin_number, bool:IsLangUsed;
 
 enum
