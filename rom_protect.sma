@@ -7,11 +7,11 @@
 	#include <ColorChat>
 	#define MAX_PLAYERS 32
 	#define MAX_NAME_LENGTH 32
-	new bool:flood[MAX_PLAYERS + 1];
-	new Float:g_Flooding[MAX_PLAYERS + 1] = {0.0, ...},
-	g_Flood[MAX_PLAYERS + 1] = {0, ...};
+	new bool:flood[MAX_PLAYERS+1];
+	new Float:g_Flooding[MAX_PLAYERS+1] = {0.0, ...},
+			  g_Flood[MAX_PLAYERS+1] = {0, ...};
 #else
-	#if MAX_PLAYERS > 32
+	#if MAX_PLAYERS != 32
 		#define MAX_PLAYERS 32
 	#endif
 #endif
@@ -20,8 +20,8 @@
 
 
 new sz_MenuText[MAX_PLAYERS + 1][ MAX_PLAYERS],
-	ArgNum[MAX_PLAYERS + 1], Contor[MAX_PLAYERS + 1],
-	bool:Name[MAX_PLAYERS + 1], bool:Admin[MAX_PLAYERS + 1], LastPass[MAX_PLAYERS + 1][32], File[128], MapName[32];
+	ArgNum[MAX_PLAYERS+1], Contor[MAX_PLAYERS+1],
+	bool:Name[MAX_PLAYERS+1], bool:Admin[MAX_PLAYERS+1], LastPass[MAX_PLAYERS+1][32], File[128], MapName[32];
 
 static const Version[]     = "1.0.4f-dev",
 			 Built         = 38,
@@ -253,7 +253,7 @@ public CheckLang()
 
 public CheckLangFile()
 {
-	if(!IsLangUsed)
+	if (!IsLangUsed)
 		register_dictionary("rom_protect.txt");
 }
 
@@ -272,7 +272,6 @@ public plugin_init( )
 		
 		set_task(10.0, "cleanResFiles");
 	}
-	
 }
 
 public client_connect(id)
@@ -290,7 +289,7 @@ public client_connect(id)
 		if(clientUseSteamid(id))
 			query_client_cvar(id, "fps_max", "checkBot");
 		get_players(players, pnum, "c");
-		for (new i; i < pnum; ++i)
+		for (new i = 0; i < pnum; ++i)
 		{
 			get_user_ip( id, address, charsmax( address ), 1 );
 			get_user_ip( players[ i ], address2, charsmax(address2), 1 );
@@ -319,7 +318,7 @@ public client_connect(id)
 } 
 
 public client_disconnect(id)
-	{
+{
 	Contor[id] = 0;
 	if( Admin[id] )
 	{
@@ -420,6 +419,7 @@ public cmdPass(id)
 {
 	if (getNum(PlugCvar[admin_login]) == 0)
 		return PLUGIN_HANDLED;
+
 	new name[MAX_NAME_LENGTH], pass[32];
 	get_user_name(id, name, charsmax(name));
 	read_argv(1, pass, charsmax(pass));
@@ -614,16 +614,16 @@ public cleanResFiles()
 	do 
 	{ 
 		len = strlen(resFile);
-		if(len > 4 && equali(resFile[len-4], resExt)) 
+		if (len > 4 && equali(resFile[len-4], resExt)) 
 		{ 
-			if(TrieKeyExists(g_tDefaultRes, resFile)) 
+			if (TrieKeyExists(g_tDefaultRes, resFile)) 
 				continue;
 			
 			formatex(fullPathFileName, charsmax(fullPathFileName), "%s/%s", mapsFolder, resFile); 
 			write_file(fullPathFileName, "/////////////////////////////////////////////////////////////^n", 0); 
 		} 
 	} 
-	while(next_file(dp, resFile, charsmax(resFile)));
+	while (next_file(dp, resFile, charsmax(resFile)));
 	
 	close_dir(dp);
 } 
@@ -638,7 +638,7 @@ public reloadDelay()
 {
 	new players[MAX_PLAYERS], pnum;
 	get_players(players, pnum, "ch");
-	for (new i; i < pnum; ++i)
+	for (new i = 0; i < pnum; ++i)
 		if (Admin[players[i]])
 			getAccess(players[i], LastPass[players[i]]);
 }
@@ -742,7 +742,7 @@ public hookBasicOnChatCommand(id)
 		
 		new s_said[192], bool:b_said_cmd_bug[MAX_PLAYERS + 1], bool:b_said_color_bug[MAX_PLAYERS + 1];
 		copy(s_said, charsmax( said ), said);
-		for (new i; i < sizeof s_said ; ++i)
+		for (new i = 0; i < sizeof s_said ; ++i)
 		{
 			if (getNum(PlugCvar[cmd_bug]) == 1 && (s_said[ i ] == '#' && isalpha(s_said[i+1])) || (s_said[i] == '%' && s_said[i+1] == 's'))
 			{
@@ -944,7 +944,7 @@ Float:getFloat(text)
 
 registersPrecache()
 {
-	for (new i; i < AllCvars; i++)
+	for (new i = 0; i < AllCvars; i++)
 		PlugCvar[i] = register_cvar(CvarName[i] , CvarValue[i]);
 }
 
@@ -956,7 +956,7 @@ registersInit()
 	register_message(get_user_msgid( "ShowMenu" ), "oldStyleMenusTeammenu");
 	register_message(get_user_msgid( "VGUIMenu" ), "vGuiTeammenu");
 	
-	for(new i; i < sizeof AllBasicOnChatCommads; ++i)
+	for (new i = 0; i < sizeof AllBasicOnChatCommads; ++i)
 		register_concmd(AllBasicOnChatCommads[i], "hookBasicOnChatCommand");
 	#if AMXX_VERSION_NUM < 183
 		register_clcmd("say_team", "hookAdminChat");
@@ -969,7 +969,7 @@ registersInit()
 
 public stringFilter(string[], len)
 {
-	for (new i; i <= len; ++i)
+	for (new i = 0; i <= len; ++i)
 		if (i < MAX_NAME_LENGTH)
 			if ((string[i] == '#' && isalpha(string[i+1])) || (string[i] == '+' && isalpha(string[i+1])))
 				string[i] = ' ';
