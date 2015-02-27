@@ -21,10 +21,10 @@
 
 new sz_MenuText[MAX_PLAYERS + 1][ MAX_PLAYERS],
 	ArgNum[MAX_PLAYERS + 1], Contor[MAX_PLAYERS + 1],
-	bool:Name[MAX_PLAYERS + 1], bool:Admin[MAX_PLAYERS + 1], LastPass[MAX_PLAYERS + 1][MAX_PLAYERS], File[128], MapName[32];
+	bool:Name[MAX_PLAYERS + 1], bool:Admin[MAX_PLAYERS + 1], LastPass[MAX_PLAYERS + 1][32], File[128], MapName[32];
 
 static const Version[]     = "1.0.4f-dev",
-			 Built         = 36,
+			 Built         = 38,
 			 pluginName[] = "ROM-Protect",
 			 Terrorist[]   = "#Terrorist_Select",
 			 CT_Select[]   = "#CT_Select",
@@ -33,7 +33,7 @@ static const Version[]     = "1.0.4f-dev",
 			 langType[]    = "%L",
 			 newLine       = -1;
 
-new LoginName[1024][MAX_PLAYERS + 1], LoginPass[1024][MAX_PLAYERS + 1], LoginAccess[1024][MAX_PLAYERS + 1], LoginFlag[1024][MAX_PLAYERS + 1];
+new LoginName[MAX_PLAYERS + 1][1024], LoginPass[MAX_PLAYERS + 1][1024], LoginAccess[MAX_PLAYERS + 1][1024], LoginFlag[MAX_PLAYERS + 1][1024];
 new admin_number, bool:IsLangUsed;
 
 enum
@@ -153,7 +153,7 @@ new const char_list[ ] =
 	'2','3','4','5','6','7','8','9'
 };
 
-enum
+enum INFO
 {
 	INFO_NAME,
 	INFO_IP,
@@ -667,54 +667,56 @@ public cvarFunc(id, level, cid)
 
 public hookBanClassCommand(id)
 { 
-	
 	if ( id && !is_user_admin(id) )
 		return PLUGIN_CONTINUE;
-	server_print("recunoaste consola ca si admin");
+	
 	if (getNum(PlugCvar[anti_ban_class]) > 0)
 	{
-		server_print("intra in cvar");
-		new ip[32], ip_num[4][3];
+		new ip[32], IpNum[4][3], NumStr[1], Value;
 		read_argv(1, ip, charsmax(ip));
 		
 		for	(new i = 0; i < 4; ++i)
-		{
-			split(ip, ip_num[i], charsmax(ip_num[]), ip, charsmax(ip), ".");
-			server_print("%s", ip_num[i]);
-		}
+			split(ip, IpNum[i], charsmax(IpNum[]), ip, charsmax(ip), ".");
 		
-		switch(getNum(PlugCvar[anti_ban_class]))
+		Value = getNum(PlugCvar[anti_ban_class]);
+		
+		if (Value > 4 || Value < 0)
+			Value = 4;
+			
+		num_to_str(Value,NumStr,charsmax(NumStr));
+		
+		switch (Value)
 		{
 			case 1:
 			{
-				if ( !str_to_num(ip_num[0]) || !str_to_num(ip_num[1]) || !str_to_num(ip_num[2]) )
+				if ( !str_to_num(IpNum[0]) || !str_to_num(IpNum[1]) || !str_to_num(IpNum[2]) )
 				{
 					if (getNum(PlugCvar[plug_warn]) == 1)
 						console_print(id, langType, id, "ROM_ANTI_BAN_CLASS", getString(PlugCvar[Tag]));
 					if (getNum(PlugCvar[plug_log]) == 1)
-						logCommand(langType, LANG_SERVER, "ROM_ANTI_BAN_CLASS_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP), "o clasa");
+						logCommand(langType, LANG_SERVER, "ROM_ANTI_ANY_BAN_CLASS_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP));
 					return PLUGIN_HANDLED;
 				}
 			}
 			case 2:
 			{
-				if ( !str_to_num(ip_num[0]) || !str_to_num(ip_num[1]) )
+				if ( !str_to_num(IpNum[0]) || !str_to_num(IpNum[1]) )
 				{
 					if (getNum(PlugCvar[plug_warn]) == 1)
 						console_print(id, langType, id, "ROM_ANTI_BAN_CLASS", getString(PlugCvar[Tag]));
 					if (getNum(PlugCvar[plug_log]) == 1)
-						logCommand(langType, LANG_SERVER, "ROM_ANTI_BAN_CLASS_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP), "doua clase");
+						logCommand(langType, LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP), NumStr);
 					return PLUGIN_HANDLED;
 				}
 			}
 			case 3:
 			{
-				if ( !str_to_num(ip_num[0]) )
+				if ( !str_to_num(IpNum[0]) )
 				{
 					if (getNum(PlugCvar[plug_warn]) == 1)
 						console_print(id, langType, id, "ROM_ANTI_BAN_CLASS", getString(PlugCvar[Tag]));
 					if (getNum(PlugCvar[plug_log]) == 1)
-						logCommand(langType, LANG_SERVER, "ROM_ANTI_BAN_CLASS_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP), "trei clasa");
+						logCommand(langType, LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP), NumStr);
 					return PLUGIN_HANDLED;
 				}
 			}
@@ -723,7 +725,7 @@ public hookBanClassCommand(id)
 				if (getNum(PlugCvar[plug_warn]) == 1)
 					console_print(id, langType, id, "ROM_ANTI_BAN_CLASS", getString(PlugCvar[Tag]));
 				if (getNum(PlugCvar[plug_log]) == 1)
-					logCommand(langType, LANG_SERVER, "ROM_ANTI_BAN_CLASS_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP), "toate clasele");
+					logCommand(langType, LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP), NumStr);
 				return PLUGIN_HANDLED;
 			}
 		}
@@ -879,35 +881,38 @@ logCommand(const szMsg[], any:...)
 	write_file(File, LogMessage, newLine);
 }
 
-getInfo(id, const iInfo)
+getInfo(id, const INFO:iInfo)
 {
-	new szInfoToReturn[64];
-	
-	switch(iInfo)
+	new Server[32] = "SERVER"; // Trebuie sa aibe acealasi numar de caractere pentru a nu primi "error 047".
+	switch (iInfo)
 	{
 		case INFO_NAME:
 		{
-			static szName[32];
-			get_user_name(id, szName, charsmax(szName));
+			static name[32];
+			get_user_name(id, name, charsmax(name));
 			
-			copy(szInfoToReturn, charsmax(szInfoToReturn), szName);
+			return name;
 		}
 		case INFO_IP:
 		{
-			static szIp[32];
-			get_user_ip(id, szIp, charsmax(szIp), 1);
+			static ip[32];
+			get_user_ip(id, ip, charsmax(ip), 1);
 			
-			copy(szInfoToReturn, charsmax(szInfoToReturn), szIp);
+			return ip;
 		}
 		case INFO_AUTHID:
 		{
-			static szAuthId[35];
-			get_user_authid(id, szAuthId, charsmax(szAuthId));
-			
-			copy(szInfoToReturn, charsmax(szInfoToReturn), szAuthId);
+			static authid[32];
+			if (id)
+			{
+				get_user_authid(id, authid, charsmax(authid));
+				return authid;
+			}
+			else
+				return Server;
 		}
 	}
-	return szInfoToReturn;
+	return Server; // Un return care nu se va apela niciodata, insa compilatorul nu va mai primi warning.
 }
 
 getTime()
@@ -1388,7 +1393,7 @@ WriteLang( bool:exist )
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
-			write_file( langFile, "ROM_FAKE_PLAYERS_DETECT_LOG = %s : L-am detectat pe %s [ %s | %s ] ca suspect de ^"xFake-Players^" sau ^"xSpammer^".", newLine );
+			write_file( langFile, "ROM_FAKE_PLAYERS_DETECT_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca suspect de ^"xFake-Players^" sau ^"xSpammer^".", newLine );
 			
 		#if AMXX_VERSION_NUM < 183
 			formatex(line, charsmax(line), "ROM_PLUGIN_PAUSE = %L", LANG_SERVER, "ROM_PLUGIN_PAUSE", "^%c", "^%s", "^%c" );
@@ -1488,7 +1493,7 @@ WriteLang( bool:exist )
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
-			write_file( langFile, "ROM_CMD_BUG_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului.", newLine );
+			write_file( langFile, "ROM_CMD_BUG_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului.", newLine );
 			
 		formatex(line, charsmax(line), "ROM_CMD_BUG_PRINT = %L", LANG_SERVER, "ROM_CMD_BUG_PRINT", "^%s");
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
@@ -1514,7 +1519,7 @@ WriteLang( bool:exist )
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
-			write_file( langFile, "ROM_COLOR_BUG_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii.", newLine );
+			write_file( langFile, "ROM_COLOR_BUG_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii.", newLine );
 			
 		formatex(line, charsmax(line), "ROM_COLOR_BUG_PRINT = %L", LANG_SERVER, "ROM_COLOR_BUG_PRINT", "^%s");
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
@@ -1540,7 +1545,7 @@ WriteLang( bool:exist )
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
-			write_file( langFile, "ROM_SPEC_BUG_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului.", newLine );
+			write_file( langFile, "ROM_SPEC_BUG_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului.", newLine );
 			
 		#if AMXX_VERSION_NUM < 183
 			formatex(line, charsmax(line), "ROM_ADMIN_CHAT_FLOOD = %L", LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD", "^%c", "^%s", "^%c" );
@@ -1553,7 +1558,7 @@ WriteLang( bool:exist )
 			if( equal(line, "ML_NOTFOUND" , eqSize) )
 				write_file( langFile, line , newLine );
 			else
-				write_file( langFile, "ROM_ADMIN_CHAT_FLOOD_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa dea kick adminilor de pe server.", newLine );	
+				write_file( langFile, "ROM_ADMIN_CHAT_FLOOD_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa dea kick adminilor de pe server.", newLine );	
 		#endif
 		formatex(line, charsmax(line), "ROM_FILE_NOT_FOUND = %L", LANG_SERVER, "ROM_FILE_NOT_FOUND", "^%s", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
@@ -1577,7 +1582,7 @@ WriteLang( bool:exist )
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
-			write_file( langFile, "ROM_MOTDFILE_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca cvar-ul ^"motdfile^" ca sa fure informatii din acest server.", newLine );	
+			write_file( langFile, "ROM_MOTDFILE_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca cvar-ul ^"motdfile^" ca sa fure informatii din acest server.", newLine );	
 			
 		#if AMXX_VERSION_NUM < 183
 			formatex(line, charsmax(line), "ROM_ADVERTISE = %L", LANG_SERVER, "ROM_ADVERTISE", "^%c", "^%s", "^%c", "^%c", "^%s", "^%c", "^%c", "^%s", "^%c" );
@@ -1597,13 +1602,19 @@ WriteLang( bool:exist )
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
-			write_file( langFile, "ROM_ANTI_BAN_CLASS = %s : S-a detectat o comanda de ban suspecta, comanda ta a fost blocata.", newLine );
-			
-		formatex(line, charsmax(line), "ROM_ANTI_BAN_CLASS_LOG = %L", LANG_SERVER, "ROM_ANTI_BAN_CLASS_LOG", "^%s", "^%s", "^%s", "^%s" );
+			write_file( langFile, "ROM_ANTI_BAN_CLASS = %s : S-au detectat u numar prea mare de ban-uri pe clasa de ip, comanda ta a fost blocata.", newLine );
+		
+		formatex(line, charsmax(line), "ROM_ANTI_ANY_BAN_CLASS_LOG = %L", LANG_SERVER, "ROM_ANTI_ANY_BAN_CLASS_LOG", "^%s", "^%s", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
-			write_file( langFile, "ROM_ANTI_BAN_CLASS_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa dea ban pe mai mult de %s ip.", newLine );	
+			write_file( langFile, "ROM_ANTI_ANY_BAN_CLASS_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa dea ban pe clasa de ip.", newLine );	
+		
+		formatex(line, charsmax(line), "ROM_ANTI_SOME_BAN_CLASS_LOG = %L", LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", "^%s", "^%s", "^%s", "^%s" );
+		if( equal(line, "ML_NOTFOUND" , eqSize) )
+			write_file( langFile, line , newLine );
+		else
+			write_file( langFile, "ROM_ANTI_SOME_BAN_CLASS_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa dea ban pe mai mult de %s clase de ip.", newLine );	
 	}
 	else
 	{
@@ -1623,7 +1634,7 @@ WriteLang( bool:exist )
 		
 		write_file( langFile, "ROM_FAKE_PLAYERS_LOG = %s : S-a depistat un atac de ^"xFake-Players^" de la IP-ul : %s .", newLine );
 		write_file( langFile, "ROM_FAKE_PLAYERS_DETECT = %s : Ai primit kick deoarece deoarece esti suspect de fake-client. Te rugam sa folosesti alt client.", newLine );
-		write_file( langFile, "ROM_FAKE_PLAYERS_DETECT_LOG = %s : L-am detectat pe %s [ %s | %s ] ca suspect de ^"xFake-Players^" sau ^"xSpammer^".", newLine );
+		write_file( langFile, "ROM_FAKE_PLAYERS_DETECT_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca suspect de ^"xFake-Players^" sau ^"xSpammer^".", newLine );
 		
 		#if AMXX_VERSION_NUM < 183
 			write_file( langFile, "ROM_PLUGIN_PAUSE = %c%s : %cNe pare rau, dar din anumite motive, acest plugin nu poate fi pus pe pauza.", newLine );
@@ -1663,7 +1674,7 @@ WriteLang( bool:exist )
 			write_file( langFile, "ROM_CMD_BUG = ^^3%s : ^^4S-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.", newLine );
 		#endif
 		
-		write_file(langFile, "ROM_CMD_BUG_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului.", newLine );
+		write_file(langFile, "ROM_CMD_BUG_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului.", newLine );
 		write_file(langFile, "ROM_CMD_BUG_PRINT = %s : S-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.", newLine);
 		
 		#if AMXX_VERSION_NUM < 183
@@ -1672,7 +1683,7 @@ WriteLang( bool:exist )
 			write_file( langFile, "ROM_COLOR_BUG = ^^3%s : ^^4S-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.", newLine );
 		#endif
 		
-		write_file( langFile, "ROM_COLOR_BUG_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii.", newLine );
+		write_file( langFile, "ROM_COLOR_BUG_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii.", newLine );
 		write_file(langFile, "ROM_COLOR_BUG_PRINT = %s : S-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.", newLine);		
 		
 		#if AMXX_VERSION_NUM < 183
@@ -1681,23 +1692,29 @@ WriteLang( bool:exist )
 			write_file( langFile, "ROM_SPEC_BUG = ^^3%s : ^^4Ai facut o miscare suspecta asa ca te-am mutat la echipa precedenta.", newLine );
 		#endif
 		
-		write_file( langFile, "ROM_SPEC_BUG_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului.", newLine );
+		write_file( langFile, "ROM_SPEC_BUG_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului.", newLine );
 		
 		#if AMXX_VERSION_NUM < 183
 			write_file( langFile, "ROM_ADMIN_CHAT_FLOOD = %c%s : %cS-a observat un mic flood la chat primit din partea ta. Mesajele trimise de tine vor fi filtrate.", newLine );
-			write_file( langFile, "ROM_ADMIN_CHAT_FLOOD_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa dea kick adminilor de pe server.", newLine );	
+			write_file( langFile, "ROM_ADMIN_CHAT_FLOOD_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa dea kick adminilor de pe server.", newLine );	
 		#endif
 		
 		write_file( langFile, "ROM_FILE_NOT_FOUND = %s : Fisierul %s nu exista.", newLine );
+		
 		write_file( langFile, "ROM_ADMIN_DEBUG = Nume : %s - Parola : %s - Acces : %s - Flag : %s", newLine );
+		
 		write_file( langFile, "ROM_MOTDFILE = %s : S-a detectat o miscare suspecta din partea ta, comanda ta a fost blocata.", newLine );
-		write_file( langFile, "ROM_MOTDFILE_LOG = %s : L-am detectat pe %s [ %s | %s ] ca a incercat sa foloseasca cvar-ul ^"motdfile^" ca sa fure informatii din acest server.", newLine );	
+		write_file( langFile, "ROM_MOTDFILE_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca cvar-ul ^"motdfile^" ca sa fure informatii din acest server.", newLine );	
 		
 		#if AMXX_VERSION_NUM < 183
 			write_file( langFile, "ROM_ADVERTISE = %c%s :%c Acest server este supravegheat de pluginul de protectie %c%s%c versiunea %c%s%c .", newLine );
 		#else
 			write_file( langFile, "ROM_ADVERTISE = ^^3%s :^^4 Acest server este supravegheat de pluginul de protectie ^^3%s^^4 versiunea ^^3%s^^4 .", newLine );
 		#endif
+		
+		write_file( langFile, "ROM_ANTI_BAN_CLASS = %s : S-au detectat u numar prea mare de ban-uri pe clasa de ip, comanda ta a fost blocata.", newLine );
+		write_file( langFile, "ROM_ANTI_ANY_BAN_CLASS_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa dea ban pe clasa de ip.", newLine );	
+		write_file( langFile, "ROM_ANTI_SOME_BAN_CLASS_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa dea ban pe mai mult de %s clase de ip.", newLine );	
 	}
 	register_dictionary("rom_protect.txt");
 	IsLangUsed = true;
