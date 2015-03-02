@@ -19,12 +19,12 @@
 #pragma semicolon 1
 
 
-new sz_MenuText[MAX_PLAYERS + 1][ MAX_PLAYERS],
-	ArgNum[MAX_PLAYERS+1], Contor[MAX_PLAYERS+1],
-	bool:Name[MAX_PLAYERS+1], bool:Admin[MAX_PLAYERS+1], LastPass[MAX_PLAYERS+1][32], File[128], MapName[32];
+new sz_MenuText[MAX_PLAYERS + 1][ MAX_PLAYERS],	ArgNum[MAX_PLAYERS+1], Contor[MAX_PLAYERS+1],
+	bool:Name[MAX_PLAYERS+1], bool:IsAdmin[MAX_PLAYERS+1], LastPass[MAX_PLAYERS+1][32], 
+	File[128], MapName[32];
 
 static const Version[]     = "1.0.4f-dev",
-			 Built         = 40,
+			 Built         = 41,
 			 pluginName[] = "ROM-Protect",
 			 Terrorist[]   = "#Terrorist_Select",
 			 CT_Select[]   = "#CT_Select",
@@ -320,9 +320,9 @@ public client_connect(id)
 public client_disconnect(id)
 {
 	Contor[id] = 0;
-	if( Admin[id] )
+	if( IsAdmin[id] )
 	{
-		Admin[id] = false;
+		IsAdmin[id] = false;
 		remove_user_flags( id );
 	}
 }
@@ -388,9 +388,9 @@ public client_infochanged(id)
 		set_user_info(id, "name", newName);
 	}
 	
-	if (!equali(newName, oldName) && Admin[id])
+	if (!equali(newName, oldName) && IsAdmin[id])
 	{
-		Admin[id] = false;
+		IsAdmin[id] = false;
 		remove_user_flags(id);
 	}
 	
@@ -425,10 +425,21 @@ public cmdPass(id)
 	read_argv(1, pass, charsmax(pass));
 	remove_quotes(pass);
 	
+	if (equal(LastPass[id], pass) && IsAdmin[id])
+	{
+		#if AMXX_VERSION_NUM < 183
+			ColorChat(id, GREY, langType, id, "ROM_ADMIN_ALREADY_LOADED", '^3', getString(PlugCvar[Tag]), '^4');
+		#else
+			client_print_color(id, print_team_grey, langType, id, "ROM_ADMIN_ALREADY_LOADED", getString(PlugCvar[Tag]));
+		#endif
+		client_print(id, print_console, langType, id, "ROM_ADMIN_ALREADY_LOADED_PRINT", getString(PlugCvar[Tag]));
+		return PLUGIN_HANDLED;
+	}	
+	
 	loadAdminLogin();
 	getAccess(id, pass);
 	
-	if (!Admin[id])
+	if (!IsAdmin[id])
 	{
 		if (!Name[ id ])
 		{
@@ -639,7 +650,7 @@ public reloadDelay()
 	new players[MAX_PLAYERS], pnum;
 	get_players(players, pnum, "ch");
 	for (new i = 0; i < pnum; ++i)
-		if (Admin[players[i]])
+		if (IsAdmin[players[i]])
 			getAccess(players[i], LastPass[players[i]]);
 }
 
@@ -850,7 +861,6 @@ getAccess(const id, const userPass[])
 	get_user_info(id, "name", userName, charsmax(userName));
 	if (!(get_user_flags(id) & ADMIN_CHAT))
 		remove_user_flags(id);
-	copy(LastPass[id], charsmax(LastPass[]), userPass);
 	for (new i = 1; i <= admin_number; ++i)
 	{
 		if (equali(LoginName[i], userName))
@@ -859,11 +869,12 @@ getAccess(const id, const userPass[])
 			Name[id] = false;
 		if (equal(LoginFlag[i], "f") && Name[id])
 		{
-			if (equal(LoginPass[i], userPass) || Admin[id])
+			if (equal(LoginPass[i], userPass) || IsAdmin[id])
 			{
-				Admin[id] = true;
+				IsAdmin[id] = true;
 				acces = read_flags(LoginAccess[i]);
 				set_user_flags(id, acces);
+				copy(LastPass[id], charsmax(LastPass[]), userPass);
 			}
 			break;
 		}
@@ -1476,6 +1487,26 @@ WriteLang( bool:exist )
 			write_file( langFile, "ROM_ADMIN_LOADED_PRINT = %s : Admin-ul tau a fost incarcat.", newLine );
 			
 		#if AMXX_VERSION_NUM < 183
+			formatex(line, charsmax(line), "ROM_ADMIN_ALREADY_LOADED = %L", LANG_SERVER, "ROM_ADMIN_ALREADY_LOADED", "^%c", "^%s", "^%c" );
+			if( equal(line, "ML_NOTFOUND" , eqSize) )
+				write_file( langFile, line , newLine );
+			else
+				write_file( langFile, "ROM_ADMIN_ALREADY_LOADED = %c%s : %cAdmin-ul tau este deja incarcat.", newLine );
+		#else
+			formatex(line, charsmax(line), "ROM_ADMIN_ALREADY_LOADED = %L", LANG_SERVER, "ROM_ADMIN_ALREADY_LOADED", "^%s" );
+			if( equal(line, "ML_NOTFOUND" , eqSize) )
+				write_file( langFile, line , newLine );
+			else
+				write_file( langFile, "ROM_ADMIN_ALREADY_LOADED = ^^3%s : ^^4Admin-ul tau este deja incarcat.", newLine );
+		#endif
+		
+		formatex(line, charsmax(line), "ROM_ADMIN_ALREADY_LOADED_PRINT = %L", LANG_SERVER, "ROM_ADMIN_ALREADY_LOADED_PRINT", "^%s" );
+		if( equal(line, "ML_NOTFOUND" , eqSize) )
+			write_file( langFile, line , newLine );
+		else
+			write_file( langFile, "ROM_ADMIN_ALREADY_LOADED_PRINT = %s : Admin-ul tau este deja incarcat.", newLine );
+			
+		#if AMXX_VERSION_NUM < 183
 			formatex(line, charsmax(line), "ROM_CMD_BUG = %L", LANG_SERVER, "ROM_CMD_BUG", "^%c", "^%s", "^%c" );
 			if( equal(line, "ML_NOTFOUND" , eqSize) )
 				write_file( langFile, line , newLine );
@@ -1602,15 +1633,15 @@ WriteLang( bool:exist )
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
-			write_file( langFile, "ROM_ANTI_BAN_CLASS = %s : S-au detectat u numar prea mare de ban-uri pe clasa de ip, comanda ta a fost blocata.", newLine );
+			write_file( langFile, "ROM_ANTI_BAN_CLASS = %s : S-au detectat un numar prea mare de ban-uri pe clasa de ip, comanda ta a fost blocata.", newLine );
 		
-		formatex(line, charsmax(line), "ROM_ANTI_ANY_BAN_CLASS_LOG = %L", LANG_SERVER, "ROM_ANTI_ANY_BAN_CLASS_LOG", "^%s", "^%s", "^%s" );
+		formatex(line, charsmax(line), "ROM_ANTI_ANY_BAN_CLASS_LOG = %L", LANG_SERVER, "ROM_ANTI_ANY_BAN_CLASS_LOG", "^%s", "^%s", "^%s", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
 			write_file( langFile, "ROM_ANTI_ANY_BAN_CLASS_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa dea ban pe clasa de ip.", newLine );	
 		
-		formatex(line, charsmax(line), "ROM_ANTI_SOME_BAN_CLASS_LOG = %L", LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", "^%s", "^%s", "^%s", "^%s" );
+		formatex(line, charsmax(line), "ROM_ANTI_SOME_BAN_CLASS_LOG = %L", LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", "^%s", "^%s", "^%s", "^%s", "^%s" );
 		if( equal(line, "ML_NOTFOUND" , eqSize) )
 			write_file( langFile, line , newLine );
 		else
@@ -1667,6 +1698,14 @@ WriteLang( bool:exist )
 		#endif
 		
 		write_file( langFile, "ROM_ADMIN_LOADED_PRINT = %s : Admin-ul tau a fost incarcat.", newLine );
+		
+		#if AMXX_VERSION_NUM < 183
+			write_file( langFile, "ROM_ADMIN_ALREADY_LOADED = %c%s : %cAdmin-ul tau este deja incarcat.", newLine );
+		#else
+			write_file( langFile, "ROM_ADMIN_ALREADY_LOADED = ^^3%s : ^^4Admin-ul tau este deja incarcat.", newLine );
+		#endif
+		
+		write_file( langFile, "ROM_ADMIN_ALREADY_LOADED_PRINT = %s : Admin-ul tau este deja incarcat.", newLine );
 		
 		#if AMXX_VERSION_NUM < 183
 			write_file( langFile, "ROM_CMD_BUG = %c%s : %cS-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.", newLine );
