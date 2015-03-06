@@ -259,6 +259,20 @@ native get_user_team(index, team[]="", len=0);
 native Float:get_gametime();
 #endif
 
+forward plugin_init();
+
+forward plugin_pause();
+
+forward plugin_precache();
+
+forward client_infochanged(id);
+
+forward client_connect(id);
+
+forward client_disconnect(id);
+
+forward plugin_end();
+
 
 // From amxmisc header :
 
