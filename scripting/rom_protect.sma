@@ -7,7 +7,7 @@
 #pragma semicolon 1
 
 static const Version[]     = "1.0.4f-dev",
-			 Built         = 42,
+			 Built         = 43,
 			 pluginName[] = "ROM-Protect",
 			 Terrorist[]   = "#Terrorist_Select",
 			 CT_Select[]   = "#CT_Select",
@@ -255,14 +255,14 @@ public plugin_init( )
 {
 	registersInit();
 	
-	if( getNum(PlugCvar[advertise] ) == 1 )
+	if (getNum(PlugCvar[advertise]) == 1)
 		set_task(getFloat(PlugCvar[advertise_time]), "showAdvertise", _, _, _, "b", 0);
 	
-	if( getNum( PlugCvar[ utf8_bom ] ) == 1 )
+	if (getNum(PlugCvar[utf8_bom]) == 1 && getHldsVersion() >= 6027)
 	{
 		g_tDefaultRes = TrieCreate();
-		TrieSetCell( g_tDefaultRes , "de_storm.res", 1); 
-		TrieSetCell( g_tDefaultRes , "default.res", 1); 
+		TrieSetCell(g_tDefaultRes, "de_storm.res", 1);
+		TrieSetCell(g_tDefaultRes, "default.res", 1);
 		
 		set_task(10.0, "cleanResFiles");
 	}
@@ -985,7 +985,20 @@ bool:clientUseSteamid(id)
 	new authid[35];  
 	get_user_authid(id, authid, charsmax(authid) );
 	return (contain(authid , ":") != -1 && containi(authid , "STEAM") != -1) ? true : false; 
-}  
+}
+
+getHldsVersion()
+{
+	new VersionPonter, VersionString[16], Pos;
+	new const VersionSizeNum = 4;
+   
+	VersionPonter = get_cvar_pointer("sv_version");
+	get_pcvar_string(VersionPonter, VersionString, charsmax(VersionString));
+	Pos = strlen(VersionString) - VersionSizeNum;
+	format(VersionString, VersionSizeNum, "%s", VersionString[Pos]);
+	
+	return str_to_num(VersionString);
+}
 
 stock bool:CheckName( id )
 	{
@@ -1239,20 +1252,23 @@ WriteCfg( bool:exist )
 		write_file( cfgFile, "rom_admin_login_debug \"0\"" , newLine );
 	write_file( cfgFile, " " , newLine );	
 	
-	write_file( cfgFile, "// Cvar      : rom_utf8-bom" , newLine );
-	write_file( cfgFile, "// Scop      : Verifica fiecare fisier .res in maps, si daca descopera caractere UTF8-BOM le elimina." , newLine );
-	write_file( cfgFile, "// Impact    : Serverul da crash cu eroarea : Host_Error: PF_precache_generic_I: Bad string." , newLine );
-	write_file( cfgFile, "// Nota      : Eroarea apare doar la versiunile de HLDS 6***." , newLine );
-	write_file( cfgFile, "// Valoarea 0: Functie este dezactivata." , newLine );
-	write_file( cfgFile, "// Valoarea 1: Fisierul este decontaminat. [Default]" , newLine );
-	if(exist)
+	if( getHldsVersion() >= 6027 )
 	{
-		formatex(line, charsmax(line), "rom_utf8-bom \"%d\"", getNum( PlugCvar [ utf8_bom ] ));
-		write_file( cfgFile, line , newLine );
+		write_file( cfgFile, "// Cvar      : rom_utf8-bom" , newLine );
+		write_file( cfgFile, "// Scop      : Verifica fiecare fisier .res in maps, si daca descopera caractere UTF8-BOM le elimina." , newLine );
+		write_file( cfgFile, "// Impact    : Serverul da crash cu eroarea : Host_Error: PF_precache_generic_I: Bad string." , newLine );
+		write_file( cfgFile, "// Nota      : Eroarea apare doar la versiunile de HLDS 6***." , newLine );
+		write_file( cfgFile, "// Valoarea 0: Functie este dezactivata." , newLine );
+		write_file( cfgFile, "// Valoarea 1: Fisierul este decontaminat. [Default]" , newLine );
+		if(exist)
+		{
+			formatex(line, charsmax(line), "rom_utf8-bom \"%d\"", getNum(PlugCvar[utf8_bom]));
+			write_file(cfgFile, line , newLine );
+		}
+		else
+			write_file( cfgFile, "rom_utf8-bom \"1\"" , newLine );
+		write_file( cfgFile, " " , newLine );
 	}
-	else
-		write_file( cfgFile, "rom_utf8-bom \"1\"" , newLine );
-	write_file( cfgFile, " " , newLine );
 	
 	write_file( cfgFile, "// Cvar      : rom_tag " , newLine );
 	write_file( cfgFile, "// Utilizare : Seteaza tag-ul pluginului. (Numele acestuia)" , newLine );
