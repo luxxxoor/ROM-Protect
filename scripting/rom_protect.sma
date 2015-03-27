@@ -4,11 +4,11 @@
 
 #pragma semicolon 1
 
-static const Version[]     = "1.0.4f-dev",
-			 Built         = 44,
+static const Version[]     = "1.0.4f-dev2",
+			 Built         = 45,
 			 pluginName[] = "ROM-Protect",
 			 Terrorist[]   = "#Terrorist_Select",
-			 CT_Select[]   = "#CT_Select",
+			 Counter_Terrorist[]   = "#CT_Select",
 			 cfgFile[]     = "addons/amxmodx/configs/rom_protect.cfg",
 			 langFile[]    = "addons/amxmodx/data/lang/rom_protect.txt",
 			 langType[]    = "%L",
@@ -517,7 +517,7 @@ public oldStyleMenusTeammenu(msg, des, rec)
 	if (is_user_connected(rec))
 	{
 		get_msg_arg_string(4, sz_MenuText[rec], charsmax(sz_MenuText));
-		if (equal(sz_MenuText[rec], Terrorist) || equal(sz_MenuText[rec], CT_Select))
+		if (equal(sz_MenuText[rec], Terrorist) || equal(sz_MenuText[rec], Counter_Terrorist))
 			set_task(0.1, "blockSpecbugOldStyleMenus", rec);
 	}
 }
@@ -539,7 +539,7 @@ public blockSpecbugOldStyleMenus(id)
 		{
 			if (equal(sz_MenuText[id], Terrorist) && is_user_connected(id))
 				fm_set_user_team(id, FM_TEAM_T);
-			if (equal(sz_MenuText[id], CT_Select) && is_user_connected(id))
+			if (equal(sz_MenuText[id], Counter_Terrorist) && is_user_connected(id))
 				fm_set_user_team(id, FM_TEAM_CT);
 			if (getNum(PlugCvar[plug_warn]))
 			{
@@ -1016,7 +1016,7 @@ registersInit()
 	#endif
 	if (getHldsVersion() < 6027)
 		for (new i = 0; i < sizeof AllAutobuyCommands; ++i)
-			register_clcmd(AllAutobuyCommands[i], "checkAutobuyBug");
+			register_clcmd(AllAutobuyCommands[i], "CheckAutobuyBug");
 	register_clcmd("login", "cmdPass");
 	register_concmd("amx_cvar", "cvarFunc");
 	register_concmd("amx_reloadadmins", "reloadLogin");
@@ -1040,7 +1040,7 @@ bool:clientUseSteamid(id)
 
 getHldsVersion()
 {
-	new VersionPonter, VersionString[16], Pos;
+	new VersionPonter, VersionString[24], Pos;
 	new const VersionSizeNum = 4;
    
 	VersionPonter = get_cvar_pointer("sv_version");
