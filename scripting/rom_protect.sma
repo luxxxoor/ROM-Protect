@@ -33,9 +33,15 @@ enum
 
 #if AMXX_VERSION_NUM < 183
 	#include <ColorChat>
+	#define MAX_PLAYERS 32		
+	#define MAX_NAME_LENGTH 32
 	new bool:flood[MAX_PLAYERS+1];
 	new Float:g_Flooding[MAX_PLAYERS+1] = {0.0, ...},
 			  g_Flood[MAX_PLAYERS+1] = {0, ...};
+#else		
+	#if MAX_PLAYERS != 32		
+		#define MAX_PLAYERS 32		
+	#endif
 #endif
 
 new MenuText[MAX_PLAYERS+1][MAX_PLAYERS],	ArgNum[MAX_PLAYERS+1], Contor[MAX_PLAYERS+1],
