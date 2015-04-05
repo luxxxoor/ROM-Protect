@@ -3,8 +3,12 @@
 
 #pragma semicolon 1
 
+#if AMXX_VERSION_NUM < 181 
+    #assert AMX Mod X v1.8.1 or later library required!
+#endif 
+
 static const Version[]     = "1.0.4f-dev3",
-			 Built         = 48,
+			 Built         = 49,
 			 pluginName[] = "ROM-Protect",
 			 Terrorist[]   = "#Terrorist_Select",
 			 Counter_Terrorist[]   = "#CT_Select",
