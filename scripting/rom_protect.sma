@@ -4,7 +4,7 @@
 #pragma semicolon 1
 
 static const Version[]     = "1.0.4f-dev3",
-			 Built         = 46,
+			 Built         = 48,
 			 pluginName[] = "ROM-Protect",
 			 Terrorist[]   = "#Terrorist_Select",
 			 Counter_Terrorist[]   = "#CT_Select",
@@ -564,7 +564,7 @@ public cmdPass(const id)
 
 public oldStyleMenusTeammenu(msg, des, rec)
 {
-	if ( is_user_connected(rec) )
+	if ( is_user_connected(rec) && getNum(PlugCvar[spec_bug]) == 1)
 	{
 		get_msg_arg_string(4, MenuText[rec], charsmax(MenuText));
 		
@@ -577,16 +577,19 @@ public oldStyleMenusTeammenu(msg, des, rec)
 
 public vGuiTeammenu(msg, des, rec)  
 {  
-	if ( get_msg_arg_int(1) == 26 || get_msg_arg_int(1) == 27 )
+	if ( getNum(PlugCvar[spec_bug]) == 1)
 	{
-		ArgNum[rec] = get_msg_arg_int(1);
-		set_task(0.1, "blockSpecbugVGui", rec);
+		if ( get_msg_arg_int(1) == 26 || get_msg_arg_int(1) == 27 )
+		{
+			ArgNum[rec] = get_msg_arg_int(1);
+			set_task(0.1, "blockSpecbugVGui", rec);
+		}
 	}
 }
 
 public blockSpecbugOldStyleMenus(const id)
 {
-	if ( !is_user_alive(id) && is_user_connected(id) && getNum(PlugCvar[spec_bug]) == 1 )
+	if ( !is_user_alive(id) && is_user_connected(id) )
 	{
 		if ( fm_get_user_team(id) == FM_TEAM_SPECTATOR && !is_user_alive(id) )
 		{
@@ -621,11 +624,12 @@ public blockSpecbugOldStyleMenus(const id)
 
 public blockSpecbugVGui(const id)
 {
-	new bool:bug_log[MAX_PLAYERS+1];
-	if ( !is_user_alive(id) && is_user_connected(id) && getNum(PlugCvar[spec_bug]) == 1 )
+	if ( !is_user_alive(id) && is_user_connected(id) )
 	{
 		if ( fm_get_user_team(id) == FM_TEAM_SPECTATOR )
 		{
+			new bool:bug_log[MAX_PLAYERS+1];
+				
 			if ( ArgNum[id] == 26 )
 			{
 				fm_set_user_team(id, FM_TEAM_T);
@@ -2340,13 +2344,15 @@ writeSignature(const file[])
 	write_file( file, "// O productie FioriGinal.ro - site : www.fioriginal.ro", newLine);
 	write_file( file, "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html", newLine);
 	write_file( file, "// Link sursa : https://github.com/luxxxoor/ROM-Protect", -1);
-	if ( equal(file, langFile) )
-	{
-		write_file( file, " ", newLine);
-		write_file( file, "// Colori : ^1 - Culoarea aleasa de jucator cu con_color.", -1);
-		write_file( file, "//          ^3 - Culoare gri.", -1);
-		write_file( file, "//          ^4 - Culoare verde.", -1);
-	}
+	#if AMXX_VERSION_NUM >= 183
+		if ( equal(file, langFile) )
+		{
+			write_file( file, " ", newLine);
+			write_file( file, "// Colori : ^1 - Culoarea aleasa de jucator cu con_color.", -1);
+			write_file( file, "//          ^3 - Culoare gri.", -1);
+			write_file( file, "//          ^4 - Culoare verde.", -1);
+		}
+	#endif
 	write_file( file, " ", newLine);
 	write_file( file, " ", newLine);
 	write_file( file, " ", newLine);
