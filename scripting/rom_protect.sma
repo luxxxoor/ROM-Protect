@@ -461,7 +461,7 @@ public plugin_pause()
 	}
 }
 
-public cmdPass(const id)
+public cmdPass(id)
 {
 	if ( getNum(PlugCvar[admin_login]) == 0 )
 	{
@@ -523,7 +523,7 @@ public cmdPass(const id)
 }
 
 #if AMXX_VERSION_NUM < 183
-	public hookAdminChat(const id)
+	public hookAdminChat(id)
 	{
 		new said[2];
 		
@@ -591,7 +591,7 @@ public vGuiTeammenu(msg, des, rec)
 	}
 }
 
-public blockSpecbugOldStyleMenus(const id)
+public blockSpecbugOldStyleMenus(id)
 {
 	if ( !is_user_alive(id) && is_user_connected(id) )
 	{
@@ -626,7 +626,7 @@ public blockSpecbugOldStyleMenus(const id)
 	}
 }
 
-public blockSpecbugVGui(const id)
+public blockSpecbugVGui(id)
 {
 	if ( !is_user_alive(id) && is_user_connected(id) )
 	{
@@ -667,7 +667,7 @@ public blockSpecbugVGui(const id)
 }
 
 #if AMXX_VERSION_NUM < 183
-	public showAdminChatFloodWarning(const id)
+	public showAdminChatFloodWarning(id)
 	{
 		if ( flood[id] )
 		{
@@ -778,7 +778,7 @@ public cvarFunc(id, level, cid)
 	return PLUGIN_CONTINUE; 
 }
 
-public hookBanClassCommand(const id)
+public hookBanClassCommand(id)
 { 
 	if ( !is_user_admin(id) )
 	{
@@ -883,7 +883,7 @@ public hookBanClassCommand(const id)
 	return PLUGIN_CONTINUE;
 }
 
-public hookBasicOnChatCommand(const id)
+public hookBasicOnChatCommand(id)
 {
 	if ( getNum(PlugCvar[color_bug]) == 1 || getNum(PlugCvar[cmd_bug]) == 1 )
 	{
@@ -951,7 +951,7 @@ public hookBasicOnChatCommand(const id)
 	return PLUGIN_CONTINUE;
 }
 
-public checkBot(const id, const Var[], const Value[])
+public checkBot(id, const Var[], const Value[])
 {
     if ( equal(Var, "fps_max") && Value[0] == 'B' )
     {
@@ -965,7 +965,7 @@ public checkBot(const id, const Var[], const Value[])
     }
 }
 
-public CheckAutobuyBug(const id)		
+public CheckAutobuyBug(id)		
 {		
 	new Command[512];
 	new Count = read_argc();
@@ -1050,7 +1050,7 @@ loadAdminLogin()
 	fclose(file);
 }
 
-getAccess(const id, const UserPass[])
+getAccess(id, UserPass[])
 {
 	new userName[MAX_NAME_LENGTH], acces;
 
@@ -1098,7 +1098,7 @@ logCommand(const Msg[], any:...)
 	write_file(File, LogMessage, newLine);
 }
 
-getInfo(const id, const INFO:iInfo)
+getInfo(id, INFO:iInfo)
 {
 	new const Server[32] = "SERVER"; // Trebuie sa aibe acealasi numar de caractere pentru a nu primi "error 047".
 	switch (iInfo)
@@ -1144,7 +1144,7 @@ getTime()
 	return Time;
 }
 
-getString(const Text)
+getString(Text)
 {
 	new File[32]; 
 	get_pcvar_string(Text, File, charsmax(File));
@@ -1152,7 +1152,7 @@ getString(const Text)
 	return File;
 }
 
-getNum(const Text)
+getNum(Text)
 {
 	new Num;
 	Num = get_pcvar_num(Text);
@@ -1160,7 +1160,7 @@ getNum(const Text)
 	return Num;
 }
 
-Float:getFloat(const Text)
+Float:getFloat(Text)
 {
 	new Float:float = get_pcvar_float(Text);
 	
@@ -1217,7 +1217,7 @@ registersInit()
 	register_concmd("amx_addban", "hookBanClassCommand");
 }
 
-public stringFilter(string[], const len)
+public stringFilter(string[], len)
 {
 	for (new i = 0; i <= len; ++i)
 	{
@@ -1231,7 +1231,7 @@ public stringFilter(string[], const len)
 	}
 }
 
-bool:clientUseSteamid(const id) 
+bool:clientUseSteamid(id) 
 {	
 	new authid[35]; 
 	get_user_authid(id, authid, charsmax(authid) );
@@ -1252,7 +1252,7 @@ getHldsVersion()
 	return str_to_num(VersionString);
 }
 
-CheckLong(cCommand[], const Len)
+CheckLong(cCommand[], Len)
 {
 	new mCommand[512];
 	
@@ -1553,7 +1553,7 @@ WriteCfg( bool:exist )
 	write_file( cfgFile, "// Efect : Selecteaza fisierul de unde sa fie citite adminele cu flag ^"f^"", newLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_admin_login_file ^"%s^"", getString( PlugCvar [ admin_login_file ] ));
+		formatex(line, charsmax(line), "rom_admin_login_file ^"%s^"", getString(PlugCvar[admin_login_file ]));
 		write_file( cfgFile, line, newLine);
 	}
 	else
@@ -2336,30 +2336,30 @@ WriteLang( bool:exist )
 	IsLangUsed = true;
 }
 
-writeSignature(const file[])
+writeSignature(const File[])
 {
 	new line[121];
 	
-	write_file( file, "// *ROM-Protect", newLine);
-	write_file( file, "// Plugin OpenSource anti-flood/bug-fix pentru orice server.", newLine);
+	write_file( File, "// *ROM-Protect", newLine);
+	write_file( File, "// Plugin OpenSource anti-flood/bug-fix pentru orice server.", newLine);
 	formatex(line, charsmax(line), "// Versiunea %s. Bulit %d", Version, Built);
-	write_file( file, line, newLine); 
-	write_file( file, "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor", newLine);
-	write_file( file, "// O productie FioriGinal.ro - site : www.fioriginal.ro", newLine);
-	write_file( file, "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html", newLine);
-	write_file( file, "// Link sursa : https://github.com/luxxxoor/ROM-Protect", -1);
+	write_file( File, line, newLine); 
+	write_file( File, "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor", newLine);
+	write_file( File, "// O productie FioriGinal.ro - site : www.fioriginal.ro", newLine);
+	write_file( File, "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html", newLine);
+	write_file( File, "// Link sursa : https://github.com/luxxxoor/ROM-Protect", -1);
 	#if AMXX_VERSION_NUM >= 183
-		if ( equal(file, langFile) )
+		if ( equal(File, langFile) )
 		{
-			write_file( file, " ", newLine);
-			write_file( file, "// Colori : ^1 - Culoarea aleasa de jucator cu con_color.", -1);
-			write_file( file, "//          ^3 - Culoare gri.", -1);
-			write_file( file, "//          ^4 - Culoare verde.", -1);
+			write_file( File, " ", newLine);
+			write_file( File, "// Colori : ^1 - Culoarea aleasa de jucator cu con_color.", -1);
+			write_file( File, "//          ^3 - Culoare gri.", -1);
+			write_file( File, "//          ^4 - Culoare verde.", -1);
 		}
 	#endif
-	write_file( file, " ", newLine);
-	write_file( file, " ", newLine);
-	write_file( file, " ", newLine);
+	write_file( File, " ", newLine);
+	write_file( File, " ", newLine);
+	write_file( File, " ", newLine);
 }
 
 /*
