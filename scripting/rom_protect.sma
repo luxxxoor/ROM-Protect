@@ -8,7 +8,7 @@
 #endif 
 
 static const Version[]           = "1.0.4f-dev4",
-			 Build               = 50,
+			 Build               = 51,
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -43,14 +43,12 @@ enum
 	new bool:flood[MAX_PLAYERS+1];
 	new Float:g_Flooding[MAX_PLAYERS+1] = {0.0, ...},
 			  g_Flood[MAX_PLAYERS+1] = {0, ...};		  
-	enum Color
+	enum _:Colors 
 	{
-		NORMAL = 1, // clients scr_concolor cvar color
-		GREEN, // Green Color
-		TEAM_COLOR, // Red, grey, blue
-		GREY, // grey
-		RED, // Red
-		BLUE, // Blue
+		DontChange,
+		Red,
+		Blue,
+		Grey
 	}
 #else		
 	#if MAX_PLAYERS != 32		
@@ -362,8 +360,8 @@ public client_connect(id)
 					if ( getNum(PlugCvar[plug_warn]) == 1 )
 					{
 						#if AMXX_VERSION_NUM < 183
-							ColorChat(0, GREY, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS", '^3', getString(PlugCvar[Tag]), '^4', address);
-							ColorChat(0, GREY, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", '^3', getString(PlugCvar[Tag]), '^4');
+							client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS", '^3', getString(PlugCvar[Tag]), '^4', address);
+							client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", '^3', getString(PlugCvar[Tag]), '^4');
 						#else
 							client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS", getString(PlugCvar[Tag]), address);
 							client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", getString(PlugCvar[Tag]));
@@ -477,7 +475,7 @@ public plugin_pause()
 		if (getNum(PlugCvar[plug_warn]) == 1)
 		{
 			#if AMXX_VERSION_NUM < 183
-				ColorChat(0, GREY, LangType, LANG_PLAYER, "ROM_PLUGIN_PAUSE", '^3', getString(PlugCvar[Tag]), '^4');
+				client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_PLUGIN_PAUSE", '^3', getString(PlugCvar[Tag]), '^4');
 			#else
 				client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_PLUGIN_PAUSE", getString(PlugCvar[Tag]));
 			#endif
@@ -508,7 +506,7 @@ public cmdPass(id)
 	if (equal(LastPass[id], pass) && IsAdmin[id])
 	{
 		#if AMXX_VERSION_NUM < 183
-			ColorChat(id, GREY, LangType, id, "ROM_ADMIN_ALREADY_LOADED", '^3', getString(PlugCvar[Tag]), '^4');
+			client_print_color(id, Grey, LangType, id, "ROM_ADMIN_ALREADY_LOADED", '^3', getString(PlugCvar[Tag]), '^4');
 		#else
 			client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_ALREADY_LOADED", getString(PlugCvar[Tag]));
 		#endif
@@ -524,7 +522,7 @@ public cmdPass(id)
 		if (!Name[ id ])
 		{
 			#if AMXX_VERSION_NUM < 183
-				ColorChat(id, GREY, LangType, id, "ROM_ADMIN_WRONG_NAME", '^3', getString(PlugCvar[Tag]), '^4');
+				client_print_color(id, Grey, LangType, id, "ROM_ADMIN_WRONG_NAME", '^3', getString(PlugCvar[Tag]), '^4');
 			#else
 				client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_WRONG_NAME", getString(PlugCvar[Tag]));
 			#endif
@@ -533,7 +531,7 @@ public cmdPass(id)
 		else
 		{
 			#if AMXX_VERSION_NUM < 183
-				ColorChat(id, GREY, LangType, id, "ROM_ADMIN_WRONG_PASS", '^3', getString(PlugCvar[Tag]), '^4');
+				client_print_color(id, Grey, LangType, id, "ROM_ADMIN_WRONG_PASS", '^3', getString(PlugCvar[Tag]), '^4');
 			#else
 				client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_WRONG_PASS", getString(PlugCvar[Tag]));
 			#endif
@@ -543,7 +541,7 @@ public cmdPass(id)
 	else
 	{
 		#if AMXX_VERSION_NUM < 183
-			ColorChat(id, GREY, LangType, id, "ROM_ADMIN_LOADED", '^3', getString(PlugCvar[Tag]), '^4');
+			client_print_color(id, Grey, LangType, id, "ROM_ADMIN_LOADED", '^3', getString(PlugCvar[Tag]), '^4');
 		#else
 			client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_LOADED", getString(PlugCvar[Tag]));
 		#endif
@@ -641,7 +639,7 @@ public blockSpecbugOldStyleMenus(id)
 			if ( getNum(PlugCvar[plug_warn]) )
 			{
 				#if AMXX_VERSION_NUM < 183
-					ColorChat(id,GREY, LangType, id, "ROM_SPEC_BUG", '^3', getString(PlugCvar[Tag]), '^4');
+					client_print_color(id,Grey, LangType, id, "ROM_SPEC_BUG", '^3', getString(PlugCvar[Tag]), '^4');
 				#else
 					client_print_color(id, print_team_grey, LangType, id, "ROM_SPEC_BUG", getString(PlugCvar[Tag]));
 				#endif
@@ -680,7 +678,7 @@ public blockSpecbugVGui(id)
 			if ( getNum(PlugCvar[plug_warn]) == 1 && bug_log[id] )
 			{
 				#if AMXX_VERSION_NUM < 183
-					ColorChat(id, GREY, LangType, id, "ROM_SPEC_BUG", '^3', getString(PlugCvar[Tag]), '^4');
+					client_print_color(id, Grey, LangType, id, "ROM_SPEC_BUG", '^3', getString(PlugCvar[Tag]), '^4');
 				#else
 					client_print_color(id, print_team_grey, LangType, id, "ROM_SPEC_BUG", getString(PlugCvar[Tag]));
 				#endif
@@ -704,7 +702,7 @@ public blockSpecbugVGui(id)
 		{
 			if ( getNum(PlugCvar[plug_warn]) == 1 )
 			{
-					ColorChat(id, GREY, LangType, id, "ROM_ADMIN_CHAT_FLOOD", '^3', getString(PlugCvar[Tag]), '^4');
+					client_print_color(id, Grey, LangType, id, "ROM_ADMIN_CHAT_FLOOD", '^3', getString(PlugCvar[Tag]), '^4');
 			}
 			
 			if ( getNum(PlugCvar[plug_log]) == 1 )
@@ -719,8 +717,9 @@ public blockSpecbugVGui(id)
 
 public showAdvertise()
 {
+	write_file( LangFile, "ROM_ADVERTISE = %c%s :%c Acest server este supravegheat de pluginul de protectie %c%s%c versiunea %c%s%c .", NewLine);
 	#if AMXX_VERSION_NUM < 183
-		ColorChat(0, GREY, LangType, LANG_PLAYER, "ROM_ADVERTISE", '^3', getString(PlugCvar[Tag]), '^4', '^3', PluginName, '^4', '^3', Version, '^4');
+		client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_ADVERTISE", '^3', getString(PlugCvar[Tag]), '^4', '^3', PluginName, '^4', '^3', Version, '^4');
 	#else
 		client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_ADVERTISE", getString(PlugCvar[Tag]), PluginName, Version);
 	#endif
@@ -948,7 +947,7 @@ public hookBasicOnChatCommand(id)
 			if ( getNum(PlugCvar[plug_warn]) == 1 )
 			{
 				#if AMXX_VERSION_NUM < 183
-					ColorChat( id, GREY, LangType, id, "ROM_CMD_BUG", '^3', getString(PlugCvar[Tag]), '^4');
+					client_print_color( id, Grey, LangType, id, "ROM_CMD_BUG", '^3', getString(PlugCvar[Tag]), '^4');
 				#else
 					client_print_color( id, print_team_grey, LangType, id, "ROM_CMD_BUG", getString(PlugCvar[Tag]) );
 				#endif
@@ -966,7 +965,7 @@ public hookBasicOnChatCommand(id)
 			if ( getNum(PlugCvar[plug_warn]) == 1 )
 			{
 				#if AMXX_VERSION_NUM < 183
-					ColorChat( id, GREY, LangType, id, "ROM_COLOR_BUG", '^3', getString(PlugCvar[Tag]), '^4');
+					client_print_color( id, Grey, LangType, id, "ROM_COLOR_BUG", '^3', getString(PlugCvar[Tag]), '^4');
 				#else
 					client_print_color( id, print_team_grey, LangType, id, "ROM_COLOR_BUG", getString(PlugCvar[Tag]) );
 				#endif
@@ -1011,7 +1010,7 @@ public CheckAutobuyBug(id)
 				if ( getNum(PlugCvar[plug_warn]) == 1 )
 				{		
 					#if AMXX_VERSION_NUM < 183		
-						ColorChat( id, GREY, LangType, id, "ROM_AUTOBUY", '^3', getString(PlugCvar[Tag]), '^4');		
+						client_print_color( id, Grey, LangType, id, "ROM_AUTOBUY", '^3', getString(PlugCvar[Tag]), '^4');		
 					#else		
 						client_print_color( id, print_team_grey, LangType, id, "ROM_AUTOBUY", getString(PlugCvar[Tag]));
 					#endif		
@@ -1230,27 +1229,27 @@ getTime()
 	return Time;
 }
 
-getString(Text)
+getString(Cvar)
 {
-	new File[32]; 
-	get_pcvar_string(Text, File, charsmax(File));
+	new CvarString[32]; 
+	get_pcvar_string(Cvar, CvarString, charsmax(CvarString));
 	
-	return File;
+	return CvarString;
 }
 
-getNum(Text)
+getNum(Cvar)
 {
-	new Num;
-	Num = get_pcvar_num(Text);
+	new CvarNum;
+	CvarNum = get_pcvar_num(Cvar);
 	
-	return Num;
+	return CvarNum;
 }
 
-Float:getFloat(Text)
+Float:getFloat(Cvar)
 {
-	new Float:float = get_pcvar_float(Text);
+	new Float:CvarFloat = get_pcvar_float(Cvar);
 	
-	return float;
+	return CvarFloat;
 } 
 
 registersPrecache()
@@ -1277,8 +1276,8 @@ registersInit()
 	register_plugin(PluginName, Version, "FioriGinal.Ro");
 	register_cvar("rom_protect", Version, FCVAR_SERVER | FCVAR_SPONLY);
 	
-	register_message(get_user_msgid( "ShowMenu" ), "oldStyleMenusTeammenu");
-	register_message(get_user_msgid( "VGUIMenu" ), "vGuiTeammenu");
+	register_message(get_user_msgid("ShowMenu"), "oldStyleMenusTeammenu");
+	register_message(get_user_msgid("VGUIMenu"), "vGuiTeammenu");
 	
 	for (new i = 0; i < sizeof AllBasicOnChatCommads; ++i)
 	{
@@ -2494,9 +2493,9 @@ writeSignature(const File[])
 		if ( equal(File, LangFile) )
 		{
 			write_file( File, " ", NewLine);
-			write_file( File, "// Colori : ^1 - Culoarea aleasa de jucator cu con_color.", -1);
-			write_file( File, "//          ^3 - Culoare gri.", -1);
-			write_file( File, "//          ^4 - Culoare verde.", -1);
+			write_file( File, "// Colori : ^^1 - Culoarea aleasa de jucator cu con_color.", -1);
+			write_file( File, "//          ^^3 - Culoare gri.", -1);
+			write_file( File, "//          ^^4 - Culoare verde.", -1);
 		}
 	#endif
 	write_file( File, " ", NewLine);
@@ -3685,7 +3684,7 @@ stock _HTTP2_large_comp(large1[], const large1_size, large2[], const large2_size
 }
 
 #if AMXX_VERSION_NUM < 183
-// header ColorChat.inc
+// header client_print_color.inc
 
 /* Fun functions
 *
@@ -3694,125 +3693,251 @@ stock _HTTP2_large_comp(large1[], const large1_size, large2[], const large2_size
 * This file is provided as is (no warranties).
 */
 
-new TeamName[][] = 
+stock const g_szTeamName[Colors][] = 
 {
-	"",
+	"UNASSIGNED",
 	"TERRORIST",
 	"CT",
 	"SPECTATOR"
 };
 
-ColorChat(id, Color:type, const msg[], {Float,Sql,Result,_}:...)
+stock client_print_color(id, iColor=DontChange, const szMsg[], any:...)
 {
-	new message[256];
-
-	switch(type)
+	// check if id is different from 0
+	if( id && !is_user_connected(id) )
 	{
-		case NORMAL: // clients scr_concolor cvar color
-		{
-			message[0] = 0x01;
-		}
-		case GREEN: // Green
-		{
-			message[0] = 0x04;
-		}
-		default: // White, Red, Blue
-		{
-			message[0] = 0x03;
-		}
+		return 0;
 	}
 
-	vformat(message[1], 251, msg, 4);
+	if( iColor > Grey )
+	{
+		iColor = DontChange;
+	}
 
-	// Make sure message is not longer than 192 character. Will crash the server.
-	message[192] = '^0';
+	new szMessage[192];
+	if( iColor == DontChange )
+	{
+		szMessage[0] = 0x04;
+	}
+	else
+	{
+		szMessage[0] = 0x03;
+	}
 
-	new team, ColorChange, index, MSG_Type;
-	
+	new iParams = numargs();
+	// Specific player code
 	if(id)
 	{
-		MSG_Type = MSG_ONE;
-		index = id;
-	} else {
-		index = FindPlayer();
-		MSG_Type = MSG_ALL;
-	}
-	
-	team = get_user_team(index);
-	ColorChange = ColorSelection(index, MSG_Type, type);
+		if( iParams == 3 )
+		{
+			copy(szMessage[1], charsmax(szMessage)-1, szMsg);
+		}
+		else
+		{
+			vformat(szMessage[1], charsmax(szMessage)-1, szMsg, 4);
+		}
 
-	ShowColorMessage(index, MSG_Type, message);
-		
-	if(ColorChange)
+		if( iColor )
+		{
+			new szTeam[11]; // store current team so we can restore it
+			get_user_team(id, szTeam, charsmax(szTeam));
+
+			// set id TeamInfo in consequence
+			// so SayText msg gonna show the right color
+			Send_TeamInfo(id, id, g_szTeamName[iColor]);
+
+			// Send the message
+			Send_SayText(id, id, szMessage);
+
+			// restore TeamInfo
+			Send_TeamInfo(id, id, szTeam);
+		}
+		else
+		{
+			Send_SayText(id, id, szMessage);
+		}
+	} 
+
+	// Send message to all players
+	else
 	{
-		Team_Info(index, MSG_Type, TeamName[team]);
-	}
-}
+		// Figure out if at least 1 player is connected
+		// so we don't send useless message if not
+		// and we gonna use that player as team reference (aka SayText message sender) for color change
+		new iPlayers[32], iNum;
+		get_players(iPlayers, iNum, "ch");
+		if( !iNum )
+		{
+			return 0;
+		}
 
-ShowColorMessage(id, type, message[])
-{
-	static bool:saytext_used;
-	static get_user_msgid_saytext;
-	if(!saytext_used)
-	{
-		get_user_msgid_saytext = get_user_msgid("SayText");
-		saytext_used = true;
-	}
-	message_begin(type, get_user_msgid_saytext, _, id);
-	write_byte(id);
-	write_string(message);
-	message_end();	
-}
+		new iFool = iPlayers[0];
 
-Team_Info(id, type, team[])
-{
-	static bool:teaminfo_used;
-	static get_user_msgid_teaminfo;
-	if(!teaminfo_used)
-	{
-		get_user_msgid_teaminfo = get_user_msgid("TeamInfo");
-		teaminfo_used = true;
-	}
-	message_begin(type, get_user_msgid_teaminfo, _, id);
-	write_byte(id);
-	write_string(team);
-	message_end();
+		new iMlNumber, i, j;
+		new Array:aStoreML = ArrayCreate();
+		if( iParams >= 5 ) // ML can be used
+		{
+			for(j=4; j<iParams; j++)
+			{
+				// retrieve original param value and check if it's LANG_PLAYER value
+				if( getarg(j) == LANG_PLAYER )
+				{
+					i=0;
+					// as LANG_PLAYER == -1, check if next parm string is a registered language translation
+					while( ( szMessage[ i ] = getarg( j + 1, i++ ) ) ) {}
+					if( GetLangTransKey(szMessage) != TransKey_Bad )
+					{
+						// Store that arg as LANG_PLAYER so we can alter it later
+						ArrayPushCell(aStoreML, j++);
 
+						// Update ML array saire so we'll know 1st if ML is used,
+						// 2nd how many args we have to alterate
+						iMlNumber++;
+					}
+				}
+			}
+		}
+
+		// If arraysize == 0, ML is not used
+		// we can only send 1 MSG_BROADCAST message
+		if( !iMlNumber )
+		{
+			if( iParams == 3 )
+			{
+				copy(szMessage[1], charsmax(szMessage)-1, szMsg);
+			}
+			else
+			{
+				vformat(szMessage[1], charsmax(szMessage)-1, szMsg, 4);
+			}
+
+			if( iColor )
+			{
+				new szTeam[11];
+				get_user_team(iFool, szTeam, charsmax(szTeam));
+				Send_TeamInfo(0, iFool, g_szTeamName[iColor]);
+				Send_SayText(0, iFool, szMessage);
+				Send_TeamInfo(0, iFool, szTeam);
+			}
+			else
+			{
+				Send_SayText(0, iFool, szMessage);
+			}
+		}
+
+		// ML is used, we need to loop through all players,
+		// format text and send a MSG_ONE_UNRELIABLE SayText message
+		else
+		{
+			new szTeam[11], szFakeTeam[10];
+			
+			if( iColor )
+			{
+				get_user_team(iFool, szTeam, charsmax(szTeam));
+				copy(szFakeTeam, charsmax(szFakeTeam), g_szTeamName[iColor]);
+			}
+
+			for( i = 0; i < iNum; i++ )
+			{
+				id = iPlayers[i];
+
+				for(j=0; j<iMlNumber; j++)
+				{
+					// Set all LANG_PLAYER args to player index ( = id )
+					// so we can format the text for that specific player
+					setarg(ArrayGetCell(aStoreML, j), _, id);
+				}
+
+				// format string for specific player
+				vformat(szMessage[1], charsmax(szMessage)-1, szMsg, 4);
+
+				if( iColor )
+				{
+					Send_TeamInfo(id, iFool, szFakeTeam);
+					Send_SayText(id, iFool, szMessage);
+					Send_TeamInfo(id, iFool, szTeam);
+				}
+				else
+				{
+					Send_SayText(id, iFool, szMessage);
+				}
+			}
+			ArrayDestroy(aStoreML);
+		}
+	}
 	return 1;
 }
 
-ColorSelection(index, type, Color:Type)
+stock Send_TeamInfo(iReceiver, iPlayerId, szTeam[])
 {
-	switch(Type)
+	static iTeamInfo = 0;
+	if( !iTeamInfo )
 	{
-		case RED:
-		{
-			return Team_Info(index, type, TeamName[1]);
-		}
-		case BLUE:
-		{
-			return Team_Info(index, type, TeamName[2]);
-		}
-		case GREY:
-		{
-			return Team_Info(index, type, TeamName[0]);
-		}
+		iTeamInfo = get_user_msgid("TeamInfo");
 	}
-
-	return 0;
+	message_begin(iReceiver ? MSG_ONE_UNRELIABLE : MSG_BROADCAST, iTeamInfo, .player=iReceiver);
+	write_byte(iPlayerId);
+	write_string(szTeam);
+	message_end();
 }
 
-FindPlayer()
+stock Send_SayText(iReceiver, iPlayerId, szMessage[])
 {
-	new i = -1;
-
-	while(i <= get_maxplayers())
+	static iSayText = 0;
+	if( !iSayText )
 	{
-		if(is_user_connected(++i))
-			return i;
+		iSayText = get_user_msgid("SayText");
+	}
+	message_begin(iReceiver ? MSG_ONE_UNRELIABLE : MSG_BROADCAST, iSayText, .player=iReceiver);
+	write_byte(iPlayerId);
+	write_string(szMessage);
+	message_end();
+}
+
+stock register_dictionary_colored(const filename[])
+{
+	if( !register_dictionary(filename) )
+	{
+		return 0;
 	}
 
-	return -1;
+	new szFileName[256];
+	get_localinfo("amxx_datadir", szFileName, charsmax(szFileName));
+	format(szFileName, charsmax(szFileName), "%s/lang/%s", szFileName, filename);
+	new fp = fopen(szFileName, "rt");
+	if( !fp )
+	{
+		log_amx("Failed to open %s", szFileName);
+		return 0;
+	}
+
+	new szBuffer[512], szLang[3], szKey[64], szTranslation[256], TransKey:iKey;
+
+	while( !feof(fp) )
+	{
+		fgets(fp, szBuffer, charsmax(szBuffer));
+		trim(szBuffer);
+
+		if( szBuffer[0] == '[' )
+		{
+			strtok(szBuffer[1], szLang, charsmax(szLang), szBuffer, 1, ']');
+		}
+		else if( szBuffer[0] )
+		{
+			strbreak(szBuffer, szKey, charsmax(szKey), szTranslation, charsmax(szTranslation));
+			iKey = GetLangTransKey(szKey);
+			if( iKey != TransKey_Bad )
+			{
+				while( replace(szTranslation, charsmax(szTranslation), "!g", "^4") ){}
+				while( replace(szTranslation, charsmax(szTranslation), "!t", "^3") ){}
+				while( replace(szTranslation, charsmax(szTranslation), "!n", "^1") ){}
+				AddTranslation(szLang, iKey, szTranslation[2]);
+			}
+		}
+	}
+	
+	fclose(fp);
+	return 1;
 }
 
 #endif
