@@ -8,14 +8,14 @@
 #endif 
 
 static const Version[]           = "1.0.4f-dev4",
-			 Build               = 52,
+			 Build               = 53,
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
 			 CfgFile[]           = "addons/amxmodx/configs/rom_protect.cfg",
 			 LangFile[]          = "addons/amxmodx/data/lang/rom_protect.txt",
 			 PlugLocation[]      = "/addons/amxmodx/plugins/rom_protect.amxx",
-			 OldPlugLocation[]   = "/addons/amxmodx/plugins/rom_protect.amxx.old",
+			 NewPlugLocation[]   = "/addons/amxmodx/plugins/rom_protect_new.amxx",
 			 LangType[]          = "%L",
 			 NewLine             = -1;
 
@@ -217,15 +217,19 @@ public plugin_precache()
 	if ( getNum(PlugCvar[auto_update]) == 1 )
 	{
 		FileSize = file_size(PlugLocation);
-		rename_file(PlugLocation, OldPlugLocation, 1);
+		if ( file_exists(NewPlugLocation) )
+		{
+			delete_file(NewPlugLocation);
+		}
+		
 		#if AMXX_VERSION_NUM == 183
-			HTTP2_Download("http://rom-protect.lixter.com/rom_protect.amxx", PlugLocation, "downloadComplete");
+			HTTP2_Download("http://rom-protect.lixter.com/rom_protect.amxx", NewPlugLocation, "downloadComplete");
 		#endif
 		#if AMXX_VERSION_NUM == 182
-			HTTP2_Download("http://rom-protect.lixter.com/rom_protect2.amxx", PlugLocation, "downloadComplete");
+			HTTP2_Download("http://rom-protect.lixter.com/rom_protect2.amxx", NewPlugLocation, "downloadComplete");
 		#endif
 		#if AMXX_VERSION_NUM == 181
-			HTTP2_Download("http://rom-protect.lixter.com/rom_protect1.amxx", PlugLocation, "downloadComplete");
+			HTTP2_Download("http://rom-protect.lixter.com/rom_protect1.amxx", NewPlugLocation, "downloadComplete");
 		#endif
 	}
 	
@@ -1033,13 +1037,13 @@ public downloadComplete(Index, Error)
 		{
 			logCommand(LangType, LANG_SERVER, "ROM_AUTO_UPDATE_SUCCEED", getString(PlugCvar[Tag]));
 		}
-		delete_file(OldPlugLocation);
+		delete_file(PlugLocation);
+		rename_file(NewPlugLocation, PlugLocation, 1);
 	}
 	else
 	{
 		logCommand(LangType, LANG_SERVER, "ROM_AUTO_UPDATE_FAILED", getString(PlugCvar[Tag]));
-		delete_file(PlugLocation);
-		rename_file(OldPlugLocation, PlugLocation, 1);
+		delete_file(NewPlugLocation);
 	}
 }
 
