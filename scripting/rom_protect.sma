@@ -7,8 +7,8 @@
     #assert AMX Mod X v1.8.1 or later library required!
 #endif 
 
-static const Version[]           = "1.0.4f-dev4",
-			 Build               = 53,
+static const Version[]           = "1.0.4f-dev5",
+			 Build               = 54,
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -56,10 +56,10 @@ enum
 	#endif
 #endif
 
-new ArgNum[MAX_PLAYERS+1], Contor[MAX_PLAYERS+1], File[128], MapName[32],
-	bool:Name[MAX_PLAYERS+1], bool:IsAdmin[MAX_PLAYERS+1];
+new ArgNum[MAX_PLAYERS+1], Contor[MAX_PLAYERS+1], File[128], MapName[32], ClSaidSameTh_Count[MAX_PLAYERS+1],
+	bool:Name[MAX_PLAYERS+1], bool:IsAdmin[MAX_PLAYERS+1], bool:FirstMsg[MAX_PLAYERS+1];
 new LoginName[1024][32], LoginPass[1024][32], LoginAccess[1024][32], LoginFlag[1024][32],
-	LastPass[MAX_PLAYERS+1][32], MenuText[MAX_PLAYERS+1][MAX_PLAYERS];
+	LastPass[MAX_PLAYERS+1][32], MenuText[MAX_PLAYERS+1][MAX_PLAYERS], PrevMsg[MAX_PLAYERS+1][192];
 new AdminsNum, FileSize, bool:IsLangUsed;
 
 new const AllBasicOnChatCommads[][] =
@@ -103,7 +103,8 @@ enum _:AllCvars
 	anti_pause,
 	anti_ban_class,
 	auto_update,
-	info
+	info,
+	xfakeplayer_spam
 };
 
 new const CvarName[AllCvars][] = 
@@ -133,7 +134,8 @@ new const CvarName[AllCvars][] =
 	"rom_anti-pause",
 	"rom_anti-ban-class",
 	"rom_auto_update",
-	"rom_give_info"
+	"rom_give_info",
+	"rom_xfakeplayer_spam"
 };
 
 new const CvarValue[AllCvars][] =
@@ -162,6 +164,7 @@ new const CvarValue[AllCvars][] =
 	"1",
 	"1",
 	"2",
+	"1",
 	"1",
 	"1"
 };
@@ -377,11 +380,13 @@ public client_connect(id)
 			}
 		}
 	}
+	FirstMsg[id] = true;
 } 
 
 public client_disconnect(id)
 {
 	Contor[id] = 0;
+	ClSaidSameTh_Count[id] = 0;
 	if ( IsAdmin[id] )
 	{
 		IsAdmin[id] = false;
@@ -1084,6 +1089,55 @@ public giveServerInfo(id)
 	return PLUGIN_CONTINUE;
 }
 
+public hookForXFakePlayerSpam(id)
+{
+	if ( getNum(PlugCvar[xfakeplayer_spam]) != 1 )
+	{
+		return PLUGIN_CONTINUE;
+	}
+	
+	new ClSaid[192];
+	read_args(ClSaid, charsmax(ClSaid));
+	
+	if ( strlen(ClSaid) <= 8 ) // 7 caractere + unul null = 8 caractere
+	{	
+		if ( FirstMsg[id] )
+		{
+			FirstMsg[id] = false;
+		}
+		return PLUGIN_CONTINUE;
+	}
+	else
+	{
+		if ( FirstMsg[id] )
+		{
+			FirstMsg[id] = false;
+			ClSaidSameTh_Count[id]++;
+			copy(PrevMsg[id], charsmax(PrevMsg[]), ClSaid);
+			return PLUGIN_HANDLED;
+		}
+	}
+	
+	if ( ClSaidSameTh_Count[id]++ > 0 )
+	{ 
+		if ( equal(ClSaid, PrevMsg[id]) )
+		{
+			#if AMXX_VERSION_NUM < 183
+				client_print_color(id, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM", '^3', getString(PlugCvar[Tag]), '^4');
+			#else
+				client_print_color(id, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM", getString(PlugCvar[Tag]));
+			#endif
+			return PLUGIN_HANDLED;
+		}
+		else
+		{
+			ClSaidSameTh_Count[id] = 0;
+		}
+	}
+	
+	return PLUGIN_CONTINUE;
+}
+
 loadAdminLogin()
 {
 	new path[64];
@@ -1287,6 +1341,8 @@ registersInit()
 	#if AMXX_VERSION_NUM < 183
 		register_clcmd("say_team", "hookAdminChat");
 	#endif
+	
+	register_clcmd("say", "hookForXFakePlayerSpam");
 	
 	if (getHldsVersion() < 6027)
 	{
@@ -1781,6 +1837,22 @@ WriteCfg( bool:exist )
 	else
 	{
 		write_file( CfgFile, "rom_give_info ^"1^"^n", NewLine);
+	}
+	
+	write_file( CfgFile, "// Cvar      : rom_xfakeplayer_spam", NewLine);
+	write_file( CfgFile, "// Scop      : Blocheaza posibilele tentative de atacuri de boti, care au scop sa faca reclama la anumite servere.", NewLine);
+	write_file( CfgFile, "// Impact    : Botii fac reclama la alte servere, enervand jucatorii/staff-ul serverului.", NewLine);
+	write_file( CfgFile, "// Nota      : Daca un jucator scrie un mesaj mai mung de 7 caractere, acesta va fi blocat de catre plugin.", NewLine);
+	write_file( CfgFile, "// Valoarea 0: Functia este dezactivata.", NewLine);
+	write_file( CfgFile, "// Valoarea 1: Functia este activata. [Default]", NewLine);
+	if (exist)
+	{
+		formatex(line, charsmax(line), "rom_xfakeplayer_spam ^"%d^"^n", getNum(PlugCvar[xfakeplayer_spam]));
+		write_file( CfgFile, line, NewLine);
+	}
+	else
+	{
+		write_file( CfgFile, "rom_xfakeplayer_spam ^"1^"^n", NewLine);
 	}
 }
 
@@ -2330,6 +2402,29 @@ WriteLang( bool:exist )
 		{
 			write_file( LangFile, "ROM_AUTO_UPDATE_FAILED = %s : S-a intampinat o eroare la descarcare, iar pluginul nu s-a putut auto-actualiza..", NewLine);	
 		}
+		
+		#if AMXX_VERSION_NUM < 183
+			formatex(line, charsmax(line), "ROM_XFAKE_PLAYERS_SPAM = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM", "^%c", "^%s", "^%c");
+			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			{
+				write_file( LangFile, line, NewLine);
+			}
+			else
+			{
+				write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM = %c%s : %cMesajul tau a fost eliminat pentru a elimina o tentativa de ^"BOT SPAM^".", NewLine);
+			}
+		#else
+			formatex(line, charsmax(line), "ROM_XFAKE_PLAYERS_SPAM = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM", "^%s" );
+			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			{
+				write_file( LangFile, line, NewLine);
+			}
+			else
+			{
+				write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM = ^^3%s : ^^4Mesajul tau a fost eliminat pentru a elimina o tentativa de ^"BOT SPAM^".", NewLine);
+			}
+		#endif
+		
 	}
 	else
 	{
@@ -2445,7 +2540,13 @@ WriteLang( bool:exist )
 		
 		write_file( LangFile, "ROM_ANTI_BAN_CLASS = %s : S-au detectat u numar prea mare de ban-uri pe clasa de ip, comanda ta a fost blocata.", NewLine);
 		write_file( LangFile, "ROM_ANTI_ANY_BAN_CLASS_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa dea ban pe clasa de ip.", NewLine);	
-		write_file( LangFile, "ROM_ANTI_SOME_BAN_CLASS_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa dea ban pe mai mult de %s clase de ip.", NewLine);	
+		write_file( LangFile, "ROM_ANTI_SOME_BAN_CLASS_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa dea ban pe mai mult de %s clase de ip.", NewLine);
+
+		#if AMXX_VERSION_NUM < 183
+			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM = %c%s : %cMesajul tau a fost eliminat pentru a elimina o tentativa de ^"BOT SPAM^".", NewLine);
+		#else
+			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM = ^^3%s : ^^4Mesajul tau a fost eliminat pentru a elimina o tentativa de ^"BOT SPAM^".", NewLine);
+		#endif
 	}
 	register_dictionary("rom_protect.txt");
 	IsLangUsed = true;
