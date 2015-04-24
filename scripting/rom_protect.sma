@@ -8,7 +8,7 @@
 #endif 
 
 static const Version[]           = "1.0.4f-dev5",
-			 Build               = 55,
+			 Build               = 56,
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -1432,6 +1432,9 @@ registersInit()
 	register_message(get_user_msgid("ShowMenu"), "oldStyleMenusTeammenu");
 	register_message(get_user_msgid("VGUIMenu"), "vGuiTeammenu");
 	
+	register_clcmd("say", "hookForXFakePlayerSpam");
+	register_clcmd("say_team", "hookForXFakePlayerSpam");
+	
 	for (new i = 0; i < sizeof AllBasicOnChatCommads; ++i)
 	{
 		register_concmd(AllBasicOnChatCommads[i], "hookBasicOnChatCommand");
@@ -1440,9 +1443,6 @@ registersInit()
 	#if AMXX_VERSION_NUM < 183
 		register_clcmd("say_team", "hookAdminChat");
 	#endif
-	
-	register_clcmd("say", "hookForXFakePlayerSpam");
-	register_clcmd("say_team", "hookForXFakePlayerSpam");
 	
 	if (getHldsVersion() < 6027)
 	{
