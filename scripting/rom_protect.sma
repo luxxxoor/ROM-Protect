@@ -8,7 +8,7 @@
 #endif 
 
 static const Version[]           = "1.0.4f-dev5",
-			 Build               = 56,
+			 Build               = 57,
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -1202,17 +1202,17 @@ public hookForXFakePlayerSpam(id)
 			
 			if ( ClSaidSameTh_Count[id] >= getNum(PlugCvar[xfakeplayer_spam_maxsais]) )
 			{
-				new address[32];
+				new address[32], Punish[8];
 				get_user_ip(id, address, charsmax(address), 1);
-				
+				num_to_str(getNum(PlugCvar[xfakeplayer_spam_punish]), Punish, charsmax(Punish));
 				if ( getNum(PlugCvar[plug_warn]) == 1 )
 				{
 					#if AMXX_VERSION_NUM < 183
 						client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM", '^3', getString(PlugCvar[Tag]), '^4', address);
-						client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_PUNISH", '^3', getString(PlugCvar[Tag]), '^4');
+						client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_PUNISH", '^3', getString(PlugCvar[Tag]), '^4', Punish);
 					#else
 						client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM", getString(PlugCvar[Tag]), address);
-						client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_PUNISH", getString(PlugCvar[Tag]));
+						client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_PUNISH", getString(PlugCvar[Tag]), Punish);
 					#endif
 					
 					client_print(id, print_console, LangType, id, "ROM_XFAKE_PLAYERS_SPAM_BAN", getString(PlugCvar[Tag]));
@@ -1223,7 +1223,7 @@ public hookForXFakePlayerSpam(id)
 					logCommand(LangType, LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_LOG", getString(PlugCvar[Tag]), address);
 				}
 				
-				server_cmd("addip ^"%d^" ^"%s^";wait;writeip", getNum(PlugCvar[xfakeplayer_spam_punish]), address);
+				server_cmd("addip ^"%s^" ^"%s^";wait;writeip", Punish, address);
 			}
 			
 			return PLUGIN_HANDLED;
