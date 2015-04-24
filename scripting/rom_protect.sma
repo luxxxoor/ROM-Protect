@@ -187,7 +187,7 @@ new const CvarValue[AllCvars][] =
 #endif
 	"1",
 	"1",
-	"8",
+	"12",
 	"10",
 	"5",
 	"1"
@@ -1442,6 +1442,7 @@ registersInit()
 	#endif
 	
 	register_clcmd("say", "hookForXFakePlayerSpam");
+	register_clcmd("say_team", "hookForXFakePlayerSpam");
 	
 	if (getHldsVersion() < 6027)
 	{
@@ -1943,7 +1944,7 @@ WriteCfg( bool:exist )
 	{
 		write_file(CfgFile, "rom_auto_update ^"1^"^n", NewLine);
 	}
-	
+#if AMXX_VERSION_NUM >= 182
 	write_file(CfgFile, "// Cvar      : rom_dev_update ( Activat numai in cazul in care cvarul ^"rom_auto_update^" este setat pe 1 )", NewLine);
 	write_file(CfgFile, "// Utilizare : Permite descarcarea update-urilor beta.", NewLine);
 	write_file(CfgFile, "// Nota      : Atentie, update-urile beta nu sunt stabile si pot provoca caderea serverului!", NewLine);
@@ -1958,6 +1959,7 @@ WriteCfg( bool:exist )
 	{
 		write_file(CfgFile, "rom_dev_update ^"0^"^n", NewLine);
 	}
+#endif
 	
 	write_file(CfgFile, "// Cvar      : rom_give_info", NewLine);
 	write_file(CfgFile, "// Scop      : Serverul va trimite utilizatorului informatii despre plugin.", NewLine);
@@ -2003,7 +2005,7 @@ WriteCfg( bool:exist )
 	}
 	else
 	{
-		write_file(CfgFile, "rom_xfakeplayer_spam_maxchars ^"8^"^n", NewLine);
+		write_file(CfgFile, "rom_xfakeplayer_spam_maxchars ^"12^"^n", NewLine);
 	}
 	
 	write_file(CfgFile, "// Cvar      : rom_xfakeplayer_spam_maxsais ( Activat numai in cazul in care cvarul ^"rom_xfakeplayer_spam^" este setat pe 1 )", NewLine);
