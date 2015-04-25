@@ -8,7 +8,7 @@
 #endif 
 
 static const Version[]           = "1.0.4f-dev5",
-			 Build               = 57,
+			 Build               = 58,
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -374,15 +374,17 @@ public client_connect(id)
 			{
 				if ( ++Contor[id] > getNum(PlugCvar[fake_players_limit]) )
 				{
-					server_cmd("addip ^"%d^" ^"%s^";wait;writeip", getNum(PlugCvar[fake_players_punish]), address);
+					new Punish[8];
+					num_to_str(getNum(PlugCvar[fake_players_punish]), Punish, charsmax(Punish));
+					server_cmd("addip ^"%s^" ^"%s^";wait;writeip", Punish, address);
 					if ( getNum(PlugCvar[plug_warn]) == 1 )
 					{
 						#if AMXX_VERSION_NUM < 183
 							client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS", '^3', getString(PlugCvar[Tag]), '^4', address);
-							client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", '^3', getString(PlugCvar[Tag]), '^4', getNum(PlugCvar[fake_players_punish]));
+							client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", '^3', getString(PlugCvar[Tag]), '^4', Punish);
 						#else
 							client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS", getString(PlugCvar[Tag]), address);
-							client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", getString(PlugCvar[Tag]), getNum(PlugCvar[fake_players_punish]));
+							client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", getString(PlugCvar[Tag]), Punish);
 						#endif
 					}
 					if ( getNum(PlugCvar[plug_log]) == 1 )
@@ -1205,6 +1207,7 @@ public hookForXFakePlayerSpam(id)
 				new address[32], Punish[8];
 				get_user_ip(id, address, charsmax(address), 1);
 				num_to_str(getNum(PlugCvar[xfakeplayer_spam_punish]), Punish, charsmax(Punish));
+				
 				if ( getNum(PlugCvar[plug_warn]) == 1 )
 				{
 					#if AMXX_VERSION_NUM < 183
@@ -1215,7 +1218,7 @@ public hookForXFakePlayerSpam(id)
 						client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_PUNISH", getString(PlugCvar[Tag]), Punish);
 					#endif
 					
-					client_print(id, print_console, LangType, id, "ROM_XFAKE_PLAYERS_SPAM_BAN", getString(PlugCvar[Tag]));
+					client_print(id, print_console, LangType, id, "ROM_XFAKE_PLAYERS_SPAM_BAN", getString(PlugCvar[Tag]), Punish);
 				}
 				
 				if ( getNum(PlugCvar[plug_log]) == 1 )
@@ -2124,7 +2127,7 @@ WriteLang( bool:exist )
 			}
 			else
 			{
-				write_file( LangFile, "ROM_FAKE_PLAYERS_PUNISH = ^^3%s : ^^4Ip-ul a primit ban %d minute pentru a nu afecta jocul.", NewLine);
+				write_file( LangFile, "ROM_FAKE_PLAYERS_PUNISH = ^^3%s : ^^4Ip-ul a primit ban %s minute pentru a nu afecta jocul.", NewLine);
 			}
 		#endif
 		
@@ -2664,7 +2667,16 @@ WriteLang( bool:exist )
 			}
 		#endif
 		
-					
+		formatex(line, charsmax(line), "ROM_XFAKE_PLAYERS_SPAM_BAN = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_BAN", "^%s", "^%s"  );
+		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		{
+			write_file( LangFile, line, NewLine);
+		}
+		else
+		{
+			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_BAN = %s : Ai fost detectat ca fiind un bot xfake_player, asa ca ai fost banat pentru %s minute.", NewLine);
+		}
+		
 		formatex(line, charsmax(line), "ROM_XFAKE_PLAYERS_SPAM_LOG = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_LOG", "^%s", "^%s"  );
 		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
 		{
@@ -2827,6 +2839,7 @@ WriteLang( bool:exist )
 			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_PUNISH = ^^3%s : ^^4 Ip-ul a primit ban %s minute pentru a nu afecta jocul.", NewLine);
 		#endif
 		
+		write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_BAN = %s : Ai fost detectat ca fiind un bot xfake_player, asa ca ai fost banat pentru %s minute.", NewLine);
 		write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_LOG = %s : S-a depistat un atac de ^"BOT SPAM^" de la IP-ul : %s .", NewLine);
 		
 		write_file( LangFile, "ROM_PROTCVARS = %s : Cvar-ururile acestui plugin sunt protejate, comanda ta nu a avut efect.", NewLine);
