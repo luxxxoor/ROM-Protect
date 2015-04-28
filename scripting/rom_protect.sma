@@ -7,8 +7,8 @@
     #assert AMX Mod X v1.8.1 or later library required!
 #endif 
 
-static const Version[]           = "1.0.4f-dev5",
-			 Build               = 59,
+static const Version[]           = "1.0.4f-dev6",
+			 Build               = 60,
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -1504,16 +1504,20 @@ registersInit()
 	register_srvcmd("ROM_INFO", "giveServerInfo");
 }
 
-public stringFilter(string[], len)
+public stringFilter(String[], len)
 {
+	new LeftBuffer[MAX_NAME_LENGTH], RightBuffef[MAX_NAME_LENGTH], MidBuffer[3];
 	for (new i = 0; i <= len; ++i)
 	{
-		if ( i < MAX_NAME_LENGTH )
+		if ( i+1 < MAX_NAME_LENGTH )
 		{
-			if ( (string[i] == '#' && isalpha(string[i+1])) || (string[i] == '+' && isalpha(string[i+1])) )
+			if ( (String[i] == '#' && isalpha(String[i+1])) || (String[i] == '+' && isalpha(String[i+1])) )
 			{
-				string[i] = ' ';
+				formatex(MidBuffer, charsmax(MidBuffer), "%c%c", String[i], String[i+1]);
+				split(String, LeftBuffer, charsmax(LeftBuffer), RightBuffef, charsmax(RightBuffef), MidBuffer);
+				format(String, len, "%s%c %c%s", LeftBuffer, String[i], String[i+1], RightBuffef);
 			}
+			
 		}
 	}
 }
@@ -1608,8 +1612,9 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Nota      : -", NewLine);
 	write_file(CfgFile, "// Update    : Incepand cu versiunea 1.0.1s, pluginul protejeaza serverele si de noul cmd-bug bazat pe caracterul '#'. Pluginul blocheaza de acum '#' si '%' in chat si '#' in nume.", NewLine);
 	write_file(CfgFile, "// Update    : Incepand cu versiunea 1.0.3a, pluginul devine mai inteligent, si va bloca doar posibilele folosiri ale acestui bug, astfel incat caracterele '#' si '%' vor putea fi folosite, insa nu in toate cazurile.", NewLine);
-	write_file(CfgFile, "// Update    : Incepand cu versiunea 1.0.3s, pluginul incearca sa inlature bugul provotat de caracterul '+' in nume, acesta incercand sa deruteze playerii sau adminii (nu aparea numele jucatorului in meniuri).", NewLine);
+	write_file(CfgFile, "// Update    : Incepand cu versiunea 1.0.3s, pluginul inlatura si bugul provotat de caracterul '+' in nume, acesta incercand sa deruteze playerii sau adminii (nu apare numele jucatorului in meniuri).", NewLine);
 	write_file(CfgFile, "// Update    : Incepand cu versiunea 1.0.4b, pluginul verifica si comenzile de baza care pot elibera mesaje in chat (ex: amx_say, amx_psay, etc.), adica toate comenzile prezente in adminchat.amxx.", NewLine);
+	write_file(CfgFile, "// Update    : Incepand cu versiunea 1.0.4f, pluginul devine mai indulgent cu jucatorii, si nu va mai inlocui caractere '#' si '+' cu un spatiu din nume, ci va pune un spatiu dupa acestea.", NewLine);
 	write_file(CfgFile, "// Valoarea 0: Functia este dezactivata." , NewLine);
 	write_file(CfgFile, "// Valoarea 1: Atacul este blocat. [Default]" , NewLine);
 	if (exist)
