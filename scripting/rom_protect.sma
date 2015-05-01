@@ -8,7 +8,7 @@
 #endif 
 
 static const Version[]           = "1.0.4f-dev6",
-			 Build               = 60,
+			 Build               = 61,
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -40,9 +40,9 @@ enum
 #if AMXX_VERSION_NUM < 183
 	#define MAX_PLAYERS 32		
 	#define MAX_NAME_LENGTH 32
-	new bool:flood[MAX_PLAYERS+1];
-	new Float:g_Flooding[MAX_PLAYERS+1] = {0.0, ...},
-			  g_Flood[MAX_PLAYERS+1] = {0, ...};		  
+	new bool:IsFlooding[MAX_PLAYERS+1];
+	new Float:Flooding[MAX_PLAYERS+1] = {0.0, ...},
+			  Flood[MAX_PLAYERS+1] = {0, ...};		  
 	enum _:Colors 
 	{
 		DontChange,
@@ -57,9 +57,9 @@ enum
 #endif
 
 new ArgNum[MAX_PLAYERS+1], Contor[MAX_PLAYERS+1], File[128], MapName[32], ClSaidSameTh_Count[MAX_PLAYERS+1],
-	bool:Name[MAX_PLAYERS+1], bool:IsAdmin[MAX_PLAYERS+1], bool:FirstMsg[MAX_PLAYERS+1], bool:Gag[MAX_PLAYERS+1];
-new LoginName[1024][32], LoginPass[1024][32], LoginAccess[1024][32], LoginFlag[1024][32],
-	LastPass[MAX_PLAYERS+1][32], MenuText[MAX_PLAYERS+1][MAX_PLAYERS], PrevMsg[MAX_PLAYERS+1][192];
+	bool:CorrectName[MAX_PLAYERS+1], bool:IsAdmin[MAX_PLAYERS+1], bool:FirstMsg[MAX_PLAYERS+1], bool:Gag[MAX_PLAYERS+1];
+new LoginName[MAX_PLAYERS+1][32], LoginPass[MAX_PLAYERS+1][32], LoginAccess[MAX_PLAYERS+1][32], LoginFlag[MAX_PLAYERS+1][6],
+	LastPass[MAX_PLAYERS+1][32], MenuText[MAX_PLAYERS+1][MAX_PLAYERS];
 new AdminsNum, FileSize, bool:IsLangUsed;
 
 new const AllBasicOnChatCommads[][] =
@@ -198,8 +198,9 @@ new const CvarValue[AllCvars][] =
 
 new PlugCvar[AllCvars];
 
-new Trie:g_tDefaultRes;
+new Trie:DefaultRes;
 
+/*
 new const char_list[ ] =
 {
 	'A','B','C','D','E','F','G','H',
@@ -214,12 +215,13 @@ new const char_list[ ] =
 	',','<','.','>','/','?','0','1',
 	'2','3','4','5','6','7','8','9'
 };
+*/
 
 public plugin_precache()
 {	
 	registersPrecache();
 	
-	new szCurentDate[15];
+	new CurentDate[15];
 	get_localinfo("amxx_logs", File, charsmax(File));
 	formatex(File, charsmax(File), "%s/%s", File, PluginName);
 	
@@ -228,8 +230,8 @@ public plugin_precache()
 		mkdir(File);
 	}
 	
-	get_time("%d-%m-%Y", szCurentDate, charsmax(szCurentDate));
-	formatex(File, charsmax( File ), "%s/%s_%s.log", File, PluginName, szCurentDate);
+	get_time("%d-%m-%Y", CurentDate, charsmax(CurentDate));
+	formatex(File, charsmax( File ), "%s/%s_%s.log", File, PluginName, CurentDate);
 	
 	if ( !file_exists(File) )
 	{
@@ -344,9 +346,9 @@ public plugin_init()
 	
 	if ( getNum(PlugCvar[utf8_bom]) == 1 )
 	{
-		g_tDefaultRes = TrieCreate();
-		TrieSetCell(g_tDefaultRes, "de_storm.res", 1);
-		TrieSetCell(g_tDefaultRes, "default.res", 1);
+		DefaultRes = TrieCreate();
+		TrieSetCell(DefaultRes, "de_storm.res", 1);
+		TrieSetCell(DefaultRes, "default.res", 1);
 		
 		set_task(10.0, "cleanResFiles");
 	}
@@ -356,23 +358,24 @@ public client_connect(id)
 {
 	if ( getNum(PlugCvar[cmd_bug]) == 1 )
 	{
-		new name[MAX_NAME_LENGTH];
-		get_user_name(id, name, charsmax(name));
-		stringFilter(name, charsmax(name));
-		set_user_info(id, "name", name);
+		new Name[MAX_NAME_LENGTH];
+		get_user_name(id, Name, charsmax(Name));
+		stringFilter(Name, charsmax(Name));
+		set_user_info(id, "name", Name);
 	}
 	if ( getNum(PlugCvar[fake_players]) == 1 )
 	{
-		new players[MAX_PLAYERS], pnum, Address[32], address2[32];
 		if ( clientUseSteamid(id) )
 		{
 			query_client_cvar(id, "fps_max", "checkBot");
 		}
-		get_players(players, pnum, "c");
-		for (new i = 0; i < pnum; ++i)
+	
+		new Players[MAX_PLAYERS], PlayersNum, Address[32], address2[32];
+		get_players(Players, PlayersNum, "c");
+		for (new i = 0; i < PlayersNum; ++i)
 		{
 			get_user_ip(id, Address, charsmax(Address), 1);
-			get_user_ip(players[i], address2, charsmax(address2), 1);
+			get_user_ip(Players[i], address2, charsmax(address2), 1);
 			if ( equal(Address, address2) && !is_user_bot(id) )
 			{
 				if ( ++Contor[id] > getNum(PlugCvar[fake_players_limit]) )
@@ -418,37 +421,35 @@ public plugin_end()
 {
 	if ( getNum(PlugCvar[delete_vault]) != 0 )
 	{
-		new baseDir[128], text[200] ;
+		new BaseDir[128];
 		
-		get_basedir(baseDir, charsmax(baseDir));
-		formatex(baseDir, charsmax(baseDir), "%s/data/vault.ini", baseDir);
+		get_basedir(BaseDir, charsmax(BaseDir));
+		formatex(BaseDir, charsmax(BaseDir), "%s/data/vault.ini", BaseDir);
 		
-		if ( file_exists(baseDir) )
+		if ( file_exists(BaseDir) )
 		{
-			delete_file(baseDir);
+			delete_file(BaseDir);
 			
 			switch(getNum( PlugCvar[delete_vault]))
 			{
 				case 1:
 				{
-					formatex(text, charsmax(text), "server_language en", baseDir);
-					write_file( baseDir, text, NewLine);
+					write_file(BaseDir, "server_language en", NewLine);
 				}
 				case 2:
 				{
-					formatex(text, charsmax(text) , "server_language ro", baseDir);
-					write_file(baseDir, text, NewLine);
+					write_file(BaseDir, "server_language ro", NewLine);
 				}
 			}
 		}
 	}
 	if ( getNum(PlugCvar[delete_custom_hpk]) == 1 )
 	{
-		new baseDir[] = "/", dirPointer, File[32];
+		new BaseDir[] = "/", DirPointer, File[32];
 		
-		dirPointer = open_dir(baseDir, "", 0);
+		DirPointer = open_dir(BaseDir, "", 0);
 		
-		while ( next_file(dirPointer, File, charsmax(File)) )
+		while ( next_file(DirPointer, File, charsmax(File)) )
 		{
 			if ( File[0] == '.' )
 			{
@@ -462,7 +463,7 @@ public plugin_end()
 			}
 		}
 		
-		close_dir(dirPointer);
+		close_dir(DirPointer);
 	}
 	return PLUGIN_CONTINUE;
 }
@@ -475,17 +476,17 @@ public client_infochanged(id)
 		return PLUGIN_CONTINUE;
 	}
 		
-	static newName[MAX_NAME_LENGTH], oldName[MAX_NAME_LENGTH];
-	get_user_name(id, oldName, charsmax(oldName));
-	get_user_info(id, "name", newName, charsmax(newName));
+	new NewName[MAX_NAME_LENGTH], OldName[MAX_NAME_LENGTH];
+	get_user_name(id, OldName, charsmax(OldName));
+	get_user_info(id, "name", NewName, charsmax(NewName));
 	
 	if (getNum(PlugCvar[cmd_bug]) == 1)
 	{
-		stringFilter(newName, charsmax(newName));
-		set_user_info(id, "name", newName);
+		stringFilter(NewName, charsmax(NewName));
+		set_user_info(id, "name", NewName);
 	}
 	
-	if (!equali(newName, oldName) && IsAdmin[id])
+	if (!equali(NewName, OldName) && IsAdmin[id])
 	{
 		IsAdmin[id] = false;
 		remove_user_flags(id);
@@ -523,13 +524,13 @@ public cmdPass(id)
 		return PLUGIN_HANDLED;
 	}
 
-	new name[MAX_NAME_LENGTH], pass[32];
+	new Name[MAX_NAME_LENGTH], Password[32];
 	
-	get_user_name(id, name, charsmax(name));
-	read_argv(1, pass, charsmax(pass));
-	remove_quotes(pass);
+	get_user_name(id, Name, charsmax(Name));
+	read_argv(1, Password, charsmax(Password));
+	remove_quotes(Password);
 	
-	if (equal(LastPass[id], pass) && IsAdmin[id])
+	if (equal(LastPass[id], Password) && IsAdmin[id])
 	{
 		#if AMXX_VERSION_NUM < 183
 			client_print_color(id, Grey, LangType, id, "ROM_ADMIN_ALREADY_LOADED", '^3', getString(PlugCvar[Tag]), '^4');
@@ -541,11 +542,11 @@ public cmdPass(id)
 	}	
 
 	loadAdminLogin();
-	getAccess(id, pass);
+	getAccess(id, Password);
 	
 	if (!IsAdmin[id])
 	{
-		if (!Name[ id ])
+		if (!CorrectName[ id ])
 		{
 			#if AMXX_VERSION_NUM < 183
 				client_print_color(id, Grey, LangType, id, "ROM_ADMIN_WRONG_NAME", '^3', getString(PlugCvar[Tag]), '^4');
@@ -580,11 +581,11 @@ public cmdPass(id)
 #if AMXX_VERSION_NUM < 183
 	public hookAdminChat(id)
 	{
-		new said[2];
+		new Said[2];
 		
-		read_argv(1, said, charsmax(said));
+		read_argv(1, Said, charsmax(Said));
 
-		if (said[0] != '@')
+		if (Said[0] != '@')
 		{
 			return PLUGIN_CONTINUE;
 		}
@@ -593,28 +594,28 @@ public cmdPass(id)
 
 		if (maxChat && getNum(PlugCvar[admin_chat_flood]) == 1)
 		{
-			new Float:nexTime = get_gametime();
+			new Float:NexTime = get_gametime();
 
-			if (g_Flooding[id] > nexTime)
+			if (Flooding[id] > NexTime)
 			{
-				if (g_Flood[id] >= 3)
+				if (Flood[id] >= 3)
 				{
-					flood[id] = true;
+					IsFlooding[id] = true;
 					set_task(1.0, "showAdminChatFloodWarning", id);
-					g_Flooding[id] = nexTime + maxChat + 3.0;
+					Flooding[id] = NexTime + maxChat + 3.0;
 					return PLUGIN_HANDLED;
 				}
-				++g_Flood[id];
+				++Flood[id];
 			}
 			else
 			{
-				if (g_Flood[id])
+				if (Flood[id])
 				{
-					--g_Flood[id];
+					--Flood[id];
 				}
 			}
 			
-			g_Flooding[id] = nexTime + maxChat;
+			Flooding[id] = NexTime + maxChat;
 		}
 
 		return PLUGIN_CONTINUE;
@@ -687,21 +688,21 @@ public blockSpecbugVGui(id)
 	{
 		if ( fm_get_user_team(id) == FM_TEAM_SPECTATOR )
 		{
-			new bool:bug_log[MAX_PLAYERS+1];
+			new bool:ShowLogOrWarning[MAX_PLAYERS+1];
 				
 			if ( ArgNum[id] == 26 )
 			{
 				fm_set_user_team(id, FM_TEAM_T);
-				bug_log[id] = true;
+				ShowLogOrWarning[id] = true;
 			}    
 			
 			if ( ArgNum[id] == 27 )
 			{
 				fm_set_user_team(id, FM_TEAM_CT);
-				bug_log[id] = true;
+				ShowLogOrWarning[id] = true;
 			}   
 			
-			if ( getNum(PlugCvar[plug_warn]) == 1 && bug_log[id] )
+			if ( getNum(PlugCvar[plug_warn]) == 1 && ShowLogOrWarning[id] )
 			{
 				#if AMXX_VERSION_NUM < 183
 					client_print_color(id, Grey, LangType, id, "ROM_SPEC_BUG", '^3', getString(PlugCvar[Tag]), '^4');
@@ -710,11 +711,12 @@ public blockSpecbugVGui(id)
 				#endif
 			}
 			
-			if ( getNum( PlugCvar[plug_log]) == 1 && bug_log[id] )
+			if ( getNum( PlugCvar[plug_log]) == 1 && ShowLogOrWarning[id] )
 			{
 				logCommand(LangType, LANG_SERVER, "ROM_SPEC_BUG_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP));
-				bug_log[id] = false;
 			}
+			
+			ShowLogOrWarning[id] = false;
 		}
 		
 		set_task(0.1, "blockSpecbugVGui", id);
@@ -724,7 +726,7 @@ public blockSpecbugVGui(id)
 #if AMXX_VERSION_NUM < 183
 	public showAdminChatFloodWarning(id)
 	{
-		if ( flood[id] )
+		if ( IsFlooding[id] )
 		{
 			if ( getNum(PlugCvar[plug_warn]) == 1 )
 			{
@@ -736,7 +738,7 @@ public blockSpecbugVGui(id)
 				logCommand(LangType, LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP));
 			}
 			
-			flood[id] = false;
+			IsFlooding[id] = false;
 		}
 	}
 #endif
@@ -752,36 +754,36 @@ public showAdvertise()
 
 public cleanResFiles() 
 { 
-	new mapsFolder[] = "maps"; 
-	new const resExt[] = ".res"; 
-	new resFile[64], len; 
-	new dp = open_dir(mapsFolder, resFile, charsmax(resFile)); 
+	new MapsFolder[] = "maps"; 
+	new const ResExt[] = ".res"; 
+	new ResFile[64], len; 
+	new Dp = open_dir(MapsFolder, ResFile, charsmax(ResFile)); 
 	
-	if ( !dp )
+	if ( !Dp )
 	{
 		return; 
 	}
 	
-	new fullPathFileName[128];
+	new FullPathFileName[128];
 	
 	do 
 	{ 
-		len = strlen(resFile);
+		len = strlen(ResFile);
 		
-		if ( len > 4 && equali(resFile[len-4], resExt) ) 
+		if ( len > 4 && equali(ResFile[len-4], ResExt) ) 
 		{ 
-			if ( TrieKeyExists(g_tDefaultRes, resFile) ) 
+			if ( TrieKeyExists(DefaultRes, ResFile) ) 
 			{
 				continue;
 			}
 			
-			formatex(fullPathFileName, charsmax(fullPathFileName), "%s/%s", mapsFolder, resFile); 
-			write_file(fullPathFileName, "/////////////////////////////////////////////////////////////^n", 0); 
+			formatex(FullPathFileName, charsmax(FullPathFileName), "%s/%s", MapsFolder, ResFile); 
+			write_file(FullPathFileName, "/////////////////////////////////////////////////////////////^n", 0); 
 		} 
 	} 
-	while (next_file(dp, resFile, charsmax(resFile)));
+	while ( next_file(Dp, ResFile, charsmax(ResFile)) );
 	
-	close_dir(dp);
+	close_dir(Dp);
 } 
 
 
@@ -792,29 +794,34 @@ public reloadLogin(id, level, cid)
 
 public reloadDelay()
 {
-	new players[MAX_PLAYERS], pnum;
+	new Players[MAX_PLAYERS], PlayersNum;
 	
-	get_players(players, pnum, "ch");
+	get_players(Players, PlayersNum, "ch");
 	
-	for (new i = 0; i < pnum; ++i)
+	for (new i = 0; i < PlayersNum; ++i)
 	{
-		if ( IsAdmin[players[i]] )
+		if ( IsAdmin[Players[i]] )
 		{
-			getAccess(players[i], LastPass[players[i]]);
+			getAccess(Players[i], LastPass[Players[i]]);
 		}
 	}
 }
 
 public cvarFunc(id, level, cid) 
 { 
+	if ( !cmd_access(id, level, cid, 2) )
+	{
+		return PLUGIN_CONTINUE;
+	}
+		
 	if ( getNum(PlugCvar[motdfile]) == 1 )
 	{
-		new arg[32], arg2[32]; 
+		new Cvar[32], Value[32]; 
 		
-		read_argv(1, arg, charsmax(arg));
-		read_argv(2, arg2, charsmax(arg2));
+		read_argv(1, Cvar, charsmax(Cvar));
+		read_argv(2, Value, charsmax(Value));
 		
-		if ( equali(arg, "motdfile") && contain(arg2, ".ini") != -1 ) 
+		if ( equali(Cvar, "motdfile") && contain(Value, ".ini") != -1 ) 
 		{
 			if ( getNum(PlugCvar[plug_warn]) == 1 )
 			{
@@ -832,11 +839,65 @@ public cvarFunc(id, level, cid)
 	
 	if ( getNum(PlugCvar[protcvars]) == 1 )
 	{
-		new arg[32]; 
+		new Command[32]; 
 		
-		read_argv(1, arg, charsmax(arg));
+		read_argv(1, Command, charsmax(Command));
 		
-		if ( contain(arg, "rom_") != -1 )
+		if ( containi(Command, "rom_") != -1 )
+		{
+			if ( getNum(PlugCvar[plug_warn]) == 1 )
+			{
+				console_print(id, LangType, id, "ROM_PROTCVARS", getString(PlugCvar[Tag]));
+			}
+			
+			if ( getNum(PlugCvar[plug_log]) == 1 )
+			{
+				logCommand(LangType, LANG_SERVER, "ROM_PROTCVARS_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP));
+			}
+			
+			return PLUGIN_HANDLED; 
+		}
+	}
+	
+	return PLUGIN_CONTINUE; 
+}
+
+public rconFunc(id, level, cid) 
+{ 
+	if ( !cmd_access(id, level, cid, 2) )
+	{
+		return PLUGIN_CONTINUE;
+	}
+	
+	if ( getNum(PlugCvar[motdfile]) == 1 )
+	{
+		new Command[32]; 
+		
+		read_args(Command, charsmax(Command));
+		
+		if ( containi(Command, "motdfile") && contain(Command, ".ini") != -1 ) 
+		{
+			if ( getNum(PlugCvar[plug_warn]) == 1 )
+			{
+				console_print(id, LangType, id, "ROM_MOTDFILE", getString(PlugCvar[Tag]));
+			}
+			
+			if ( getNum(PlugCvar[plug_log]) == 1 )
+			{
+				logCommand(LangType, LANG_SERVER, "ROM_MOTDFILE_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP));
+			}
+			
+			return PLUGIN_HANDLED; 
+		}
+	}
+	
+	if ( getNum(PlugCvar[protcvars]) == 1 )
+	{
+		new Command[32]; 
+		
+		read_args(Command, charsmax(Command));
+		
+		if ( !equali(Command, "rom_info") && containi(Command, "rom_") != -1 )
 		{
 			if ( getNum(PlugCvar[plug_warn]) == 1 )
 			{
@@ -864,18 +925,18 @@ public hookBanClassCommand(id)
 	
 	if ( getNum(PlugCvar[anti_ban_class]) > 0 )
 	{
-		new ip[32], IpNum[4][3], NumStr[1], Value;
+		new Ip[32], IpNum[4][3], NumStr[1], Value;
 		
-		read_argv(1, ip, charsmax(ip));
+		read_argv(1, Ip, charsmax(Ip));
 		
-		if ( containi( ip, "STEAM") != -1 || containi( ip, "VALVE") != -1 )
+		if ( containi( Ip, "STEAM") != -1 || containi( Ip, "VALVE") != -1 )
 		{
 			return PLUGIN_CONTINUE;
 		}
 		
 		for	(new i = 0; i < 4; ++i)
 		{
-			split(ip, IpNum[i], charsmax(IpNum[]), ip, charsmax(ip), ".");
+			split(Ip, IpNum[i], charsmax(IpNum[]), Ip, charsmax(Ip), ".");
 		}
 		
 		Value = getNum(PlugCvar[anti_ban_class]);
@@ -964,32 +1025,30 @@ public hookBasicOnChatCommand(id)
 {
 	if ( getNum(PlugCvar[color_bug]) == 1 || getNum(PlugCvar[cmd_bug]) == 1 )
 	{
-		new said[192];
+		new Said[192], CheckString[192], bool:IsUsedCmdBug[MAX_PLAYERS+1], bool:IsUsedColorBug[MAX_PLAYERS+1];
 		
-		read_args(said, charsmax(said));
+		read_args(Said, charsmax(Said));
 		
-		new s_said[192], bool:b_said_cmd_bug[MAX_PLAYERS+1], bool:b_said_color_bug[MAX_PLAYERS+1];
+		copy(CheckString, charsmax(CheckString), Said);
 		
-		copy(s_said, charsmax( said ), said);
-		
-		for (new i = 0; i < sizeof s_said ; ++i)
+		for (new i = 0; i < sizeof CheckString ; ++i)
 		{
-			if ( getNum(PlugCvar[cmd_bug]) == 1 && (s_said[ i ] == '#' && isalpha(s_said[i+1])) || (s_said[i] == '%' && s_said[i+1] == 's') )
+			if ( getNum(PlugCvar[cmd_bug]) == 1 && (CheckString[i] == '#' && isalpha(CheckString[i+1])) || (CheckString[i] == '%' && CheckString[i+1] == 's') )
 			{
-				b_said_cmd_bug[id] = true;
+				IsUsedCmdBug[id] = true;
 				break;
 			}
 			if ( getNum(PlugCvar[color_bug]) == 1 )
 			{
-				if ( s_said[i] == '' || s_said[i] == '' || s_said[i] == '' )
+				if ( CheckString[i] == '' || CheckString[i] == '' || CheckString[i] == '' )
 				{
-					b_said_color_bug[id] = true;
+					IsUsedColorBug[id] = true;
 					break;
 				}
 			}
 		}
 		
-		if ( b_said_cmd_bug[id] )
+		if ( IsUsedCmdBug[id] )
 		{
 			if ( getNum(PlugCvar[plug_warn]) == 1 )
 			{
@@ -1004,10 +1063,10 @@ public hookBasicOnChatCommand(id)
 			{
 				logCommand(LangType, LANG_SERVER, "ROM_CMD_BUG_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP));
 			}
-			b_said_cmd_bug[id] = false;
+			IsUsedCmdBug[id] = false;
 			return PLUGIN_HANDLED;
 		}
-		if ( b_said_color_bug[id] )
+		if ( IsUsedColorBug[id] )
 		{
 			if ( getNum(PlugCvar[plug_warn]) == 1 )
 			{
@@ -1021,7 +1080,7 @@ public hookBasicOnChatCommand(id)
 			{
 				logCommand(LangType, LANG_SERVER, "ROM_COLOR_BUG_LOG", getString(PlugCvar[Tag]), getInfo(id, INFO_NAME), getInfo(id, INFO_AUTHID), getInfo(id, INFO_IP));
 			}
-			b_said_color_bug[id] = false;
+			IsUsedColorBug[id] = false;
 			return PLUGIN_HANDLED;
 		}
 	}
@@ -1136,7 +1195,7 @@ public giveClientInfo(id)
 		
 	client_print(id, print_console, "^n^n^nVersiune curenta : %s. Build : %d", Version, Build);
 	client_print(id, print_console, "Autor : luxor # Dr.Fio & DR2.IND. Comunitatea : FioriGinal.Ro" );
-	client_print(id, print_console, "Link oficial : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html");
+	client_print(id, print_console, "Link oficial : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-IsFlooding-bug-fix-t28292.html");
 	client_print(id, print_console, "Contact : luxxxoor (Steam) / alex.vrincean (Skype).^n^n^n");
 	
 	return PLUGIN_CONTINUE;
@@ -1176,7 +1235,7 @@ public hookForXFakePlayerSpam(id)
 		return PLUGIN_HANDLED;
 	}
 	
-	new ClSaid[192];
+	new ClSaid[192], PreviousMessage[MAX_PLAYERS+1][192];
 	read_args(ClSaid, charsmax(ClSaid));
 	
 	if ( strlen(ClSaid) <= getNum(PlugCvar[xfakeplayer_spam_maxchars])+1 )
@@ -1193,14 +1252,14 @@ public hookForXFakePlayerSpam(id)
 		{
 			FirstMsg[id] = false;
 			ClSaidSameTh_Count[id]++;
-			copy(PrevMsg[id], charsmax(PrevMsg[]), ClSaid);
+			copy(PreviousMessage[id], charsmax(PreviousMessage[]), ClSaid);
 			return PLUGIN_HANDLED;
 		}
 	}
 	
 	if ( ClSaidSameTh_Count[id]++ > 0 )
 	{
-		if ( equal(ClSaid, PrevMsg[id]) )
+		if ( equal(ClSaid, PreviousMessage[id]) )
 		{
 			if ( getNum(PlugCvar[plug_warn]) == 1 )
 			{
@@ -1283,45 +1342,47 @@ public hookForXFakePlayerSpam(id)
 
 loadAdminLogin()
 {
-	new path[64];
+	new Path[64];
 	
-	get_localinfo("amxx_configsdir", path, charsmax(path));
-	formatex(path, charsmax(path), "%s/%s", path, getString(PlugCvar[admin_login_file]));
+	get_localinfo("amxx_configsdir", Path, charsmax(Path));
+	format(Path, charsmax(Path), "%s/%s", Path, getString(PlugCvar[admin_login_file]));
 	
-	new file = fopen(path, "r+");
+	new File = fopen(Path, "r+");
 	
-	if ( !file )
+	if ( !File )
 	{
 		if ( getNum(PlugCvar[plug_log]) == 1 )
 		{
 			logCommand( LangType, LANG_SERVER, "ROM_FILE_NOT_FOUND", getString(PlugCvar[Tag]), getString(PlugCvar[admin_login_file]));
 		}
+		write_file(getString(PlugCvar[admin_login_file]), "; Aici vor fi inregistrate adminele protejate." , NewLine);
+		write_file(getString(PlugCvar[admin_login_file]), "; Exemplu de adaugare admin : ^"nume^" ^"parola^" ^"acces^" ^"f^"" , NewLine);
 		
 		return;
 	}
 	
-	new text[121], name[MAX_NAME_LENGTH], pass[32], acc[26], flags[6];
+	new Text[121], Name[MAX_NAME_LENGTH], Password[32], Access[26], Flags[6];
 	
-	for (AdminsNum = 0; !feof( file ); ++AdminsNum)
+	for (AdminsNum = 0; !feof(File); ++AdminsNum)
 	{
-		fgets(file, text, charsmax(text));
+		fgets(File, Text, charsmax(Text));
 		
-		trim(text);
+		trim(Text);
 		
-		if ( (text[0] == ';') || !strlen(text) || (text[0] == '/') )
+		if ( (Text[0] == ';') || !strlen(Text) || (Text[0] == '/') )
 		{
 			continue;
 		}
 		
-		if (parse(text, name, charsmax(name), pass, charsmax(pass), acc, charsmax(acc), flags, charsmax(flags)) != 4)
+		if (parse(Text, Name, charsmax(Name), Password, charsmax(Password), Access, charsmax(Access), Flags, charsmax(Flags)) != 4)
 		{
 			continue;
 		}
 		
-		copy(LoginName[AdminsNum], charsmax(LoginName[]),  name);
-		copy(LoginPass[AdminsNum], charsmax(LoginPass[]),  pass);
-		copy(LoginAccess[AdminsNum], charsmax(LoginAccess[]),  acc);
-		copy(LoginFlag[AdminsNum], charsmax(LoginFlag[]),  flags);
+		copy(LoginName[AdminsNum], charsmax(LoginName[]),  Name);
+		copy(LoginPass[AdminsNum], charsmax(LoginPass[]),  Password);
+		copy(LoginAccess[AdminsNum], charsmax(LoginAccess[]),  Access);
+		copy(LoginFlag[AdminsNum], charsmax(LoginFlag[]),  Flags);
 		
 		if (getNum(PlugCvar[admin_login_debug]) == 1)
 		{
@@ -1329,14 +1390,14 @@ loadAdminLogin()
 		}
 	}
 
-	fclose(file);
+	fclose(File);
 }
 
 getAccess(id, UserPass[])
 {
-	new userName[MAX_NAME_LENGTH], acces;
+	new UserName[MAX_NAME_LENGTH], Acces;
 
-	get_user_info(id, "name", userName, charsmax(userName));
+	get_user_info(id, "name", UserName, charsmax(UserName));
 	
 	if ( !(get_user_flags(id) & ADMIN_CHAT) )
 	{
@@ -1345,22 +1406,22 @@ getAccess(id, UserPass[])
 
 	for (new i = 1; i <= AdminsNum; ++i)
 	{
-		if ( equali(LoginName[i], userName) )
+		if ( equali(LoginName[i], UserName) )
 		{
-			Name[id] = true;
+			CorrectName[id] = true;
 		}
 		else
 		{
-			Name[id] = false;
+			CorrectName[id] = false;
 		}
 		
-		if (equal(LoginFlag[i], "f") && Name[id])
+		if (equal(LoginFlag[i], "f") && CorrectName[id])
 		{
 			if ( equal(LoginPass[i], UserPass) || IsAdmin[id] )
 			{
 				IsAdmin[id] = true;
-				acces = read_flags(LoginAccess[i]);
-				set_user_flags(id, acces);
+				Acces = read_flags(LoginAccess[i]);
+				set_user_flags(id, Acces);
 				copy(LastPass[id], charsmax(LastPass[]), UserPass);
 			}
 			
@@ -1369,44 +1430,44 @@ getAccess(id, UserPass[])
 	}
 }
 
-logCommand(const Msg[], any:...)
+logCommand(const StandardMessage[], any:...)
 {
 	new Message[256], LogMessage[256];
 	
-	vformat(Message, charsmax(Message), Msg , 2);
+	vformat(Message, charsmax(Message), StandardMessage, 2);
 	formatex(LogMessage, charsmax(LogMessage), "L %s%s%s", getTime(), MapName, Message);
 	
 	server_print(LogMessage);
 	write_file(File, LogMessage, NewLine);
 }
 
-getInfo(id, INFO:iInfo)
+getInfo(id, INFO:Type)
 {
 	new const Server[32] = "SERVER"; // Trebuie sa aibe acealasi numar de caractere pentru a nu primi "error 047".
-	switch (iInfo)
+	switch ( Type )
 	{
 		case INFO_NAME:
 		{
-			new name[32];
-			get_user_name(id, name, charsmax(name));
+			new Name[32];
+			get_user_name(id, Name, charsmax(Name));
 			
-			return name;
+			return Name;
 		}
 		case INFO_IP:
 		{
-			new ip[32];
-			get_user_ip(id, ip, charsmax(ip), 1);
+			new Ip[32];
+			get_user_ip(id, Ip, charsmax(Ip), 1);
 			
-			return ip;
+			return Ip;
 		}
 		case INFO_AUTHID:
 		{
-			new authid[32];
-			if (id)
+			new AuthID[32];
+			if ( id )
 			{
-				get_user_authid(id, authid, charsmax(authid));
+				get_user_authid(id, AuthID, charsmax(AuthID));
 				
-				return authid;
+				return AuthID;
 			}
 			else
 			{
@@ -1496,18 +1557,19 @@ registersInit()
 		}
 	}
 	
-	register_clcmd("login", "cmdPass");
-	register_concmd("amx_cvar", "cvarFunc");
 	register_concmd("amx_reloadadmins", "reloadLogin");
 	register_concmd("amx_addban", "hookBanClassCommand");
-	register_clcmd("ROM_INFO", "giveClientInfo");
-	register_srvcmd("ROM_INFO", "giveServerInfo");
+	register_concmd("amx_cvar", "cvarFunc");
+	register_clcmd("amx_rcon", "rconFunc");
+	register_clcmd("login", "cmdPass");
+	register_clcmd("rom_info", "giveClientInfo");
+	register_srvcmd("rom_info", "giveServerInfo");
 }
 
-public stringFilter(String[], len)
+public stringFilter(String[], Len)
 {
 	new LeftBuffer[MAX_NAME_LENGTH], RightBuffef[MAX_NAME_LENGTH], MidBuffer[3];
-	for (new i = 0; i <= len; ++i)
+	for (new i = 0; i <= Len; ++i)
 	{
 		if ( i+1 < MAX_NAME_LENGTH )
 		{
@@ -1515,7 +1577,7 @@ public stringFilter(String[], len)
 			{
 				formatex(MidBuffer, charsmax(MidBuffer), "%c%c", String[i], String[i+1]);
 				split(String, LeftBuffer, charsmax(LeftBuffer), RightBuffef, charsmax(RightBuffef), MidBuffer);
-				format(String, len, "%s%c %c%s", LeftBuffer, String[i], String[i+1], RightBuffef);
+				format(String, Len, "%s%c %c%s", LeftBuffer, String[i], String[i+1], RightBuffef);
 			}
 			
 		}
@@ -1524,10 +1586,10 @@ public stringFilter(String[], len)
 
 bool:clientUseSteamid(id) 
 {	
-	new authid[35]; 
-	get_user_authid(id, authid, charsmax(authid) );
+	new AuthID[35]; 
+	get_user_authid(id, AuthID, charsmax(AuthID) );
 	
-	return (contain(authid , ":") != -1 && containi(authid , "STEAM") != -1) ? true : false; 
+	return (contain(AuthID , ":") != -1 && containi(AuthID , "STEAM") != -1) ? true : false; 
 }
 
 getHldsVersion()
@@ -1600,7 +1662,7 @@ WriteCfg( bool:exist )
 	{
 		delete_file(CfgFile);
 	}
-	new line[121];
+	new Line[121];
 	
 	writeSignature(CfgFile);
 	
@@ -1619,8 +1681,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Atacul este blocat. [Default]" , NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_cmd-bug ^"%d^"^n", getNum(PlugCvar[cmd_bug]));
-		write_file(CfgFile, line , NewLine);
+		formatex(Line, charsmax(Line), "rom_cmd-bug ^"%d^"^n", getNum(PlugCvar[cmd_bug]));
+		write_file(CfgFile, Line , NewLine);
 	}
 	else
 	{
@@ -1635,8 +1697,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Atacul este blocat. [Default]", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_spec-bug ^"%d^"^n", getNum( PlugCvar [ spec_bug ] ));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_spec-bug ^"%d^"^n", getNum( PlugCvar [ spec_bug ] ));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1652,8 +1714,8 @@ WriteCfg( bool:exist )
 		write_file(CfgFile, "// Valoarea 1: Atacul este blocat. [Default]", NewLine);
 		if (exist)
 		{
-			formatex(line, charsmax(line), "rom_admin_chat_flood ^"%d^"^n", getNum( PlugCvar [ admin_chat_flood ] ));
-			write_file(CfgFile, line, NewLine);
+			formatex(Line, charsmax(Line), "rom_admin_chat_flood ^"%d^"^n", getNum( PlugCvar [ admin_chat_flood ] ));
+			write_file(CfgFile, Line, NewLine);
 		}
 		else
 		{
@@ -1665,8 +1727,8 @@ WriteCfg( bool:exist )
 		write_file(CfgFile, "// Nota      : -.", NewLine);
 		if (exist)
 		{
-			formatex(line, charsmax(line), "rom_admin_chat_flood_time ^"%.2f^"^n", getFloat(PlugCvar[admin_chat_flood_time]));
-			write_file(CfgFile, line, NewLine);
+			formatex(Line, charsmax(Line), "rom_admin_chat_flood_time ^"%.2f^"^n", getFloat(PlugCvar[admin_chat_flood_time]));
+			write_file(CfgFile, Line, NewLine);
 		}
 		else
 		{
@@ -1682,8 +1744,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Atacul este blocat. [Default]", NewLine);		
 	if (exist)		
 	{		
-		formatex(line, charsmax(line), "rom_autobuy_bug ^"%d^"^n", getNum(PlugCvar[autobuy_bug]));		
-		write_file(CfgFile, line, NewLine);		
+		formatex(Line, charsmax(Line), "rom_autobuy_bug ^"%d^"^n", getNum(PlugCvar[autobuy_bug]));		
+		write_file(CfgFile, Line, NewLine);		
 	}		
 	else
 	{
@@ -1705,8 +1767,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Atacul este blocat prin ban 30 minute. [Default]", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_fake-players ^"%d^"^n", getNum(PlugCvar[fake_players]));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_fake-players ^"%d^"^n", getNum(PlugCvar[fake_players]));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1718,8 +1780,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Nota      : -.", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_fake-players_limit ^"%d^"^n", getNum(PlugCvar[fake_players_limit]));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_fake-players_limit ^"%d^"^n", getNum(PlugCvar[fake_players_limit]));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1731,8 +1793,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Nota      : -.", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_fake-players-punish ^"%d^"^n", getNum(PlugCvar[fake_players_punish]));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_fake-players-punish ^"%d^"^n", getNum(PlugCvar[fake_players_punish]));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1747,8 +1809,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Fisierul este sters. [Default]", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_delete_custom_hpk ^"%d^"^n", getNum( PlugCvar [ delete_custom_hpk ] ));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_delete_custom_hpk ^"%d^"^n", getNum( PlugCvar [ delete_custom_hpk ] ));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1764,8 +1826,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 2: Fisierul este sters si e setat ^"server_language ro^" in vault.ini.", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_delete_vault ^"%d^"^n", getNum( PlugCvar [ delete_vault ] ));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_delete_vault ^"%d^"^n", getNum( PlugCvar [ delete_vault ] ));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1779,8 +1841,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Mesajele sunt activate. [Default]", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_advertise ^"%d^"^n", getNum( PlugCvar [ advertise ] ));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_advertise ^"%d^"^n", getNum( PlugCvar [ advertise ] ));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1792,8 +1854,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Nota      : -.", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_advertise_time ^"%d^"^n", getNum( PlugCvar [ advertise_time ] ));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_advertise_time ^"%d^"^n", getNum( PlugCvar [ advertise_time ] ));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1807,8 +1869,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Mesajele sunt activate. [Default]", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_warn ^"%d^"^n", getNum( PlugCvar [ plug_warn ] ));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_warn ^"%d^"^n", getNum( PlugCvar [ plug_warn ] ));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1822,8 +1884,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Functia este activata.", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_log ^"%d^"^n", getNum( PlugCvar [ plug_log ] ));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_log ^"%d^"^n", getNum( PlugCvar [ plug_log ] ));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1839,8 +1901,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Adminele sunt protejate. [Default]", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_admin_login ^"%d^"^n", getNum( PlugCvar [ admin_login ] ));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_admin_login ^"%d^"^n", getNum( PlugCvar [ admin_login ] ));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1852,8 +1914,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Nota      : De preferat sa nu se suprapuna cu fisierul de admine ^"normale^", altfel unele din adminele protejate pot fi incarcate de pluginul de baza, creeand neplaceri.", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_admin_login_file ^"%s^"^n", getString(PlugCvar[admin_login_file ]));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_admin_login_file ^"%s^"^n", getString(PlugCvar[admin_login_file]));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1867,8 +1929,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Argumentele sunt printate in consola. ", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_admin_login_debug ^"%d^"^n", getNum( PlugCvar [ admin_login_debug ] ));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_admin_login_debug ^"%d^"^n", getNum( PlugCvar [ admin_login_debug ] ));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1883,8 +1945,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Fisierul este decontaminat. [Default]", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_utf8-bom ^"%d^"^n", getNum(PlugCvar[utf8_bom]));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_utf8-bom ^"%d^"^n", getNum(PlugCvar[utf8_bom]));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1903,8 +1965,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Nota      : Incepand de la versiunea 1.0.2s, pluginul *ROM-Protect devine mult mai primitor si te lasa chiar sa ii schimbi numele.", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_tag ^"%s^"^n", getString( PlugCvar [ Tag ] ));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_tag ^"%s^"^n", getString( PlugCvar [ Tag ] ));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1919,8 +1981,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Bug-ul este blocat. [Default]", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_color-bug ^"%d^"^n", getNum( PlugCvar [ color_bug ] ));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_color-bug ^"%d^"^n", getNum( PlugCvar [ color_bug ] ));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1935,8 +1997,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Bug-ul este blocat. [Default]", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_motdfile ^"%d^"^n", getNum( PlugCvar [ motdfile ] ));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_motdfile ^"%d^"^n", getNum( PlugCvar [ motdfile ] ));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1951,8 +2013,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Bug-ul este blocat. [Default]", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_anti-pause ^"%d^"^n", getNum(PlugCvar[anti_pause]) );
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_anti-pause ^"%d^"^n", getNum(PlugCvar[anti_pause]) );
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1970,8 +2032,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 4: Functia va bloca comanda daca detecteaza ban-ul pe toate clasele de ip.", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_anti-ban-class ^"%d^"^n", getNum(PlugCvar[anti_ban_class]));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_anti-ban-class ^"%d^"^n", getNum(PlugCvar[anti_ban_class]));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -1986,8 +2048,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Pluginul se va auto-actualiza. [Default]", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_auto_update ^"%d^"^n", getNum(PlugCvar[auto_update]));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_auto_update ^"%d^"^n", getNum(PlugCvar[auto_update]));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -2001,8 +2063,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Pluginul se va auto-actualiza si cu update-uri beta. [Default]", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_dev_update ^"%d^"^n", getNum(PlugCvar[dev_update]));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_dev_update ^"%d^"^n", getNum(PlugCvar[dev_update]));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -2018,8 +2080,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Functia este activata. [Default]", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_give_info ^"%d^"^n", getNum(PlugCvar[info]));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_give_info ^"%d^"^n", getNum(PlugCvar[info]));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -2034,8 +2096,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Functia este activata. [Default]", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_xfakeplayer_spam ^"%d^"^n", getNum(PlugCvar[xfakeplayer_spam]));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_xfakeplayer_spam ^"%d^"^n", getNum(PlugCvar[xfakeplayer_spam]));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -2049,8 +2111,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Functia este activata. [Default]", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_xfakeplayer_spam_maxchars ^"%d^"^n", getNum(PlugCvar[xfakeplayer_spam_maxchars]));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_xfakeplayer_spam_maxchars ^"%d^"^n", getNum(PlugCvar[xfakeplayer_spam_maxchars]));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -2062,8 +2124,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Nota      : Atentie, numarul de mesaje identice trimise trebuie sa nu fie mai mic de 3 caractere, altfel protectia s-ar putea sa baneze unii jucatori.", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_xfakeplayer_spam_maxsais ^"%d^"^n", getNum(PlugCvar[xfakeplayer_spam_maxsais]));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_xfakeplayer_spam_maxsais ^"%d^"^n", getNum(PlugCvar[xfakeplayer_spam_maxsais]));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -2078,8 +2140,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 2: Jucatorul va primi ban pentru o valoare setata in cvar-ul rom_xfakeplayer_spam_punish. [Default]", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_xfakeplayer_spam_type ^"%d^"^n", getNum(PlugCvar[xfakeplayer_spam_type]));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_xfakeplayer_spam_type ^"%d^"^n", getNum(PlugCvar[xfakeplayer_spam_type]));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -2091,8 +2153,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Nota      : -", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_xfakeplayer_spam_punish ^"%d^"^n", getNum(PlugCvar[xfakeplayer_spam_punish]));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_xfakeplayer_spam_punish ^"%d^"^n", getNum(PlugCvar[xfakeplayer_spam_punish]));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -2107,8 +2169,8 @@ WriteCfg( bool:exist )
 	write_file(CfgFile, "// Valoarea 1: Functia este activata. [Default]", NewLine);
 	if (exist)
 	{
-		formatex(line, charsmax(line), "rom_protcvars ^"%d^"^n", getNum(PlugCvar[protcvars]));
-		write_file(CfgFile, line, NewLine);
+		formatex(Line, charsmax(Line), "rom_protcvars ^"%d^"^n", getNum(PlugCvar[protcvars]));
+		write_file(CfgFile, Line, NewLine);
 	}
 	else
 	{
@@ -2119,7 +2181,7 @@ WriteCfg( bool:exist )
 
 WriteLang( bool:exist )
 	{
-	new line[121];
+	new Line[121];
 	if (exist)
 	{
 		delete_file(LangFile);
@@ -2129,20 +2191,20 @@ WriteLang( bool:exist )
 		writeSignature(LangFile);
 		write_file( LangFile, "[en]^n", NewLine);
 		
-		formatex(line, charsmax(line), "ROM_UPDATE_CFG = %L", LANG_SERVER, "ROM_UPDATE_CFG", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_UPDATE_CFG = %L", LANG_SERVER, "ROM_UPDATE_CFG", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
 			write_file( LangFile, "ROM_UPDATE_CFG = %s : Am actualizat fisierul CFG : rom_protect.cfg.", NewLine);
 		}
 		
-		formatex(line, charsmax(line), "ROM_UPDATE_LANG = %L", LANG_SERVER, "ROM_UPDATE_LANG", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_UPDATE_LANG = %L", LANG_SERVER, "ROM_UPDATE_LANG", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
@@ -2150,40 +2212,40 @@ WriteLang( bool:exist )
 		}
 		
 		#if AMXX_VERSION_NUM < 183
-			formatex(line, charsmax(line), "ROM_FAKE_PLAYERS = %L", LANG_SERVER, "ROM_FAKE_PLAYERS", "^%c", "^%s", "^%c", "^%s");
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_FAKE_PLAYERS = %L", LANG_SERVER, "ROM_FAKE_PLAYERS", "^%c", "^%s", "^%c", "^%s");
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_FAKE_PLAYERS = %c%s : %cS-a observat un numar prea mare de persoane de pe ip-ul : %s .", NewLine);
 			}
 			
-			formatex(line, charsmax(line), "ROM_FAKE_PLAYERS_PUNISH = %L", LANG_SERVER, "ROM_FAKE_PLAYERS_PUNISH", "^%c", "^%s", "^%c", "^%s");
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_FAKE_PLAYERS_PUNISH = %L", LANG_SERVER, "ROM_FAKE_PLAYERS_PUNISH", "^%c", "^%s", "^%c", "^%s");
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_FAKE_PLAYERS_PUNISH = %c%s : %cIp-ul a primit ban %s minute pentru a nu afecta jocul.", NewLine);
 			}		
 		#else
-			formatex(line, charsmax(line), "ROM_FAKE_PLAYERS = %L", LANG_SERVER, "ROM_FAKE_PLAYERS", "^%s", "^%s" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_FAKE_PLAYERS = %L", LANG_SERVER, "ROM_FAKE_PLAYERS", "^%s", "^%s" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_FAKE_PLAYERS = ^^3%s : ^^4S-a observat un numar prea mare de persoane de pe ip-ul : %s .", NewLine);
 			}
 				
-			formatex(line, charsmax(line), "ROM_FAKE_PLAYERS_PUNISH = %L", LANG_SERVER, "ROM_FAKE_PLAYERS_PUNISH", "^%s", "^%s");
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_FAKE_PLAYERS_PUNISH = %L", LANG_SERVER, "ROM_FAKE_PLAYERS_PUNISH", "^%s", "^%s");
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
@@ -2191,30 +2253,30 @@ WriteLang( bool:exist )
 			}
 		#endif
 		
-		formatex(line, charsmax(line), "ROM_FAKE_PLAYERS_LOG = %L", LANG_SERVER, "ROM_FAKE_PLAYERS_LOG", "^%s", "^%s"  );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_FAKE_PLAYERS_LOG = %L", LANG_SERVER, "ROM_FAKE_PLAYERS_LOG", "^%s", "^%s"  );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
 			write_file( LangFile, "ROM_FAKE_PLAYERS_LOG = %s : S-a depistat un atac de ^"xFake-Players^" de la IP-ul : %s .", NewLine);
 		}
 			
-		formatex(line, charsmax(line), "ROM_FAKE_PLAYERS_DETECT = %L", LANG_SERVER, "ROM_FAKE_PLAYERS_DETECT", "^%s"  );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_FAKE_PLAYERS_DETECT = %L", LANG_SERVER, "ROM_FAKE_PLAYERS_DETECT", "^%s"  );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
 			write_file( LangFile, "ROM_FAKE_PLAYERS_DETECT = %s : Ai primit kick deoarece deoarece esti suspect de fake-client. Te rugam sa folosesti alt client.", NewLine);
 		}
 			
-		formatex(line, charsmax(line), "ROM_FAKE_PLAYERS_DETECT_LOG = %L", LANG_SERVER, "ROM_FAKE_PLAYERS_DETECT_LOG", "^%s", "^%s", "^%s", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_FAKE_PLAYERS_DETECT_LOG = %L", LANG_SERVER, "ROM_FAKE_PLAYERS_DETECT_LOG", "^%s", "^%s", "^%s", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
@@ -2222,20 +2284,20 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183
-			formatex(line, charsmax(line), "ROM_PLUGIN_PAUSE = %L", LANG_SERVER, "ROM_PLUGIN_PAUSE", "^%c", "^%s", "^%c" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_PLUGIN_PAUSE = %L", LANG_SERVER, "ROM_PLUGIN_PAUSE", "^%c", "^%s", "^%c" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_PLUGIN_PAUSE = %c%s : %cNe pare rau, dar din anumite motive, acest plugin nu poate fi pus pe pauza.", NewLine);
 			}
 		#else
-			formatex(line, charsmax(line), "ROM_PLUGIN_PAUSE = %L", LANG_SERVER, "ROM_PLUGIN_PAUSE", "^%s" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_PLUGIN_PAUSE = %L", LANG_SERVER, "ROM_PLUGIN_PAUSE", "^%s" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
@@ -2243,10 +2305,10 @@ WriteLang( bool:exist )
 			}
 		#endif
 		
-		formatex(line, charsmax(line), "ROM_PLUGIN_PAUSE_LOG = %L", LANG_SERVER, "ROM_PLUGIN_PAUSE_LOG", "^%s", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_PLUGIN_PAUSE_LOG = %L", LANG_SERVER, "ROM_PLUGIN_PAUSE_LOG", "^%s", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
@@ -2254,20 +2316,20 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183 
-			formatex(line, charsmax(line), "ROM_ADMIN_WRONG_NAME = %L", LANG_SERVER, "ROM_ADMIN_WRONG_NAME", "^%c", "^%s", "^%c" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_ADMIN_WRONG_NAME = %L", LANG_SERVER, "ROM_ADMIN_WRONG_NAME", "^%c", "^%s", "^%c" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_ADMIN_WRONG_NAME = %c%s : %cNu s-a gasit nici un admin care sa poarte acest nickname.", NewLine);
 			}
 		#else
-			formatex(line, charsmax(line), "ROM_ADMIN_WRONG_NAME = %L", LANG_SERVER, "ROM_ADMIN_WRONG_NAME", "^%s" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_ADMIN_WRONG_NAME = %L", LANG_SERVER, "ROM_ADMIN_WRONG_NAME", "^%s" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
@@ -2275,10 +2337,10 @@ WriteLang( bool:exist )
 			}
 		#endif
 		
-		formatex(line, charsmax(line), "ROM_ADMIN_WRONG_NAME_PRINT = %L", LANG_SERVER, "ROM_ADMIN_WRONG_NAME_PRINT", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_ADMIN_WRONG_NAME_PRINT = %L", LANG_SERVER, "ROM_ADMIN_WRONG_NAME_PRINT", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
@@ -2286,20 +2348,20 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183
-			formatex(line, charsmax(line), "ROM_ADMIN_WRONG_PASS = %L", LANG_SERVER, "ROM_ADMIN_WRONG_PASS", "^%c", "^%s", "^%c" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_ADMIN_WRONG_PASS = %L", LANG_SERVER, "ROM_ADMIN_WRONG_PASS", "^%c", "^%s", "^%c" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_ADMIN_WRONG_PASS = %c%s : %cParola introdusa de tine este incorecta.", NewLine);
 			}
 		#else
-			formatex(line, charsmax(line), "ROM_ADMIN_WRONG_PASS = %L", LANG_SERVER, "ROM_ADMIN_WRONG_PASS", "^%s" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_ADMIN_WRONG_PASS = %L", LANG_SERVER, "ROM_ADMIN_WRONG_PASS", "^%s" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
@@ -2307,10 +2369,10 @@ WriteLang( bool:exist )
 			}
 		#endif
 		
-		formatex(line, charsmax(line), "ROM_ADMIN_WRONG_PASS_PRINT = %L", LANG_SERVER, "ROM_ADMIN_WRONG_PASS_PRINT", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_ADMIN_WRONG_PASS_PRINT = %L", LANG_SERVER, "ROM_ADMIN_WRONG_PASS_PRINT", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
@@ -2318,20 +2380,20 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183
-			formatex(line, charsmax(line), "ROM_ADMIN_LOADED = %L", LANG_SERVER, "ROM_ADMIN_LOADED", "^%c", "^%s", "^%c" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_ADMIN_LOADED = %L", LANG_SERVER, "ROM_ADMIN_LOADED", "^%c", "^%s", "^%c" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_ADMIN_LOADED = %c%s : %cAdmin-ul tau a fost incarcat.", NewLine);
 			}
 		#else
-			formatex(line, charsmax(line), "ROM_ADMIN_LOADED = %L", LANG_SERVER, "ROM_ADMIN_LOADED", "^%s" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_ADMIN_LOADED = %L", LANG_SERVER, "ROM_ADMIN_LOADED", "^%s" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
@@ -2339,10 +2401,10 @@ WriteLang( bool:exist )
 			}
 		#endif
 		
-		formatex(line, charsmax(line), "ROM_ADMIN_LOADED_PRINT = %L", LANG_SERVER, "ROM_ADMIN_LOADED_PRINT", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_ADMIN_LOADED_PRINT = %L", LANG_SERVER, "ROM_ADMIN_LOADED_PRINT", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
@@ -2350,20 +2412,20 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183
-			formatex(line, charsmax(line), "ROM_ADMIN_ALREADY_LOADED = %L", LANG_SERVER, "ROM_ADMIN_ALREADY_LOADED", "^%c", "^%s", "^%c" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_ADMIN_ALREADY_LOADED = %L", LANG_SERVER, "ROM_ADMIN_ALREADY_LOADED", "^%c", "^%s", "^%c" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_ADMIN_ALREADY_LOADED = %c%s : %cAdmin-ul tau este deja incarcat.", NewLine);
 			}
 		#else
-			formatex(line, charsmax(line), "ROM_ADMIN_ALREADY_LOADED = %L", LANG_SERVER, "ROM_ADMIN_ALREADY_LOADED", "^%s" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_ADMIN_ALREADY_LOADED = %L", LANG_SERVER, "ROM_ADMIN_ALREADY_LOADED", "^%s" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
@@ -2371,10 +2433,10 @@ WriteLang( bool:exist )
 			}
 		#endif
 		
-		formatex(line, charsmax(line), "ROM_ADMIN_ALREADY_LOADED_PRINT = %L", LANG_SERVER, "ROM_ADMIN_ALREADY_LOADED_PRINT", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_ADMIN_ALREADY_LOADED_PRINT = %L", LANG_SERVER, "ROM_ADMIN_ALREADY_LOADED_PRINT", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
@@ -2382,20 +2444,20 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183
-			formatex(line, charsmax(line), "ROM_CMD_BUG = %L", LANG_SERVER, "ROM_CMD_BUG", "^%c", "^%s", "^%c" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_CMD_BUG = %L", LANG_SERVER, "ROM_CMD_BUG", "^%c", "^%s", "^%c" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_CMD_BUG = %c%s : %cS-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.", NewLine);
 			}
 		#else
-			formatex(line, charsmax(line), "ROM_CMD_BUG = %L", LANG_SERVER, "ROM_CMD_BUG", "^%s" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_CMD_BUG = %L", LANG_SERVER, "ROM_CMD_BUG", "^%s" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
@@ -2403,20 +2465,20 @@ WriteLang( bool:exist )
 			}
 		#endif	 
 		
-		formatex(line, charsmax(line), "ROM_CMD_BUG_LOG = %L", LANG_SERVER, "ROM_CMD_BUG_LOG", "^%s", "^%s", "^%s", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_CMD_BUG_LOG = %L", LANG_SERVER, "ROM_CMD_BUG_LOG", "^%s", "^%s", "^%s", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
 			write_file( LangFile, "ROM_CMD_BUG_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului.", NewLine);
 		}
 			
-		formatex(line, charsmax(line), "ROM_CMD_BUG_PRINT = %L", LANG_SERVER, "ROM_CMD_BUG_PRINT", "^%s");
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_CMD_BUG_PRINT = %L", LANG_SERVER, "ROM_CMD_BUG_PRINT", "^%s");
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
@@ -2424,20 +2486,20 @@ WriteLang( bool:exist )
 		}
 	
 		#if AMXX_VERSION_NUM < 183
-			formatex(line, charsmax(line), "ROM_COLOR_BUG = %L", LANG_SERVER, "ROM_COLOR_BUG", "^%c", "^%s", "^%c" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_COLOR_BUG = %L", LANG_SERVER, "ROM_COLOR_BUG", "^%c", "^%s", "^%c" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_COLOR_BUG = %c%s : %cS-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.", NewLine);
 			}
 		#else
-			formatex(line, charsmax(line), "ROM_COLOR_BUG = %L", LANG_SERVER, "ROM_COLOR_BUG", "^%s" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_COLOR_BUG = %L", LANG_SERVER, "ROM_COLOR_BUG", "^%s" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
@@ -2445,20 +2507,20 @@ WriteLang( bool:exist )
 			}
 		#endif
 		
-		formatex(line, charsmax(line), "ROM_COLOR_BUG_LOG = %L", LANG_SERVER, "ROM_COLOR_BUG_LOG", "^%s", "^%s", "^%s", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_COLOR_BUG_LOG = %L", LANG_SERVER, "ROM_COLOR_BUG_LOG", "^%s", "^%s", "^%s", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
 			write_file( LangFile, "ROM_COLOR_BUG_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii.", NewLine);
 		}
 			
-		formatex(line, charsmax(line), "ROM_COLOR_BUG_PRINT = %L", LANG_SERVER, "ROM_COLOR_BUG_PRINT", "^%s");
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_COLOR_BUG_PRINT = %L", LANG_SERVER, "ROM_COLOR_BUG_PRINT", "^%s");
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
@@ -2466,20 +2528,20 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183
-			formatex(line, charsmax(line), "ROM_SPEC_BUG = %L", LANG_SERVER, "ROM_SPEC_BUG", "^%c", "^%s", "^%c" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_SPEC_BUG = %L", LANG_SERVER, "ROM_SPEC_BUG", "^%c", "^%s", "^%c" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_SPEC_BUG = %c%s : %cAi facut o miscare suspecta asa ca te-am mutat la echipa precedenta.", NewLine);
 			}
 		#else
-			formatex(line, charsmax(line), "ROM_SPEC_BUG = %L", LANG_SERVER, "ROM_SPEC_BUG", "^%s" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_SPEC_BUG = %L", LANG_SERVER, "ROM_SPEC_BUG", "^%s" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
@@ -2487,10 +2549,10 @@ WriteLang( bool:exist )
 			}
 		#endif
 		
-		formatex(line, charsmax(line), "ROM_SPEC_BUG_LOG = %L", LANG_SERVER, "ROM_SPEC_BUG_LOG", "^%s", "^%s", "^%s", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_SPEC_BUG_LOG = %L", LANG_SERVER, "ROM_SPEC_BUG_LOG", "^%s", "^%s", "^%s", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
@@ -2498,20 +2560,20 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183
-			formatex(line, charsmax(line), "ROM_ADMIN_CHAT_FLOOD = %L", LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD", "^%c", "^%s", "^%c" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_ADMIN_CHAT_FLOOD = %L", LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD", "^%c", "^%s", "^%c" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
-				write_file( LangFile, "ROM_ADMIN_CHAT_FLOOD = %c%s : %cS-a observat un mic flood la chat primit din partea ta. Mesajele trimise de tine vor fi filtrate.", NewLine);
+				write_file( LangFile, "ROM_ADMIN_CHAT_FLOOD = %c%s : %cS-a observat un mic IsFlooding la chat primit din partea ta. Mesajele trimise de tine vor fi filtrate.", NewLine);
 			}
 
-			formatex(line, charsmax(line), "ROM_ADMIN_CHAT_FLOOD_LOG = %L", LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD_LOG", "^%s", "^%s", "^%s", "^%s" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_ADMIN_CHAT_FLOOD_LOG = %L", LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD_LOG", "^%s", "^%s", "^%s", "^%s" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
@@ -2520,20 +2582,20 @@ WriteLang( bool:exist )
 		#endif
 		
 		#if AMXX_VERSION_NUM < 183
-			formatex(line, charsmax(line), "ROM_AUTOBUY = %L", LANG_SERVER, "ROM_AUTOBUY", "^%c", "^%s", "^%c" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_AUTOBUY = %L", LANG_SERVER, "ROM_AUTOBUY", "^%c", "^%s", "^%c" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_AUTOBUY = %c%s : %cComanda trimisa de tine are valori suspecte, asa ca am blocat-o.", NewLine);
 			}
 		#else
-			formatex(line, charsmax(line), "ROM_AUTOBUY = %L", LANG_SERVER, "ROM_AUTOBUY", "^%s" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_AUTOBUY = %L", LANG_SERVER, "ROM_AUTOBUY", "^%s" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
@@ -2541,50 +2603,50 @@ WriteLang( bool:exist )
 			}
 		#endif
 		
-		formatex(line, charsmax(line), "ROM_AUTOBUY_LOG = %L", LANG_SERVER, "ROM_AUTOBUY_LOG", "^%s", "^%s", "^%s", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_AUTOBUY_LOG = %L", LANG_SERVER, "ROM_AUTOBUY_LOG", "^%s", "^%s", "^%s", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
 			write_file( LangFile, "ROM_AUTOBUY_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"AUTOBUY_BUG^" ca sa strice buna functionare a serverului.", NewLine);
 		}
 		
-		formatex(line, charsmax(line), "ROM_FILE_NOT_FOUND = %L", LANG_SERVER, "ROM_FILE_NOT_FOUND", "^%s", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_FILE_NOT_FOUND = %L", LANG_SERVER, "ROM_FILE_NOT_FOUND", "^%s", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
 			write_file( LangFile, "ROM_FILE_NOT_FOUND = %s : Fisierul %s nu exista.", NewLine);
 		}
 			
-		formatex(line, charsmax(line), "ROM_ADMIN_DEBUG = %L", LANG_SERVER, "ROM_ADMIN_DEBUG", "^%s", "^%s", "^%s", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_ADMIN_DEBUG = %L", LANG_SERVER, "ROM_ADMIN_DEBUG", "^%s", "^%s", "^%s", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
 			write_file( LangFile, "ROM_ADMIN_DEBUG = Nume : %s - Parola : %s - Acces : %s - Flag : %s", NewLine);
 		}
 			
-		formatex(line, charsmax(line), "ROM_MOTDFILE = %L", LANG_SERVER, "ROM_MOTDFILE", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_MOTDFILE = %L", LANG_SERVER, "ROM_MOTDFILE", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
 			write_file( LangFile, "ROM_MOTDFILE = %s : S-a detectat o miscare suspecta din partea ta, comanda ta a fost blocata.", NewLine);
 		}
 			
-		formatex(line, charsmax(line), "ROM_MOTDFILE_LOG = %L", LANG_SERVER, "ROM_MOTDFILE_LOG", "^%s", "^%s", "^%s", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_MOTDFILE_LOG = %L", LANG_SERVER, "ROM_MOTDFILE_LOG", "^%s", "^%s", "^%s", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
@@ -2592,20 +2654,20 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183
-			formatex(line, charsmax(line), "ROM_ADVERTISE = %L", LANG_SERVER, "ROM_ADVERTISE", "^%c", "^%s", "^%c", "^%c", "^%s", "^%c", "^%c", "^%s", "^%c" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_ADVERTISE = %L", LANG_SERVER, "ROM_ADVERTISE", "^%c", "^%s", "^%c", "^%c", "^%s", "^%c", "^%c", "^%s", "^%c" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_ADVERTISE = %c%s :%c Acest server este supravegheat de pluginul de protectie %c%s%c versiunea %c%s%c .", NewLine);
 			}
 		#else
-			formatex(line, charsmax(line), "ROM_ADVERTISE = %L", LANG_SERVER, "ROM_ADVERTISE", "^%s", "^%s", "^%s" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_ADVERTISE = %L", LANG_SERVER, "ROM_ADVERTISE", "^%s", "^%s", "^%s" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
@@ -2613,50 +2675,50 @@ WriteLang( bool:exist )
 			}
 		#endif
 		
-		formatex(line, charsmax(line), "ROM_ANTI_BAN_CLASS = %L", LANG_SERVER, "ROM_ANTI_BAN_CLASS", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_ANTI_BAN_CLASS = %L", LANG_SERVER, "ROM_ANTI_BAN_CLASS", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
 			write_file( LangFile, "ROM_ANTI_BAN_CLASS = %s : S-au detectat un numar prea mare de ban-uri pe clasa de ip, comanda ta a fost blocata.", NewLine);
 		}
 		
-		formatex(line, charsmax(line), "ROM_ANTI_ANY_BAN_CLASS_LOG = %L", LANG_SERVER, "ROM_ANTI_ANY_BAN_CLASS_LOG", "^%s", "^%s", "^%s", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_ANTI_ANY_BAN_CLASS_LOG = %L", LANG_SERVER, "ROM_ANTI_ANY_BAN_CLASS_LOG", "^%s", "^%s", "^%s", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
 			write_file( LangFile, "ROM_ANTI_ANY_BAN_CLASS_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa dea ban pe clasa de ip.", NewLine);	
 		}
 		
-		formatex(line, charsmax(line), "ROM_ANTI_SOME_BAN_CLASS_LOG = %L", LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", "^%s", "^%s", "^%s", "^%s", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_ANTI_SOME_BAN_CLASS_LOG = %L", LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", "^%s", "^%s", "^%s", "^%s", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
 			write_file( LangFile, "ROM_ANTI_SOME_BAN_CLASS_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa dea ban pe mai mult de %s clase de ip.", NewLine);	
 		}
 		
-		formatex(line, charsmax(line), "ROM_AUTO_UPDATE_SUCCEED = %L", LANG_SERVER, "ROM_AUTO_UPDATE_SUCCEED", "^%s");
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_AUTO_UPDATE_SUCCEED = %L", LANG_SERVER, "ROM_AUTO_UPDATE_SUCCEED", "^%s");
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
 			write_file( LangFile, "ROM_AUTO_UPDATE_SUCCEED = %s : S-a efectuat auto-actualizarea pluginului.", NewLine);	
 		}
 		
-		formatex(line, charsmax(line), "ROM_AUTO_UPDATE_FAILED = %L", LANG_SERVER, "ROM_AUTO_UPDATE_FAILED", "^%s"); 
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_AUTO_UPDATE_FAILED = %L", LANG_SERVER, "ROM_AUTO_UPDATE_FAILED", "^%s"); 
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
@@ -2664,20 +2726,20 @@ WriteLang( bool:exist )
 		}
 		
 		#if AMXX_VERSION_NUM < 183
-			formatex(line, charsmax(line), "ROM_XFAKE_PLAYERS_SPAM_WARN = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_WARN", "^%c", "^%s", "^%c");
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM_WARN = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_WARN", "^%c", "^%s", "^%c");
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_WARN = %c%s : %cMesajul tau a fost eliminat pentru a elimina o tentativa de ^"BOT SPAM^".", NewLine);
 			}
 		#else
-			formatex(line, charsmax(line), "ROM_XFAKE_PLAYERS_SPAM_WARN = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_WARN", "^%s" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM_WARN = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_WARN", "^%s" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
@@ -2686,40 +2748,40 @@ WriteLang( bool:exist )
 		#endif
 		
 		#if AMXX_VERSION_NUM < 183
-			formatex(line, charsmax(line), "ROM_XFAKE_PLAYERS_SPAM = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM", "^%c", "^%s", "^%c", "^%s");
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM", "^%c", "^%s", "^%c", "^%s");
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM = %c%s : %cS-a depistat o tentativa de ^"BOT SPAM^" de la ip-ul : %s .", NewLine);
 			}
 			
-			formatex(line, charsmax(line), "ROM_XFAKE_PLAYERS_SPAM_PUNISH = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_PUNISH", "^%c", "^%s", "^%c", "^%s");
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM_PUNISH = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_PUNISH", "^%c", "^%s", "^%c", "^%s");
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_PUNISH = %c%s : %cIp-ul a primit ban %s minute pentru a nu afecta jocul.", NewLine);
 			}		
 		#else
-			formatex(line, charsmax(line), "ROM_XFAKE_PLAYERS_SPAM = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM", "^%s", "^%s" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM", "^%s", "^%s" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM = ^^3%s : ^^4S-a depistat o tentativa de ^"BOT SPAM^" de la ip-ul : %s .", NewLine);
 			}
 				
-			formatex(line, charsmax(line), "ROM_XFAKE_PLAYERS_SPAM_PUNISH = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_PUNISH", "^%s", "^%s");
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM_PUNISH = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_PUNISH", "^%s", "^%s");
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
@@ -2727,20 +2789,20 @@ WriteLang( bool:exist )
 			}
 		#endif
 		
-		formatex(line, charsmax(line), "ROM_XFAKE_PLAYERS_SPAM_BAN = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_BAN", "^%s", "^%s"  );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM_BAN = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_BAN", "^%s", "^%s"  );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
 			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_BAN = %s : Ai fost detectat ca fiind un bot xfake_player, asa ca ai fost banat pentru %s minute.", NewLine);
 		}
 		
-		formatex(line, charsmax(line), "ROM_XFAKE_PLAYERS_SPAM_KICK = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_KICK", "^%s"  );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM_KICK = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_KICK", "^%s"  );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
@@ -2748,20 +2810,20 @@ WriteLang( bool:exist )
 		}
 		
 		#if AMXX_VERSION_NUM < 183
-			formatex(line, charsmax(line), "ROM_XFAKE_PLAYERS_SPAM_GAG = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_GAG", "^%c", "^%s", "^%c");
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM_GAG = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_GAG", "^%c", "^%s", "^%c");
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
 				write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_GAG = %c%s : %cAi fost detectat ca fiind un bot xfake_player, nu vei mai putea folosi chat-ul pana nu te vei reconecta.", NewLine);
 			}
 		#else
-			formatex(line, charsmax(line), "ROM_XFAKE_PLAYERS_SPAM_GAG = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_GAG", "^%s" );
-			if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM_GAG = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_GAG", "^%s" );
+			if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 			{
-				write_file( LangFile, line, NewLine);
+				write_file( LangFile, Line, NewLine);
 			}
 			else
 			{
@@ -2769,30 +2831,30 @@ WriteLang( bool:exist )
 			}
 		#endif
 		
-		formatex(line, charsmax(line), "ROM_XFAKE_PLAYERS_SPAM_LOG = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_LOG", "^%s", "^%s"  );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM_LOG = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_LOG", "^%s", "^%s"  );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
 			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_LOG = %s : S-a depistat un atac de ^"BOT SPAM^" de la IP-ul : %s .", NewLine);
 		}
 		
-		formatex(line, charsmax(line), "ROM_PROTCVARS = %L", LANG_SERVER, "ROM_PROTCVARS", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_PROTCVARS = %L", LANG_SERVER, "ROM_PROTCVARS", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
 			write_file( LangFile, "ROM_PROTCVARS = %s : Cvar-ururile acestui plugin sunt protejate, comanda ta nu a avut efect.", NewLine);
 		}
 		
-		formatex(line, charsmax(line), "ROM_PROTCVARS_LOG = %L", LANG_SERVER, "ROM_PROTCVARS_LOG", "^%s", "^%s", "^%s", "^%s" );
-		if ( equal(line, "ML_NOTFOUND" , MLNTsize) )
+		formatex(Line, charsmax(Line), "ROM_PROTCVARS_LOG = %L", LANG_SERVER, "ROM_PROTCVARS_LOG", "^%s", "^%s", "^%s", "^%s" );
+		if ( equal(Line, "ML_NOTFOUND" , MLNTsize) )
 		{
-			write_file( LangFile, line, NewLine);
+			write_file( LangFile, Line, NewLine);
 		}
 		else
 		{
@@ -2888,7 +2950,7 @@ WriteLang( bool:exist )
 		write_file( LangFile, "ROM_SPEC_BUG_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului.", NewLine);
 		
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_ADMIN_CHAT_FLOOD = %c%s : %cS-a observat un mic flood la chat primit din partea ta. Mesajele trimise de tine vor fi filtrate.", NewLine);
+			write_file( LangFile, "ROM_ADMIN_CHAT_FLOOD = %c%s : %cS-a observat un mic IsFlooding la chat primit din partea ta. Mesajele trimise de tine vor fi filtrate.", NewLine);
 			write_file( LangFile, "ROM_ADMIN_CHAT_FLOOD_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa dea kick adminilor de pe server.", NewLine);	
 		#endif
 		
@@ -2951,12 +3013,12 @@ WriteLang( bool:exist )
 
 writeSignature(const File[])
 {
-	new line[121];
+	new Line[121];
 	
 	write_file( File, "// *ROM-Protect", NewLine);
-	write_file( File, "// Plugin OpenSource anti-flood/bug-fix pentru orice server.", NewLine);
-	formatex(line, charsmax(line), "// Versiunea %s. Bulid %d", Version, Build);
-	write_file( File, line, NewLine); 
+	write_file( File, "// Plugin OpenSource anti-IsFlooding/bug-fix pentru orice server.", NewLine);
+	formatex(Line, charsmax(Line), "// Versiunea %s. Bulid %d", Version, Build);
+	write_file( File, Line, NewLine); 
 	write_file( File, "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor", NewLine);
 	write_file( File, "// O productie FioriGinal.ro - site : www.fioriginal.ro", NewLine);
 	write_file( File, "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html", NewLine);
