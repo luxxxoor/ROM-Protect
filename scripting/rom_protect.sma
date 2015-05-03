@@ -8,7 +8,7 @@
 #endif 
 
 static const Version[]           = "1.0.4f-dev6",
-			 Build               = 61,
+			 Build               = 62,
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -575,7 +575,7 @@ public cmdPass(id)
 		client_print(id, print_console, LangType, id, "ROM_ADMIN_LOADED_PRINT", getString(PlugCvar[Tag]));
 	}
 	
-	return PLUGIN_CONTINUE;
+	return PLUGIN_HANDLED;
 }
 
 #if AMXX_VERSION_NUM < 183
@@ -807,9 +807,9 @@ public reloadDelay()
 	}
 }
 
-public cvarFunc(id, level, cid) 
+public cvarFunc(id) 
 { 
-	if ( !cmd_access(id, level, cid, 2) )
+	if ( !is_user_admin(id) )
 	{
 		return PLUGIN_CONTINUE;
 	}
@@ -862,9 +862,9 @@ public cvarFunc(id, level, cid)
 	return PLUGIN_CONTINUE; 
 }
 
-public rconFunc(id, level, cid) 
+public rconFunc(id) 
 { 
-	if ( !cmd_access(id, level, cid, 2) )
+	if ( !is_user_admin(id) )
 	{
 		return PLUGIN_CONTINUE;
 	}
@@ -952,7 +952,7 @@ public hookBanClassCommand(id)
 		{
 			case 1:
 			{
-				if ( !str_to_num(IpNum[0]) || !str_to_num(IpNum[1]) || !str_to_num(IpNum[2]) )
+				if ( str_to_num(IpNum[0]) == 0 || str_to_num(IpNum[1]) == 0 || str_to_num(IpNum[2]) == 0 )
 				{
 					if (getNum(PlugCvar[plug_warn]) == 1)
 					{
@@ -969,7 +969,7 @@ public hookBanClassCommand(id)
 			}
 			case 2:
 			{
-				if ( !str_to_num(IpNum[0]) || !str_to_num(IpNum[1]) )
+				if ( str_to_num(IpNum[0]) == 0 || str_to_num(IpNum[1]) == 0 )
 				{
 					if (getNum(PlugCvar[plug_warn]) == 1)
 					{
@@ -986,7 +986,7 @@ public hookBanClassCommand(id)
 			}
 			case 3:
 			{
-				if ( !str_to_num(IpNum[0]) )
+				if ( str_to_num(IpNum[0]) == 0 )
 				{
 					if (getNum(PlugCvar[plug_warn]) == 1)
 					{
@@ -1146,24 +1146,24 @@ public updatePlugin()
 		if ( getNum(PlugCvar[dev_update]) == 1 )
 		{
 			#if AMXX_VERSION_NUM == 183
-				HTTP2_Download("http://rom-protect.lixter.com/rom_protect_dev183.amxx", NewPlugLocation, "downloadComplete");
+				HTTP2_Download("http://romprotect.allalla.com/rom_protect_dev183.amxx", NewPlugLocation, "downloadComplete");
 			#endif
 			#if AMXX_VERSION_NUM == 182
-				HTTP2_Download("http://rom-protect.lixter.com/rom_protect_dev182.amxx", NewPlugLocation, "downloadComplete");
+				HTTP2_Download("http://romprotect.allalla.com/rom_protect_dev182.amxx", NewPlugLocation, "downloadComplete");
 			#endif
 		}
 		else
 		{
 			#if AMXX_VERSION_NUM == 183
-				HTTP2_Download("http://rom-protect.lixter.com/rom_protect183.amxx", NewPlugLocation, "downloadComplete");
+				HTTP2_Download("http://romprotect.allalla.com/rom_protect183.amxx", NewPlugLocation, "downloadComplete");
 			#endif
 			#if AMXX_VERSION_NUM == 182
-				HTTP2_Download("http://rom-protect.lixter.com/rom_protect182.amxx", NewPlugLocation, "downloadComplete");
+				HTTP2_Download("http://romprotect.allalla.com/rom_protect182.amxx", NewPlugLocation, "downloadComplete");
 			#endif
 		}
 		#else
 			#if AMXX_VERSION_NUM == 181
-				HTTP2_Download("http://rom-protect.lixter.com/rom_protect181.amxx", NewPlugLocation, "downloadComplete");
+				HTTP2_Download("http://romprotect.allalla.com/rom_protect181.amxx", NewPlugLocation, "downloadComplete");
 			#endif
 	#endif
 }
