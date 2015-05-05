@@ -58,8 +58,9 @@ enum
 
 new ArgNum[MAX_PLAYERS+1], Contor[MAX_PLAYERS+1], File[128], MapName[32], ClSaidSameTh_Count[MAX_PLAYERS+1],
 	bool:CorrectName[MAX_PLAYERS+1], bool:IsAdmin[MAX_PLAYERS+1], bool:FirstMsg[MAX_PLAYERS+1], bool:Gag[MAX_PLAYERS+1];
-new LoginName[MAX_PLAYERS+1][32], LoginPass[MAX_PLAYERS+1][32], LoginAccess[MAX_PLAYERS+1][32], LoginFlag[MAX_PLAYERS+1][6],
-	LastPass[MAX_PLAYERS+1][32], MenuText[MAX_PLAYERS+1][MAX_PLAYERS];
+new LoginName[256][64], LoginPass[256][64], LoginAccess[256][64], LoginFlag[256][6],
+	LastPass[256][64], MenuText[MAX_PLAYERS+1][MAX_PLAYERS];
+new PreviousMessage[MAX_PLAYERS+1][192]; // declarat global pentru a evita eroarea "Run time error 3: stack error "
 new AdminsNum, FileSize, bool:IsLangUsed;
 
 new const AllBasicOnChatCommads[][] =
@@ -1262,7 +1263,7 @@ public hookForXFakePlayerSpam(id)
 		return PLUGIN_HANDLED;
 	}
 	
-	new ClSaid[192], PreviousMessage[MAX_PLAYERS+1][192];
+	new ClSaid[192];
 	read_args(ClSaid, charsmax(ClSaid));
 	
 	if ( strlen(ClSaid) <= getNum(PlugCvar[xfakeplayer_spam_maxchars])+1 )
