@@ -1233,10 +1233,8 @@ public giveServerInfo(id)
 	server_print("Contact : luxxxoor (Steam) / alex.vrincean (Skype).");
 	server_print("Sursa in dezvoltare : https://github.com/luxxxoor/ROM-Protect ^n");
 	server_print("Acest plugin este unul OpenSource ! Este interzisa copierea/vinderea lui pentru a obtine bani.");
-	server_print("Pluginul se afla in plina dezvoltare si este menit sa ofere un minim de siguranta serverelor care \
-				  nu provin de la firme de host scumpe, care sa comfere siguranta serverelor.");
-	server_print("Clientii pot edita pluginul dupa bunul lor plac, fie din fisierul configurator si \
-				  fisier lang, fie direct din sursa acestuia.");
+	server_print("Pluginul se afla in plina dezvoltare si este menit sa ofere un minim de siguranta serverelor care nu provin de la firme de host scumpe, care sa comfere siguranta serverelor.");
+	server_print("Clientii pot edita pluginul dupa bunul lor plac, fie din fisierul configurator si fisier lang, fie direct din sursa acestuia.");
 	server_print("Copyright 2014-2015");
 	
 	return PLUGIN_CONTINUE;
