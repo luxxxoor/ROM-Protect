@@ -8,7 +8,7 @@
 #endif 
 
 static const Version[]           = "1.0.4f-test",
-			 Build               = 66,
+			 Build               = 67,
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -58,8 +58,8 @@ enum
 
 new ArgNum[MAX_PLAYERS+1], Contor[MAX_PLAYERS+1], File[128], MapName[32], ClSaidSameTh_Count[MAX_PLAYERS+1],
 	bool:CorrectName[MAX_PLAYERS+1], bool:IsAdmin[MAX_PLAYERS+1], bool:FirstMsg[MAX_PLAYERS+1], bool:Gag[MAX_PLAYERS+1];
-new LoginName[128][32], LoginPass[128][32], LoginAccess[128][32], LoginFlag[128][6],
-	LastPass[128][32], MenuText[MAX_PLAYERS+1][MAX_PLAYERS];
+new LoginName[256][32], LoginPass[256][32], LoginAccess[256][32], LoginFlag[256][6],
+	LastPass[256][32], MenuText[MAX_PLAYERS+1][MAX_PLAYERS];
 new PreviousMessage[MAX_PLAYERS+1][192]; // declarat global pentru a evita eroarea "Run time error 3: stack error "
 new AdminsNum, FileSize, bool:IsLangUsed;
 
