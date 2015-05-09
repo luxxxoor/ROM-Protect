@@ -8,7 +8,7 @@
 #endif 
 
 static const Version[]           = "1.0.4f-test",
-			 Build               = 67,
+			 Build               = 68,
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -397,8 +397,8 @@ public client_connect(id)
 						if ( getNum(PlugCvar[plug_warn]) == 1 )
 						{
 							#if AMXX_VERSION_NUM < 183
-								client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS", '^3', getString(PlugCvar[Tag]), '^4', Address);
-								client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", '^3', getString(PlugCvar[Tag]), '^4', Punish);
+								client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS", "^3", getString(PlugCvar[Tag]), "^4", Address);
+								client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", "^3", getString(PlugCvar[Tag]), "^4", Punish);
 							#else
 								client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS", getString(PlugCvar[Tag]), Address);
 								client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", getString(PlugCvar[Tag]), Punish);
@@ -521,7 +521,7 @@ public plugin_pause()
 		if (getNum(PlugCvar[plug_warn]) == 1)
 		{
 			#if AMXX_VERSION_NUM < 183
-				client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_PLUGIN_PAUSE", '^3', getString(PlugCvar[Tag]), '^4');
+				client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_PLUGIN_PAUSE", "^3", getString(PlugCvar[Tag]), "^4");
 			#else
 				client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_PLUGIN_PAUSE", getString(PlugCvar[Tag]));
 			#endif
@@ -552,7 +552,7 @@ public cmdPass(id)
 	if (equal(LastPass[id], Password) && IsAdmin[id])
 	{
 		#if AMXX_VERSION_NUM < 183
-			client_print_color(id, Grey, LangType, id, "ROM_ADMIN_ALREADY_LOADED", '^3', getString(PlugCvar[Tag]), '^4');
+			client_print_color(id, Grey, LangType, id, "ROM_ADMIN_ALREADY_LOADED", "^3", getString(PlugCvar[Tag]), "^4");
 		#else
 			client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_ALREADY_LOADED", getString(PlugCvar[Tag]));
 		#endif
@@ -568,7 +568,7 @@ public cmdPass(id)
 		if (!CorrectName[ id ])
 		{
 			#if AMXX_VERSION_NUM < 183
-				client_print_color(id, Grey, LangType, id, "ROM_ADMIN_WRONG_NAME", '^3', getString(PlugCvar[Tag]), '^4');
+				client_print_color(id, Grey, LangType, id, "ROM_ADMIN_WRONG_NAME", "^3", getString(PlugCvar[Tag]), "^4");
 			#else
 				client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_WRONG_NAME", getString(PlugCvar[Tag]));
 			#endif
@@ -577,7 +577,7 @@ public cmdPass(id)
 		else
 		{
 			#if AMXX_VERSION_NUM < 183
-				client_print_color(id, Grey, LangType, id, "ROM_ADMIN_WRONG_PASS", '^3', getString(PlugCvar[Tag]), '^4');
+				client_print_color(id, Grey, LangType, id, "ROM_ADMIN_WRONG_PASS", "^3", getString(PlugCvar[Tag]), "^4");
 			#else
 				client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_WRONG_PASS", getString(PlugCvar[Tag]));
 			#endif
@@ -587,7 +587,7 @@ public cmdPass(id)
 	else
 	{
 		#if AMXX_VERSION_NUM < 183
-			client_print_color(id, Grey, LangType, id, "ROM_ADMIN_LOADED", '^3', getString(PlugCvar[Tag]), '^4');
+			client_print_color(id, Grey, LangType, id, "ROM_ADMIN_LOADED", "^3", getString(PlugCvar[Tag]), "^4");
 		#else
 			client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_LOADED", getString(PlugCvar[Tag]));
 		#endif
@@ -685,7 +685,7 @@ public blockSpecbugOldStyleMenus(id)
 			if ( getNum(PlugCvar[plug_warn]) )
 			{
 				#if AMXX_VERSION_NUM < 183
-					client_print_color(id,Grey, LangType, id, "ROM_SPEC_BUG", '^3', getString(PlugCvar[Tag]), '^4');
+					client_print_color(id,Grey, LangType, id, "ROM_SPEC_BUG", "^3", getString(PlugCvar[Tag]), "^4");
 				#else
 					client_print_color(id, print_team_grey, LangType, id, "ROM_SPEC_BUG", getString(PlugCvar[Tag]));
 				#endif
@@ -724,7 +724,7 @@ public blockSpecbugVGui(id)
 			if ( getNum(PlugCvar[plug_warn]) == 1 && ShowLogOrWarning[id] )
 			{
 				#if AMXX_VERSION_NUM < 183
-					client_print_color(id, Grey, LangType, id, "ROM_SPEC_BUG", '^3', getString(PlugCvar[Tag]), '^4');
+					client_print_color(id, Grey, LangType, id, "ROM_SPEC_BUG", "^3", getString(PlugCvar[Tag]), "^4");
 				#else
 					client_print_color(id, print_team_grey, LangType, id, "ROM_SPEC_BUG", getString(PlugCvar[Tag]));
 				#endif
@@ -749,7 +749,7 @@ public blockSpecbugVGui(id)
 		{
 			if ( getNum(PlugCvar[plug_warn]) == 1 )
 			{
-				client_print_color(id, Grey, LangType, id, "ROM_ADMIN_CHAT_FLOOD", '^3', getString(PlugCvar[Tag]), '^4');
+				client_print_color(id, Grey, LangType, id, "ROM_ADMIN_CHAT_FLOOD", "^3", getString(PlugCvar[Tag]), "^4");
 			}
 			
 			if ( getNum(PlugCvar[plug_log]) == 1 )
@@ -765,7 +765,7 @@ public blockSpecbugVGui(id)
 public showAdvertise()
 {
 	#if AMXX_VERSION_NUM < 183
-		client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_ADVERTISE", '^3', getString(PlugCvar[Tag]), '^4', '^3', PluginName, '^4', '^3', Version, '^4');
+		client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_ADVERTISE", "^3", getString(PlugCvar[Tag]), "^4", "^3", PluginName, "^4", "^3", Version, "^4");
 	#else
 		client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_ADVERTISE", getString(PlugCvar[Tag]), PluginName, Version);
 	#endif
@@ -1072,7 +1072,7 @@ public hookBasicOnChatCommand(id)
 			if ( getNum(PlugCvar[plug_warn]) == 1 )
 			{
 				#if AMXX_VERSION_NUM < 183
-					client_print_color( id, Grey, LangType, id, "ROM_CMD_BUG", '^3', getString(PlugCvar[Tag]), '^4');
+					client_print_color( id, Grey, LangType, id, "ROM_CMD_BUG", "^3", getString(PlugCvar[Tag]), "^4");
 				#else
 					client_print_color( id, print_team_grey, LangType, id, "ROM_CMD_BUG", getString(PlugCvar[Tag]) );
 				#endif
@@ -1090,7 +1090,7 @@ public hookBasicOnChatCommand(id)
 			if ( getNum(PlugCvar[plug_warn]) == 1 )
 			{
 				#if AMXX_VERSION_NUM < 183
-					client_print_color( id, Grey, LangType, id, "ROM_COLOR_BUG", '^3', getString(PlugCvar[Tag]), '^4');
+					client_print_color( id, Grey, LangType, id, "ROM_COLOR_BUG", "^3", getString(PlugCvar[Tag]), "^4");
 				#else
 					client_print_color( id, print_team_grey, LangType, id, "ROM_COLOR_BUG", getString(PlugCvar[Tag]) );
 				#endif
@@ -1135,7 +1135,7 @@ public CheckAutobuyBug(id)
 				if ( getNum(PlugCvar[plug_warn]) == 1 )
 				{		
 					#if AMXX_VERSION_NUM < 183		
-						client_print_color( id, Grey, LangType, id, "ROM_AUTOBUY", '^3', getString(PlugCvar[Tag]), '^4');		
+						client_print_color( id, Grey, LangType, id, "ROM_AUTOBUY", "^3", getString(PlugCvar[Tag]), "^4");		
 					#else		
 						client_print_color( id, print_team_grey, LangType, id, "ROM_AUTOBUY", getString(PlugCvar[Tag]));
 					#endif		
@@ -1290,7 +1290,7 @@ public hookForXFakePlayerSpam(id)
 			if ( getNum(PlugCvar[plug_warn]) == 1 )
 			{
 				#if AMXX_VERSION_NUM < 183
-					client_print_color(id, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_WARN", '^3', getString(PlugCvar[Tag]), '^4');
+					client_print_color(id, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_WARN", "^3", getString(PlugCvar[Tag]), "^4");
 				#else
 					client_print_color(id, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_WARN", getString(PlugCvar[Tag]));
 				#endif
@@ -1305,7 +1305,7 @@ public hookForXFakePlayerSpam(id)
 					case 0 :
 					{
 						#if AMXX_VERSION_NUM < 183
-							client_print_color(id, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_GAG", '^3', getString(PlugCvar[Tag]), '^4');
+							client_print_color(id, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_GAG", "^3", getString(PlugCvar[Tag]), "^4");
 						#else
 							client_print_color(id, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_GAG", getString(PlugCvar[Tag]));
 						#endif
@@ -1335,8 +1335,8 @@ public hookForXFakePlayerSpam(id)
 						if ( getNum(PlugCvar[plug_warn]) == 1 )
 						{
 							#if AMXX_VERSION_NUM < 183
-								client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM", '^3', getString(PlugCvar[Tag]), '^4', Address);
-								client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_PUNISH", '^3', getString(PlugCvar[Tag]), '^4', Punish);
+								client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM", "^3", getString(PlugCvar[Tag]), "^4", Address);
+								client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_PUNISH", "^3", getString(PlugCvar[Tag]), "^4", Punish);
 							#else
 								client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM", getString(PlugCvar[Tag]), Address);
 								client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_PUNISH", getString(PlugCvar[Tag]), Punish);
@@ -2255,20 +2255,20 @@ WriteLang( bool:exist )
 		}
 		
 		#if AMXX_VERSION_NUM < 183
-			formatex(Line, charsmax(Line), "ROM_FAKE_PLAYERS = %L", LANG_SERVER, "ROM_FAKE_PLAYERS", "^%c", "^%s", "^%c", "^%s");
+			formatex(Line, charsmax(Line), "ROM_FAKE_PLAYERS = %L", LANG_SERVER, "ROM_FAKE_PLAYERS", "^%s", "^%s", "^%s", "^%s");
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				write_file(LangFile, "ROM_FAKE_PLAYERS = %c%s : %cS-a observat un numar prea mare de persoane de pe ip-ul : %s .", NewLine);
+				write_file(LangFile, "ROM_FAKE_PLAYERS = %s%s : %sS-a observat un numar prea mare de persoane de pe ip-ul : %s .", NewLine);
 			}
 			else
 			{
 				write_file(LangFile, Line, NewLine);
 			}
 			
-			formatex(Line, charsmax(Line), "ROM_FAKE_PLAYERS_PUNISH = %L", LANG_SERVER, "ROM_FAKE_PLAYERS_PUNISH", "^%c", "^%s", "^%c", "^%s");
+			formatex(Line, charsmax(Line), "ROM_FAKE_PLAYERS_PUNISH = %L", LANG_SERVER, "ROM_FAKE_PLAYERS_PUNISH", "^%s", "^%s", "^%s", "^%s");
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				write_file(LangFile, "ROM_FAKE_PLAYERS_PUNISH = %c%s : %cIp-ul a primit ban %s minute pentru a nu afecta jocul.", NewLine);
+				write_file(LangFile, "ROM_FAKE_PLAYERS_PUNISH = %s%s : %sIp-ul a primit ban %s minute pentru a nu afecta jocul.", NewLine);
 			}
 			else
 			{
@@ -2337,10 +2337,10 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183
-			formatex(Line, charsmax(Line), "ROM_PLUGIN_PAUSE = %L", LANG_SERVER, "ROM_PLUGIN_PAUSE", "^%c", "^%s", "^%c" );
+			formatex(Line, charsmax(Line), "ROM_PLUGIN_PAUSE = %L", LANG_SERVER, "ROM_PLUGIN_PAUSE", "^%s", "^%s", "^%s" );
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				write_file(LangFile, "ROM_PLUGIN_PAUSE = %c%s : %cNe pare rau, dar din anumite motive, acest plugin nu poate fi pus pe pauza.", NewLine);
+				write_file(LangFile, "ROM_PLUGIN_PAUSE = %s%s : %sNe pare rau, dar din anumite motive, acest plugin nu poate fi pus pe pauza.", NewLine);
 			}
 			else
 			{
@@ -2369,10 +2369,10 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183 
-			formatex(Line, charsmax(Line), "ROM_ADMIN_WRONG_NAME = %L", LANG_SERVER, "ROM_ADMIN_WRONG_NAME", "^%c", "^%s", "^%c" );
+			formatex(Line, charsmax(Line), "ROM_ADMIN_WRONG_NAME = %L", LANG_SERVER, "ROM_ADMIN_WRONG_NAME", "^%s", "^%s", "^%s" );
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				write_file(LangFile, "ROM_ADMIN_WRONG_NAME = %c%s : %cNu s-a gasit nici un admin care sa poarte acest nickname.", NewLine);
+				write_file(LangFile, "ROM_ADMIN_WRONG_NAME = %s%s : %sNu s-a gasit nici un admin care sa poarte acest nickname.", NewLine);
 			}
 			else
 			{
@@ -2401,10 +2401,10 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183
-			formatex(Line, charsmax(Line), "ROM_ADMIN_WRONG_PASS = %L", LANG_SERVER, "ROM_ADMIN_WRONG_PASS", "^%c", "^%s", "^%c" );
+			formatex(Line, charsmax(Line), "ROM_ADMIN_WRONG_PASS = %L", LANG_SERVER, "ROM_ADMIN_WRONG_PASS", "^%s", "^%s", "^%s" );
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				write_file(LangFile, "ROM_ADMIN_WRONG_PASS = %c%s : %cParola introdusa de tine este incorecta.", NewLine);
+				write_file(LangFile, "ROM_ADMIN_WRONG_PASS = %s%s : %sParola introdusa de tine este incorecta.", NewLine);
 			}
 			else
 			{
@@ -2433,10 +2433,10 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183
-			formatex(Line, charsmax(Line), "ROM_ADMIN_LOADED = %L", LANG_SERVER, "ROM_ADMIN_LOADED", "^%c", "^%s", "^%c" );
+			formatex(Line, charsmax(Line), "ROM_ADMIN_LOADED = %L", LANG_SERVER, "ROM_ADMIN_LOADED", "^%s", "^%s", "^%s" );
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				write_file(LangFile, "ROM_ADMIN_LOADED = %c%s : %cAdmin-ul tau a fost incarcat.", NewLine);
+				write_file(LangFile, "ROM_ADMIN_LOADED = %s%s : %sAdmin-ul tau a fost incarcat.", NewLine);
 			}
 			else
 			{
@@ -2465,10 +2465,10 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183
-			formatex(Line, charsmax(Line), "ROM_ADMIN_ALREADY_LOADED = %L", LANG_SERVER, "ROM_ADMIN_ALREADY_LOADED", "^%c", "^%s", "^%c" );
+			formatex(Line, charsmax(Line), "ROM_ADMIN_ALREADY_LOADED = %L", LANG_SERVER, "ROM_ADMIN_ALREADY_LOADED", "^%s", "^%s", "^%s" );
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				write_file(LangFile, "ROM_ADMIN_ALREADY_LOADED = %c%s : %cAdmin-ul tau este deja incarcat.", NewLine);
+				write_file(LangFile, "ROM_ADMIN_ALREADY_LOADED = %s%s : %sAdmin-ul tau este deja incarcat.", NewLine);
 			}
 			else
 			{
@@ -2498,10 +2498,10 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183
-			formatex(Line, charsmax(Line), "ROM_CMD_BUG = %L", LANG_SERVER, "ROM_CMD_BUG", "^%c", "^%s", "^%c" );
+			formatex(Line, charsmax(Line), "ROM_CMD_BUG = %L", LANG_SERVER, "ROM_CMD_BUG", "^%s", "^%s", "^%s" );
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				write_file(LangFile, "ROM_CMD_BUG = %c%s : %cS-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.", NewLine);
+				write_file(LangFile, "ROM_CMD_BUG = %s%s : %sS-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.", NewLine);
 			}
 			else
 			{
@@ -2540,10 +2540,10 @@ WriteLang( bool:exist )
 		}
 	
 		#if AMXX_VERSION_NUM < 183
-			formatex(Line, charsmax(Line), "ROM_COLOR_BUG = %L", LANG_SERVER, "ROM_COLOR_BUG", "^%c", "^%s", "^%c" );
+			formatex(Line, charsmax(Line), "ROM_COLOR_BUG = %L", LANG_SERVER, "ROM_COLOR_BUG", "^%s", "^%s", "^%s" );
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				write_file(LangFile, "ROM_COLOR_BUG = %c%s : %cS-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.", NewLine);
+				write_file(LangFile, "ROM_COLOR_BUG = %s%s : %sS-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.", NewLine);
 			}
 			else
 			{
@@ -2583,10 +2583,10 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183
-			formatex(Line, charsmax(Line), "ROM_SPEC_BUG = %L", LANG_SERVER, "ROM_SPEC_BUG", "^%c", "^%s", "^%c" );
+			formatex(Line, charsmax(Line), "ROM_SPEC_BUG = %L", LANG_SERVER, "ROM_SPEC_BUG", "^%s", "^%s", "^%s" );
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				write_file(LangFile, "ROM_SPEC_BUG = %c%s : %cAi facut o miscare suspecta asa ca te-am mutat la echipa precedenta.", NewLine);
+				write_file(LangFile, "ROM_SPEC_BUG = %s%s : %sAi facut o miscare suspecta asa ca te-am mutat la echipa precedenta.", NewLine);
 			}
 			else
 			{
@@ -2615,10 +2615,10 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183
-			formatex(Line, charsmax(Line), "ROM_ADMIN_CHAT_FLOOD = %L", LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD", "^%c", "^%s", "^%c" );
+			formatex(Line, charsmax(Line), "ROM_ADMIN_CHAT_FLOOD = %L", LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD", "^%s", "^%s", "^%s" );
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				write_file(LangFile, "ROM_ADMIN_CHAT_FLOOD = %c%s : %cS-a observat un mic IsFlooding la chat primit din partea ta. Mesajele trimise de tine vor fi filtrate.", NewLine);
+				write_file(LangFile, "ROM_ADMIN_CHAT_FLOOD = %s%s : %sS-a observat un mic IsFlooding la chat primit din partea ta. Mesajele trimise de tine vor fi filtrate.", NewLine);
 			}
 			else
 			{
@@ -2637,10 +2637,10 @@ WriteLang( bool:exist )
 		#endif
 		
 		#if AMXX_VERSION_NUM < 183
-			formatex(Line, charsmax(Line), "ROM_AUTOBUY = %L", LANG_SERVER, "ROM_AUTOBUY", "^%c", "^%s", "^%c" );
+			formatex(Line, charsmax(Line), "ROM_AUTOBUY = %L", LANG_SERVER, "ROM_AUTOBUY", "^%s", "^%s", "^%s" );
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				write_file(LangFile, "ROM_AUTOBUY = %c%s : %cComanda trimisa de tine are valori suspecte, asa ca am blocat-o.", NewLine);
+				write_file(LangFile, "ROM_AUTOBUY = %s%s : %sComanda trimisa de tine are valori suspecte, asa ca am blocat-o.", NewLine);
 			}
 			else
 			{
@@ -2709,10 +2709,10 @@ WriteLang( bool:exist )
 		}
 			
 		#if AMXX_VERSION_NUM < 183
-			formatex(Line, charsmax(Line), "ROM_ADVERTISE = %L", LANG_SERVER, "ROM_ADVERTISE", "^%c", "^%s", "^%c", "^%c", "^%s", "^%c", "^%c", "^%s", "^%c" );
+			formatex(Line, charsmax(Line), "ROM_ADVERTISE = %L", LANG_SERVER, "ROM_ADVERTISE", "^%s", "^%s", "^%s", "^%s", "^%s", "^%s", "^%s", "^%s", "^%s" );
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				write_file(LangFile, "ROM_ADVERTISE = %c%s :%c Acest server este supravegheat de plugin-ul de protectie %c%s%c versiunea %c%s%c .", NewLine);
+				write_file(LangFile, "ROM_ADVERTISE = %s%s :%s Acest server este supravegheat de plugin-ul de protectie %s%s%s versiunea %s%s%s .", NewLine);
 			}
 			else
 			{
@@ -2781,10 +2781,10 @@ WriteLang( bool:exist )
 		}
 		
 		#if AMXX_VERSION_NUM < 183
-			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM_WARN = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_WARN", "^%c", "^%s", "^%c");
+			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM_WARN = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_WARN", "^%s", "^%s", "^%s");
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				write_file(LangFile, "ROM_XFAKE_PLAYERS_SPAM_WARN = %c%s : %cMesajul tau a fost eliminat pentru a elimina o tentativa de ^"BOT SPAM^".", NewLine);
+				write_file(LangFile, "ROM_XFAKE_PLAYERS_SPAM_WARN = %s%s : %sMesajul tau a fost eliminat pentru a elimina o tentativa de ^"BOT SPAM^".", NewLine);
 			}
 			else
 			{
@@ -2803,20 +2803,20 @@ WriteLang( bool:exist )
 		#endif
 		
 		#if AMXX_VERSION_NUM < 183
-			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM", "^%c", "^%s", "^%c", "^%s");
+			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM", "^%s", "^%s", "^%s", "^%s");
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				write_file(LangFile, "ROM_XFAKE_PLAYERS_SPAM = %c%s : %cS-a depistat o tentativa de ^"BOT SPAM^" de la ip-ul : %s .", NewLine);
+				write_file(LangFile, "ROM_XFAKE_PLAYERS_SPAM = %s%s : %sS-a depistat o tentativa de ^"BOT SPAM^" de la ip-ul : %s .", NewLine);
 			}
 			else
 			{
 				write_file(LangFile, Line, NewLine);
 			}
 			
-			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM_PUNISH = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_PUNISH", "^%c", "^%s", "^%c", "^%s");
+			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM_PUNISH = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_PUNISH", "^%s", "^%s", "^%s", "^%s");
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				write_file(LangFile, "ROM_XFAKE_PLAYERS_SPAM_PUNISH = %c%s : %cIp-ul a primit ban %s minute pentru a nu afecta jocul.", NewLine);
+				write_file(LangFile, "ROM_XFAKE_PLAYERS_SPAM_PUNISH = %s%s : %sIp-ul a primit ban %s minute pentru a nu afecta jocul.", NewLine);
 			}
 			else
 			{
@@ -2865,10 +2865,10 @@ WriteLang( bool:exist )
 		}
 		
 		#if AMXX_VERSION_NUM < 183
-			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM_GAG = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_GAG", "^%c", "^%s", "^%c");
+			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_SPAM_GAG = %L", LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_GAG", "^%s", "^%s", "^%s");
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				write_file(LangFile, "ROM_XFAKE_PLAYERS_SPAM_GAG = %c%s : %cAi fost detectat ca fiind un bot xfake_player, nu vei mai putea folosi chat-ul pana nu te vei reconecta.", NewLine);
+				write_file(LangFile, "ROM_XFAKE_PLAYERS_SPAM_GAG = %s%s : %sAi fost detectat ca fiind un bot xfake_player, nu vei mai putea folosi chat-ul pana nu te vei reconecta.", NewLine);
 			}
 			else
 			{
@@ -2926,8 +2926,8 @@ WriteLang( bool:exist )
 		write_file( LangFile, "ROM_UPDATE_LANG = %s : Am actualizat fisierul LANG : rom_protect.txt.", NewLine);
 		
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_FAKE_PLAYERS = %c%s : %cS-a observat un numar prea mare de persoane de pe ip-ul : %s .", NewLine);
-			write_file( LangFile, "ROM_FAKE_PLAYERS_PUNISH = %c%s : %cIp-ul a primit ban %s minute pentru a nu afecta jocul.", NewLine);
+			write_file( LangFile, "ROM_FAKE_PLAYERS = %s%s : %sS-a observat un numar prea mare de persoane de pe ip-ul : %s .", NewLine);
+			write_file( LangFile, "ROM_FAKE_PLAYERS_PUNISH = %s%s : %sIp-ul a primit ban %s minute pentru a nu afecta jocul.", NewLine);
 		#else
 			write_file( LangFile, "ROM_FAKE_PLAYERS = ^^3%s : ^^4S-a observat un numar prea mare de persoane de pe ip-ul : %s .", NewLine);
 			write_file( LangFile, "ROM_FAKE_PLAYERS_PUNISH = ^^3%s :^^4 Ip-ul a primit ban %s minute pentru a nu afecta jocul.", NewLine);
@@ -2940,7 +2940,7 @@ WriteLang( bool:exist )
 		write_file( LangFile, "ROM_FAKE_PLAYERS_DETECT_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca suspect de ^"xFake-Players^" sau ^"xSpammer^".", NewLine);
 		
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_PLUGIN_PAUSE = %c%s : %cNe pare rau, dar din anumite motive, acest plugin nu poate fi pus pe pauza.", NewLine);
+			write_file( LangFile, "ROM_PLUGIN_PAUSE = %s%s : %sNe pare rau, dar din anumite motive, acest plugin nu poate fi pus pe pauza.", NewLine);
 		#else
 			write_file( LangFile, "ROM_PLUGIN_PAUSE = ^^3%s : ^^4Ne pare rau, dar din anumite motive, acest plugin nu poate fi pus pe pauza.", NewLine);
 		#endif
@@ -2948,7 +2948,7 @@ WriteLang( bool:exist )
 		write_file( LangFile, "ROM_PLUGIN_PAUSE_LOG = %s : S-a depistat o incercare a opririi pluginului de protectie %s. Operatiune a fost blocata.", NewLine);
 		
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_ADMIN_WRONG_NAME = %c%s : %cNu s-a gasit nici un admin care sa poarte acest nickname.", NewLine);
+			write_file( LangFile, "ROM_ADMIN_WRONG_NAME = %s%s : %sNu s-a gasit nici un admin care sa poarte acest nickname.", NewLine);
 		#else
 			write_file( LangFile, "ROM_ADMIN_WRONG_NAME = ^^3%s : ^^4Nu s-a gasit nici un admin care sa poarte acest nickname.", NewLine);
 		#endif
@@ -2956,7 +2956,7 @@ WriteLang( bool:exist )
 		write_file( LangFile, "ROM_ADMIN_WRONG_NAME_PRINT = %s : Nu s-a gasit nici un admin care sa poarte acest nickname.", NewLine);
 		
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_ADMIN_WRONG_PASS = %c%s : %cParola introdusa de tine este incorecta.", NewLine);
+			write_file( LangFile, "ROM_ADMIN_WRONG_PASS = %s%s : %sParola introdusa de tine este incorecta.", NewLine);
 		#else
 			write_file( LangFile, "ROM_ADMIN_WRONG_PASS = ^^3%s : ^^4Parola introdusa de tine este incorecta.", NewLine);
 		#endif
@@ -2964,7 +2964,7 @@ WriteLang( bool:exist )
 		write_file( LangFile, "ROM_ADMIN_WRONG_PASS_PRINT = %s : Parola introdusa de tine este incorecta.", NewLine);
 		
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_ADMIN_LOADED = %c%s : %cAdmin-ul tau a fost incarcat.", NewLine);
+			write_file( LangFile, "ROM_ADMIN_LOADED = %s%s : %sAdmin-ul tau a fost incarcat.", NewLine);
 		#else
 			write_file( LangFile, "ROM_ADMIN_LOADED = ^^3%s : ^^4Admin-ul tau a fost incarcat.", NewLine);
 		#endif
@@ -2972,7 +2972,7 @@ WriteLang( bool:exist )
 		write_file( LangFile, "ROM_ADMIN_LOADED_PRINT = %s : Admin-ul tau a fost incarcat.", NewLine);
 		
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_ADMIN_ALREADY_LOADED = %c%s : %cAdmin-ul tau este deja incarcat.", NewLine);
+			write_file( LangFile, "ROM_ADMIN_ALREADY_LOADED = %s%s : %sAdmin-ul tau este deja incarcat.", NewLine);
 		#else
 			write_file( LangFile, "ROM_ADMIN_ALREADY_LOADED = ^^3%s : ^^4Admin-ul tau este deja incarcat.", NewLine);
 		#endif
@@ -2980,7 +2980,7 @@ WriteLang( bool:exist )
 		write_file( LangFile, "ROM_ADMIN_ALREADY_LOADED_PRINT = %s : Admin-ul tau este deja incarcat.", NewLine);
 		
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_CMD_BUG = %c%s : %cS-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.", NewLine);
+			write_file( LangFile, "ROM_CMD_BUG = %s%s : %sS-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.", NewLine);
 		#else
 			write_file( LangFile, "ROM_CMD_BUG = ^^3%s : ^^4S-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.", NewLine);
 		#endif
@@ -2989,7 +2989,7 @@ WriteLang( bool:exist )
 		write_file(LangFile, "ROM_CMD_BUG_PRINT = %s : S-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.", NewLine);
 		
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_COLOR_BUG = %c%s : %cS-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.", NewLine);
+			write_file( LangFile, "ROM_COLOR_BUG = %s%s : %sS-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.", NewLine);
 		#else
 			write_file( LangFile, "ROM_COLOR_BUG = ^^3%s : ^^4S-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.", NewLine);
 		#endif
@@ -2998,7 +2998,7 @@ WriteLang( bool:exist )
 		write_file(LangFile, "ROM_COLOR_BUG_PRINT = %s : S-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.", NewLine);		
 		
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_SPEC_BUG = %c%s : %cAi facut o miscare suspecta asa ca te-am mutat la echipa precedenta.", NewLine);
+			write_file( LangFile, "ROM_SPEC_BUG = %s%s : %sAi facut o miscare suspecta asa ca te-am mutat la echipa precedenta.", NewLine);
 		#else
 			write_file( LangFile, "ROM_SPEC_BUG = ^^3%s : ^^4Ai facut o miscare suspecta asa ca te-am mutat la echipa precedenta.", NewLine);
 		#endif
@@ -3006,12 +3006,12 @@ WriteLang( bool:exist )
 		write_file( LangFile, "ROM_SPEC_BUG_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului.", NewLine);
 		
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_ADMIN_CHAT_FLOOD = %c%s : %cS-a observat un mic IsFlooding la chat primit din partea ta. Mesajele trimise de tine vor fi filtrate.", NewLine);
+			write_file( LangFile, "ROM_ADMIN_CHAT_FLOOD = %s%s : %sS-a observat un mic IsFlooding la chat primit din partea ta. Mesajele trimise de tine vor fi filtrate.", NewLine);
 			write_file( LangFile, "ROM_ADMIN_CHAT_FLOOD_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa dea kick adminilor de pe server.", NewLine);	
 		#endif
 		
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_AUTOBUY = %c%s : %cComanda trimisa de tine are valori suspecte, asa ca am blocat-o.", NewLine);
+			write_file( LangFile, "ROM_AUTOBUY = %s%s : %sComanda trimisa de tine are valori suspecte, asa ca am blocat-o.", NewLine);
 		#else
 			write_file( LangFile, "ROM_AUTOBUY = ^^3%s : ^^4Comanda trimisa de tine are valori suspecte, asa ca am blocat-o.", NewLine);
 		#endif
@@ -3026,7 +3026,7 @@ WriteLang( bool:exist )
 		write_file( LangFile, "ROM_MOTDFILE_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca cvar-ul ^"motdfile^" ca sa fure informatii din acest server.", NewLine);		
 		
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_ADVERTISE = %c%s :%c Acest server este supravegheat de plugin-ul de protectie %c%s%c versiunea %c%s%c .", NewLine);
+			write_file( LangFile, "ROM_ADVERTISE = %s%s :%s Acest server este supravegheat de plugin-ul de protectie %s%s%s versiunea %s%s%s .", NewLine);
 		#else
 			write_file( LangFile, "ROM_ADVERTISE = ^^3%s :^^4 Acest server este supravegheat de plugin-ul de protectie ^^3%s^^4 versiunea ^^3%s^^4 .", NewLine);
 		#endif
@@ -3039,14 +3039,14 @@ WriteLang( bool:exist )
 		write_file( LangFile, "ROM_AUTO_UPDATE_FAILED = %s : S-a intampinat o eroare la descarcare, iar plugin-ul nu s-a putut auto-actualiza..", NewLine);	
 		
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_WARN = %c%s : %cMesajul tau a fost eliminat pentru a elimina o tentativa de ^"BOT SPAM^".", NewLine);
+			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_WARN = %s%s : %sMesajul tau a fost eliminat pentru a elimina o tentativa de ^"BOT SPAM^".", NewLine);
 		#else
 			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_WARN = ^^3%s : ^^4Mesajul tau a fost eliminat pentru a elimina o tentativa de ^"BOT SPAM^".", NewLine);
 		#endif
 		
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM = %c%s : %cS-a depistat o tentativa de ^"BOT SPAM^" de la ip-ul : %s .", NewLine);
-			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_PUNISH = %c%s : %cIp-ul a primit ban %s minute pentru a nu afecta jocul.", NewLine);
+			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM = %s%s : %sS-a depistat o tentativa de ^"BOT SPAM^" de la ip-ul : %s .", NewLine);
+			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_PUNISH = %s%s : %sIp-ul a primit ban %s minute pentru a nu afecta jocul.", NewLine);
 		#else
 			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM = ^^3%s : ^^4S-a depistat o tentativa de ^"BOT SPAM^" de la ip-ul : %s .", NewLine);
 			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_PUNISH = ^^3%s : ^^4Ip-ul a primit ban %s minute pentru a nu afecta jocul.", NewLine);
@@ -3056,7 +3056,7 @@ WriteLang( bool:exist )
 		write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_KICK = %s : Ai fost detectat ca fiind un bot xfake_player, asa ca ai primit kick.", NewLine);
 		
 		#if AMXX_VERSION_NUM < 183
-			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_GAG = %c%s : %cAi fost detectat ca fiind un bot xfake_player, nu vei mai putea folosi chat-ul pana nu te vei reconecta.", NewLine);
+			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_GAG = %s%s : %sAi fost detectat ca fiind un bot xfake_player, nu vei mai putea folosi chat-ul pana nu te vei reconecta.", NewLine);
 		#else
 			write_file( LangFile, "ROM_XFAKE_PLAYERS_SPAM_GAG = ^^3%s : ^^4Ai fost detectat ca fiind un bot xfake_player, nu vei mai putea folosi chat-ul pana nu te vei reconecta.", NewLine);
 		#endif
