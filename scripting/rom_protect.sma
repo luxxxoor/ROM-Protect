@@ -7,8 +7,9 @@
     #assert AMX Mod X v1.8.1 or later library required!
 #endif 
 
-static const Version[]           = "1.0.4f-test",
-			 Build               = 68,
+static const Version[]           = "1.0.4f",
+			 Build               = 69,
+			 Date[]              = "16.05.2015",
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -276,7 +277,7 @@ public CheckCfg()
 		new File = fopen(CfgFile, "r+");
 		
 		new Text[121], CurrentVersion[64], bool:IsCurrentVersionUsed;
-		formatex(CurrentVersion, charsmax(CurrentVersion), "Versiunea %s. Bulid %d", Version, Build);
+		formatex(CurrentVersion, charsmax(CurrentVersion), "Versiunea : %s. Bulid : %d. Data lansarii versiunii : %s.", Version, Build, Date);
 		
 		while ( !feof(File) )
 		{
@@ -311,7 +312,7 @@ public CheckLang()
 		new File = fopen(LangFile, "r+");
 		
 		new Text[121], CurrentVersion[64], bool:IsCurrentVersionUsed;
-		formatex(CurrentVersion, charsmax(CurrentVersion), "Versiunea %s. Bulid %d", Version, Build);
+		formatex(CurrentVersion, charsmax(CurrentVersion), "Versiunea : %s. Bulid : %d. Data lansarii versiunii : %s.", Version, Build, Date);
 		
 		while ( !feof(File) )
 		{
@@ -1212,7 +1213,7 @@ public giveClientInfo(id)
 		return PLUGIN_HANDLED;
 	}
 		
-	client_print(id, print_console, "^n^n^nVersiune curenta : %s. Build : %d", Version, Build);
+	client_print(id, print_console, "^n^n^nVersiune curenta : %s. Build : %d. Data lansarii versiunii : %s.", Version, Build, Date);
 	client_print(id, print_console, "Autor : luxor # Dr.Fio & DR2.IND. Comunitatea : FioriGinal.Ro" );
 	client_print(id, print_console, "Link oficial : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-IsFlooding-bug-fix-t28292.html");
 	client_print(id, print_console, "Contact : luxxxoor (Steam) / alex.vrincean (Skype).^n^n^n");
@@ -1227,7 +1228,7 @@ public giveServerInfo(id)
 		return PLUGIN_HANDLED;
 	}
 	
-	server_print("^n^n^nVersiune curenta : %s. Build : %d", Version, Build);
+	server_print("^n^n^nVersiune curenta : %s. Build : %d. Data lansarii versiunii : %s.", Version, Build, Date);
 	server_print("Autor : luxor # Dr.Fio & DR2.IND. Comunitatea : FioriGinal.Ro" );
 	server_print("Link oficial : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html");
 	server_print("Contact : luxxxoor (Steam) / alex.vrincean (Skype).");
@@ -3076,7 +3077,7 @@ writeSignature(const File[])
 	
 	write_file( File, "// *ROM-Protect", NewLine);
 	write_file( File, "// Plugin OpenSource anti-IsFlooding/bug-fix pentru orice server.", NewLine);
-	formatex(Line, charsmax(Line), "// Versiunea %s. Bulid %d", Version, Build);
+	formatex(Line, charsmax(Line), "// Versiunea : %s. Bulid : %d. Data lansarii versiunii : %s.", Version, Build, Date);
 	write_file( File, Line, NewLine); 
 	write_file( File, "// Autor : lüxor # Dr.Fio & DR2.IND (+ eNd.) - SteamID (contact) : luxxxoor", NewLine);
 	write_file( File, "// O productie FioriGinal.ro - site : www.fioriginal.ro", NewLine);
