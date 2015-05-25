@@ -7,16 +7,15 @@
     #assert AMX Mod X v1.8.1 or later library required!
 #endif 
 
-static const Version[]           = "1.0.4f",
-			 Build               = 69,
-			 Date[]              = "16.05.2015",
+static const Version[]           = "1.0.4f-rev",
+			 Build               = 70,
+			 Date[]              = "25.05.2015",
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
 			 CfgFile[]           = "addons/amxmodx/configs/rom_protect.cfg",
 			 LangFile[]          = "addons/amxmodx/data/lang/rom_protect.txt",
-			 PlugLocation[]      = "/addons/amxmodx/plugins/rom_protect.amxx",
-			 NewPlugLocation[]   = "/addons/amxmodx/plugins/rom_protect_new.amxx",
+			 NewPluginLocation[] = "/addons/amxmodx/plugins/rom_protect_new.amxx",
 			 LangType[]          = "%L",
 			 NewLine             = -1;
 
@@ -62,7 +61,7 @@ new ArgNum[MAX_PLAYERS+1], Contor[MAX_PLAYERS+1], File[128], MapName[32], ClSaid
 new LoginName[256][32], LoginPass[256][32], LoginAccess[256][32], LoginFlag[256][6],
 	LastPass[256][32], MenuText[MAX_PLAYERS+1][MAX_PLAYERS];
 new PreviousMessage[MAX_PLAYERS+1][192]; // declarat global pentru a evita eroarea "Run time error 3: stack error "
-new AdminsNum, FileSize, bool:IsLangUsed;
+new AdminsNum, bool:IsLangUsed;
 
 new const AllBasicOnChatCommads[][] =
 {
@@ -260,9 +259,9 @@ public plugin_precache()
 	set_task(10.0, "CheckLangFile");
 	set_task(15.0, "CheckCfg");
 	
-	while ( file_exists(NewPlugLocation) )
+	while ( file_exists(NewPluginLocation) )
 	{
-		delete_file(NewPlugLocation);
+		delete_file(NewPluginLocation);
 	}
 }
 
@@ -491,7 +490,7 @@ public plugin_end()
 
 public client_infochanged(id)
 {
-	if (!is_user_connected(id))
+	if ( !is_user_connected(id) )
 	{
 		return PLUGIN_CONTINUE;
 	}
@@ -500,13 +499,13 @@ public client_infochanged(id)
 	get_user_name(id, OldName, charsmax(OldName));
 	get_user_info(id, "name", NewName, charsmax(NewName));
 	
-	if (getNum(PlugCvar[cmd_bug]) == 1)
+	if ( getNum(PlugCvar[cmd_bug]) == 1 )
 	{
 		stringFilter(NewName, charsmax(NewName));
 		set_user_info(id, "name", NewName);
 	}
 	
-	if (!equali(NewName, OldName) && IsAdmin[id])
+	if ( !equali(NewName, OldName) && IsAdmin[id] )
 	{
 		IsAdmin[id] = false;
 		remove_user_flags(id);
@@ -519,6 +518,8 @@ public plugin_pause()
 {
 	if (getNum(PlugCvar[anti_pause]) == 1)
 	{
+		new PluginName[32];
+		
 		if (getNum(PlugCvar[plug_warn]) == 1)
 		{
 			#if AMXX_VERSION_NUM < 183
@@ -533,7 +534,8 @@ public plugin_pause()
 				logCommand(LangType, LANG_SERVER, "ROM_PLUGIN_PAUSE_LOG", getString(PlugCvar[Tag]), getString(PlugCvar[Tag]));
 		}
 		
-		server_cmd("amxx unpause rom_protect.amxx");
+		get_plugin(-1, PluginName, charsmax(PluginName));
+		server_cmd("amxx unpause %s", PluginName);
 	}
 }
 
@@ -943,9 +945,11 @@ public hookBanClassCommand(id)
 		return PLUGIN_CONTINUE;
 	}
 	
-	if ( getNum(PlugCvar[anti_ban_class]) > 0 )
+	new Value = getNum(PlugCvar[anti_ban_class]);
+	
+	if ( Value > 0 )
 	{
-		new Ip[32], IpNum[4][3], NumStr[1], Value;
+		new Ip[32], IpNum[4][3], NumStr[1];
 		
 		read_argv(1, Ip, charsmax(Ip));
 		
@@ -961,7 +965,7 @@ public hookBanClassCommand(id)
 		
 		Value = getNum(PlugCvar[anti_ban_class]);
 		
-		if ( Value > 4 || Value < 0 )
+		if ( Value > 4 )
 		{
 			Value = 4;
 		}
@@ -1157,52 +1161,54 @@ public CheckAutobuyBug(id)
 
 public updatePlugin()
 {
-	FileSize = file_size(PlugLocation);
-	if ( file_exists(NewPlugLocation) )
+	if ( file_exists(NewPluginLocation) )
 	{
-		delete_file(NewPlugLocation);
+		delete_file(NewPluginLocation);
 	}
 	#if AMXX_VERSION_NUM >= 182
 		if ( getNum(PlugCvar[dev_update]) == 1 )
 		{
 			#if AMXX_VERSION_NUM == 183
-				HTTP2_Download("http://www.romprotect.allalla.com/rom_protect_dev183.amxx", NewPlugLocation, "downloadComplete");
+				HTTP2_Download("http://www.romprotect.allalla.com/rom_protect_dev183.amxx", NewPluginLocation, "downloadComplete");
 			#endif
 			#if AMXX_VERSION_NUM == 182
-				HTTP2_Download("http://www.romprotect.allalla.com/rom_protect_dev182.amxx", NewPlugLocation, "downloadComplete");
+				HTTP2_Download("http://www.romprotect.allalla.com/rom_protect_dev182.amxx", NewPluginLocation, "downloadComplete");
 			#endif
 		}
 		else
 		{
 			#if AMXX_VERSION_NUM == 183
-				HTTP2_Download("http://www.romprotect.allalla.com/rom_protect183.amxx", NewPlugLocation, "downloadComplete");
+				HTTP2_Download("http://www.romprotect.allalla.com/rom_protect183.amxx", NewPluginLocation, "downloadComplete");
 			#endif
 			#if AMXX_VERSION_NUM == 182
-				HTTP2_Download("http://www.romprotect.allalla.com/rom_protect182.amxx", NewPlugLocation, "downloadComplete");
+				HTTP2_Download("http://www.romprotect.allalla.com/rom_protect182.amxx", NewPluginLocation, "downloadComplete");
 			#endif
 		}
 		#else
 			#if AMXX_VERSION_NUM == 181
-				HTTP2_Download("http://www.romprotect.allalla.com/rom_protect181.amxx", NewPlugLocation, "downloadComplete");
+				HTTP2_Download("http://www.romprotect.allalla.com/rom_protect181.amxx", NewPluginLocation, "downloadComplete");
 			#endif
 	#endif
 }
 
 public downloadComplete(Index, Error) 
 {
-	if ( Error == 0 && file_size(NewPlugLocation) > 40000 ) 
+	new PluginLocation[64];
+	get_plugin(-1, PluginLocation, charsmax(PluginLocation));
+	format(PluginLocation, charsmax(PluginLocation), "/addons/amxmodx/plugins/%s", PluginLocation);
+	if ( Error == 0 && file_size(NewPluginLocation) > 40000 ) 
 	{
-		if ( FileSize != file_size(PlugLocation) )
+		if ( file_size(PluginLocation) != file_size(NewPluginLocation) )
 		{
 			logCommand(LangType, LANG_SERVER, "ROM_AUTO_UPDATE_SUCCEED", getString(PlugCvar[Tag]));
 		}
-		delete_file(PlugLocation);
-		rename_file(NewPlugLocation, PlugLocation, 1);
+		delete_file(PluginLocation);
+		rename_file(NewPluginLocation, PluginLocation, 1);
 	}
 	else
 	{
 		logCommand(LangType, LANG_SERVER, "ROM_AUTO_UPDATE_FAILED", getString(PlugCvar[Tag]));
-		delete_file(NewPlugLocation);
+		delete_file(NewPluginLocation);
 	}
 }
 
@@ -1584,8 +1590,10 @@ registersInit()
 		}
 	}
 	
-	register_concmd("amx_reloadadmins", "reloadLogin");
-	register_concmd("amx_addban", "hookBanClassCommand");
+	if ( find_plugin_byfile("advanced_bans.amxx") != -1 ) // in cazul in care acest plugin va fi detectat, serverul nu va mai avea nevoie de aceasta protectie
+		register_concmd("amx_addban", "hookBanClassCommand");
+	
+	register_concmd("amx_reloadadmins", "reloadLogin");	
 	register_concmd("amx_cvar", "cvarFunc");
 	register_clcmd("amx_rcon", "rconFunc");
 	register_clcmd("login", "cmdPass");
