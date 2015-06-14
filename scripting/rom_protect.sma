@@ -8,8 +8,8 @@
 #endif 
 
 new const Version[]           = "1.0.4s-dev",
-			 Build               = 72,
-			 Date[]              = "13.06.2015",
+			 Build               = 73,
+			 Date[]              = "14.06.2015",
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -345,9 +345,13 @@ public CheckLang()
 			{
 				logCommand(LangType, LANG_SERVER, "ROM_UPDATE_LANG", getString(PlugCvar[Tag]));
 			}
+			fclose(FilePointer);
 			WriteLang(true);
 		}
-		fclose(FilePointer);
+		else
+		{
+			fclose(FilePointer);
+		}
 	}
 }
 
@@ -3122,14 +3126,14 @@ writeSignature(FilePointer)
 	fputs(FilePointer, "// O productie FioriGinal.ro - site : www.fioriginal.ro^n");
 	fputs(FilePointer, "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html^n");
 	fputs(FilePointer, "// Link sursa : https://github.com/luxxxoor/ROM-Protect^n");
-	#if AMXX_VERSION_NUM >= 183
+	/*#if AMXX_VERSION_NUM >= 183
 		if ( equal(File, LangFile) )
 		{
 			fputs(FilePointer, "^n// Colori : ^^1 - Culoarea aleasa de jucator cu con_color.^n");
 			fputs(FilePointer, "//          ^^3 - Culoare gri.^n");
 			fputs(FilePointer, "//          ^^4 - Culoare verde.^n");
 		}
-	#endif
+	#endif*/
 	fputs(FilePointer, "^n^n^n");
 }
 
