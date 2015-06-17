@@ -8,8 +8,8 @@
 #endif 
 
 new const Version[]           = "1.0.4s-dev",
-			 Build               = 73,
-			 Date[]              = "14.06.2015",
+			 Build               = 74,
+			 Date[]              = "17.06.2015",
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -55,7 +55,7 @@ enum
 	#endif
 #endif
 
-new ArgNum[MAX_PLAYERS+1], Contor[MAX_PLAYERS+1], File[128], MapName[32], ClSaidSameTh_Count[MAX_PLAYERS+1],
+new ArgNum[MAX_PLAYERS+1], Contor[MAX_PLAYERS+1], LogFile[128], MapName[32], ClSaidSameTh_Count[MAX_PLAYERS+1],
 	bool:CorrectName[MAX_PLAYERS+1], bool:IsAdmin[MAX_PLAYERS+1], bool:FirstMsg[MAX_PLAYERS+1], bool:Gag[MAX_PLAYERS+1];
 new LoginName[256][32], LoginPass[256][32], LoginAccess[256][32], LoginFlag[256][6],
 	LastPass[256][32], MenuText[MAX_PLAYERS+1][MAX_PLAYERS];
@@ -225,20 +225,20 @@ public plugin_precache()
 	registersPrecache();
 	
 	new CurentDate[15];
-	get_localinfo("amxx_logs", File, charsmax(File));
-	format(File, charsmax(File), "%s/%s", File, PluginName);
+	get_localinfo("amxx_logs", LogFile, charsmax(LogFile));
+	format(LogFile, charsmax(LogFile), "%s/%s", LogFile, PluginName);
 	
-	if ( !dir_exists(File) )
+	if ( !dir_exists(LogFile) )
 	{
-		mkdir(File);
+		mkdir(LogFile);
 	}
 	
 	get_time("%d-%m-%Y", CurentDate, charsmax(CurentDate));
-	format(File, charsmax(File), "%s/%s_%s.log", File, PluginName, CurentDate);
+	format(LogFile, charsmax(LogFile), "%s/%s_%s.log", LogFile, PluginName, CurentDate);
 	
-	if ( !file_exists(File) )
+	if ( !file_exists(LogFile) )
 	{
-		write_file(File, "*Aici este salvata activitatea suspecta a fiecarui jucator.^n^n", -1);
+		write_file(LogFile, "*Aici este salvata activitatea suspecta a fiecarui jucator.^n^n", -1);
 	}
 	
 	get_mapname(MapName, charsmax(MapName));
@@ -292,18 +292,15 @@ public CheckCfg()
 				break;
 			}
 		}
+		fclose(FilePointer);
+		
 		if ( !IsCurrentVersionUsed )
 		{
-			fclose(FilePointer);
 			WriteCfg(true);
 			if ( getNum(PlugCvar[plug_log]) == 1 )
 			{
 				logCommand(LangType, LANG_SERVER, "ROM_UPDATE_CFG", getString(PlugCvar[Tag]));
 			}
-		}
-		else
-		{
-			fclose(FilePointer);
 		}
 	}
 }
@@ -337,6 +334,8 @@ public CheckLang()
 				break;
 			}
 		}
+		fclose(FilePointer);
+		
 		if ( !IsCurrentVersionUsed )
 		{
 			register_dictionary("rom_protect.txt");
@@ -345,12 +344,7 @@ public CheckLang()
 			{
 				logCommand(LangType, LANG_SERVER, "ROM_UPDATE_LANG", getString(PlugCvar[Tag]));
 			}
-			fclose(FilePointer);
 			WriteLang(true);
-		}
-		else
-		{
-			fclose(FilePointer);
 		}
 	}
 }
@@ -1510,7 +1504,7 @@ logCommand(const StandardMessage[], any:...)
 	formatex(LogMessage, charsmax(LogMessage), "L %s%s%s", getTime(), MapName, Message);
 	
 	server_print(LogMessage);
-	write_file(File, LogMessage, -1);
+	write_file(LogFile, LogMessage, -1);
 }
 
 getInfo(id, INFO:Type)
@@ -2260,14 +2254,14 @@ WriteLang( bool:exist )
 {
 	if (exist)
 	{		
-		new Line[121], FilePointer = fopen(LangFile, "wt");
+		new Line[512], FilePointer = fopen(LangFile, "wt");
 		
 		if ( !FilePointer ) 
 		{
 			return;
 		}
 		
-		writeSignature(FilePointer);
+		writeSignature(FilePointer, true);
 		
 		fputs(FilePointer, "[en]^n^n");
 		
@@ -2963,7 +2957,7 @@ WriteLang( bool:exist )
 			return;
 		}
 		
-		writeSignature(FilePointer);
+		writeSignature(FilePointer, true);
 		
 		fputs(FilePointer, "[en]^n^n");
 		fputs(FilePointer, "ROM_UPDATE_CFG = %s : Am actualizat fisierul CFG : rom_protect.cfg.^n");
@@ -3117,7 +3111,7 @@ WriteLang( bool:exist )
 	IsLangUsed = true;
 }
 
-writeSignature(FilePointer)
+writeSignature(FilePointer, bool:isLangFile = false)
 {
 	fputs(FilePointer, "// *ROM-Protect");
 	fputs(FilePointer, "// Plugin OpenSource anti-IsFlooding/bug-fix pentru orice server. ^n");
@@ -3126,14 +3120,14 @@ writeSignature(FilePointer)
 	fputs(FilePointer, "// O productie FioriGinal.ro - site : www.fioriginal.ro^n");
 	fputs(FilePointer, "// Link forum de dezvoltare : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-flood-bug-fix-t28292.html^n");
 	fputs(FilePointer, "// Link sursa : https://github.com/luxxxoor/ROM-Protect^n");
-	/*#if AMXX_VERSION_NUM >= 183
-		if ( equal(File, LangFile) )
+	#if AMXX_VERSION_NUM >= 183
+		if ( isLangFile )
 		{
 			fputs(FilePointer, "^n// Colori : ^^1 - Culoarea aleasa de jucator cu con_color.^n");
 			fputs(FilePointer, "//          ^^3 - Culoare gri.^n");
 			fputs(FilePointer, "//          ^^4 - Culoare verde.^n");
 		}
-	#endif*/
+	#endif
 	fputs(FilePointer, "^n^n^n");
 }
 
