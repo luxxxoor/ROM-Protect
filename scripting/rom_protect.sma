@@ -449,11 +449,11 @@ public client_connect(id)
 					'4','5','6','7','8','9'
 				};
 			
-				formatex(Capcha[id], charsmax(Capcha), "%c%c%c%c", AllChars[random(sizeof(AllChars))], AllChars[random(sizeof(AllChars))], AllChars[random(sizeof(AllChars))], AllChars[random(sizeof(AllChars))]);
+				formatex(Capcha[id], charsmax(Capcha[]), "%c%c%c%c", AllChars[random(sizeof(AllChars))], AllChars[random(sizeof(AllChars))], AllChars[random(sizeof(AllChars))], AllChars[random(sizeof(AllChars))]);
 			}
 			else
 			{
-				formatex(Capcha[id], charsmax(Capcha), "%s", getString(PlugCvar[xfakeplayer_spam_capcha_word]));
+				formatex(Capcha[id], charsmax(Capcha[]), "%s", getString(PlugCvar[xfakeplayer_spam_capcha_word]));
 			}
 		}
 	}
@@ -689,7 +689,7 @@ public oldStyleMenusTeammenu(msg, des, rec)
 {
 	if ( is_user_connected(rec) && getNum(PlugCvar[spec_bug]) == 1 )
 	{
-		get_msg_arg_string(4, MenuText[rec], charsmax(MenuText));
+		get_msg_arg_string(4, MenuText[rec], charsmax(MenuText[]));
 		
 		if ( equal(MenuText[rec], Terrorist) || equal(MenuText[rec], Counter_Terrorist) )
 		{
@@ -1001,7 +1001,7 @@ public hookBanClassCommand(id)
 		
 		for	(new i = 0; i < 4; ++i)
 		{
-			split(Ip, IpNum[i], charsmax(IpNum), Ip, charsmax(Ip), ".");
+			split(Ip, IpNum[i], charsmax(IpNum[]), Ip, charsmax(Ip), ".");
 		}
 		
 		Value = getNum(PlugCvar[anti_ban_class]);
@@ -1011,7 +1011,7 @@ public hookBanClassCommand(id)
 			Value = 4;
 		}
 			
-		num_to_str(Value,NumStr,charsmax(NumStr));
+		num_to_str(Value, NumStr, charsmax(NumStr));
 		
 		switch (Value)
 		{
@@ -1091,22 +1091,20 @@ public hookBasicOnChatCommand(id)
 	new ColorBugCvarValue = getNum(PlugCvar[color_bug]), CmdBugCvarValue = getNum(PlugCvar[cmd_bug]);
 	if ( CmdBugCvarValue == 1 || ColorBugCvarValue == 1 )
 	{
-		new Said[192], CheckString[192], bool:IsUsedCmdBug[MAX_PLAYERS+1], bool:IsUsedColorBug[MAX_PLAYERS+1];
+		new Said[192], bool:IsUsedCmdBug[MAX_PLAYERS+1], bool:IsUsedColorBug[MAX_PLAYERS+1];
 		
 		read_args(Said, charsmax(Said));
 		
-		copy(CheckString, charsmax(CheckString), Said);
-		
-		for (new i = 0; i < sizeof CheckString ; ++i)
+		for (new i = 0; i < sizeof Said ; ++i)
 		{
-			if ( CmdBugCvarValue == 1 && (CheckString[i] == '#' && isalpha(CheckString[i+1])) || (CheckString[i] == '%' && CheckString[i+1] == 's') )
+			if ( CmdBugCvarValue == 1 && (Said[i] == '#' && isalpha(Said[i+1])) || (Said[i] == '%' && Said[i+1] == 's') )
 			{
 				IsUsedCmdBug[id] = true;
 				break;
 			}
 			if ( ColorBugCvarValue == 1 )
 			{
-				if ( CheckString[i] == '' || CheckString[i] == '' || CheckString[i] == '' )
+				if ( Said[i] == '' || Said[i] == '' || Said[i] == '' )
 				{
 					IsUsedColorBug[id] = true;
 					break;
@@ -1333,7 +1331,7 @@ public hookForXFakePlayerSpam(id)
 				{
 					FirstMsg[id] = false;
 					ClSaidSameTh_Count[id]++;
-					copy(PreviousMessage[id], charsmax(PreviousMessage), ClSaid);
+					copy(PreviousMessage[id], charsmax(PreviousMessage[]), ClSaid);
 					return PLUGIN_HANDLED;
 				}
 			}
@@ -1430,18 +1428,18 @@ public hookForXFakePlayerSpam(id)
 				{
 					UnBlockedChat[id] = true;
 					#if AMXX_VERSION_NUM < 183
-						client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_ALLOW_USE_CHAT", "^3", getString(PlugCvar[Tag]), "^4");
+						client_print_color(id, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_ALLOW_USE_CHAT", "^3", getString(PlugCvar[Tag]), "^4");
 					#else
-						client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_ALLOW_USE_CHAT", getString(PlugCvar[Tag]));
+						client_print_color(id, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_ALLOW_USE_CHAT", getString(PlugCvar[Tag]));
 					#endif
 					return PLUGIN_HANDLED;
 				}
 				else
 				{	
 					#if AMXX_VERSION_NUM < 183
-						client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_CAPCHA", "^3", getString(PlugCvar[Tag]), "^4", "^3", Capcha[id], "^4");
+						client_print_color(id, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_CAPCHA", "^3", getString(PlugCvar[Tag]), "^4", "^3", Capcha[id], "^4");
 					#else
-						client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_CAPCHA", getString(PlugCvar[Tag]), Capcha[id]);
+						client_print_color(id, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_CAPCHA", getString(PlugCvar[Tag]), Capcha[id]);
 					#endif
 					return PLUGIN_HANDLED;
 				}
@@ -1507,10 +1505,10 @@ loadAdminLogin()
 				continue;
 			}
 		
-			copy(LoginName[AdminsNum], charsmax(LoginName),  Name);
-			copy(LoginPass[AdminsNum], charsmax(LoginPass),  Password);
-			copy(LoginAccess[AdminsNum], charsmax(LoginAccess),  Access);
-			copy(LoginFlag[AdminsNum], charsmax(LoginFlag),  Flags);
+			copy(LoginName[AdminsNum], charsmax(LoginName[]),  Name);
+			copy(LoginPass[AdminsNum], charsmax(LoginPass[]),  Password);
+			copy(LoginAccess[AdminsNum], charsmax(LoginAccess[]),  Access);
+			copy(LoginFlag[AdminsNum], charsmax(LoginFlag[]),  Flags);
 		
 			if (getNum(PlugCvar[admin_login_debug]) == 1)
 			{
@@ -1553,7 +1551,7 @@ getAccess(id, UserPass[])
 				IsAdmin[id] = true;
 				Acces = read_flags(LoginAccess[i]);
 				set_user_flags(id, Acces);
-				copy(LastPass[id], charsmax(LastPass), UserPass);
+				copy(LastPass[id], charsmax(LastPass[]), UserPass);
 			}
 			
 			break;
@@ -1744,8 +1742,8 @@ checkLong(cCommand[], Len)
 	
 	while (strlen(mCommand))
 	{
-		strtok(cCommand, mCommand, charsmax( mCommand ), cCommand, Len , ' ', 1);
-		if (strlen( mCommand ) > 31)
+		strtok(cCommand, mCommand, charsmax(mCommand), cCommand, Len , ' ', 1);
+		if ( strlen( mCommand ) > 31 )
 		{
 			return true;
 		}
