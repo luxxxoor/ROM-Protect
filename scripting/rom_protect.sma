@@ -8,7 +8,7 @@
 #endif 
 
 new const Version[]           = "1.0.4s-dev",
-			 Build               = 75,
+			 Build               = 77,
 			 Date[]              = "24.06.2015",
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
@@ -3040,7 +3040,7 @@ WriteLang( bool:exist )
 		#endif
 		
 		#if AMXX_VERSION_NUM < 183
-			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_CAPCHA = %L^n", LANG_SERVER, "ROM_XFAKE_PLAYERS_CAPCHA", "^%s", "^%s", "^%s");
+			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_CAPCHA = %L^n", LANG_SERVER, "ROM_XFAKE_PLAYERS_CAPCHA", "^%s", "^%s", "^%s", "^%s", "^%s");
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
 				fputs(FilePointer, "ROM_XFAKE_PLAYERS_CAPCHA = %s%s : %sPentru a folosi chat-ul scrie urmatorul cod : %s%s%s.^n");
@@ -3050,7 +3050,7 @@ WriteLang( bool:exist )
 				fputs(FilePointer, Line);
 			}
 		#else
-			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_CAPCHA = %L^n", LANG_SERVER, "ROM_XFAKE_PLAYERS_CAPCHA", "^%s" );
+			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_CAPCHA = %L^n", LANG_SERVER, "ROM_XFAKE_PLAYERS_CAPCHA", "^%s", "^%s" );
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
 				fputs(FilePointer, "ROM_XFAKE_PLAYERS_CAPCHA = ^^3%s : ^^4Pentru a folosi chat-ul scrie urmatorul cod : ^^3%s^^4.^n");
