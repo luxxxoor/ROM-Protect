@@ -8,8 +8,8 @@
 #endif 
 
 new const Version[]           = "1.0.4s-dev",
-			 Build               = 77,
-			 Date[]              = "24.06.2015",
+			 Build               = 78,
+			 Date[]              = "09.07.2015",
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -448,8 +448,8 @@ public client_connect(id)
 					'w','x','y','z','0','1','2','3',
 					'4','5','6','7','8','9'
 				};
-			
-				formatex(Capcha[id], charsmax(Capcha[]), "%c%c%c%c", AllChars[random(sizeof(AllChars))], AllChars[random(sizeof(AllChars))], AllChars[random(sizeof(AllChars))], AllChars[random(sizeof(AllChars))]);
+				const MatrixSize = sizeof AllChars;
+				formatex(Capcha[id], charsmax(Capcha[]), "%c%c%c%c", AllChars[random(MatrixSize)], AllChars[random(MatrixSize)], AllChars[random(MatrixSize)], AllChars[random(MatrixSize)]);
 			}
 			else
 			{
@@ -589,8 +589,22 @@ public cmdPass(id)
 	read_argv(1, Password, charsmax(Password));
 	remove_quotes(Password);
 	copy(CvarTag, charsmax(CvarTag), getString(PlugCvar[Tag]));
-	
-	if (equal(LastPass[id], Password) && IsAdmin[id])
+	if ( !Password[0] )
+	{
+		#if AMXX_VERSION_NUM < 183
+			client_print_color(id, Grey, LangType, id, "ROM_ADMIN_WITHOUT_PASS", "^3", CvarTag, "^4");
+		#else
+			client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_WITHOUT_PASS", CvarTag);
+		#endif
+		client_print(id, print_console, LangType, id, "ROM_ADMIN_WITHOUT_PASS_PRINT", CvarTag);
+
+		return PLUGIN_HANDLED;
+	}
+
+	loadAdminLogin();
+	getAccess(id, Password);
+
+	if ( equal(LastPass[id], Password) && IsAdmin[id] )
 	{
 		
 			
@@ -600,11 +614,9 @@ public cmdPass(id)
 			client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_ALREADY_LOADED", CvarTag);
 		#endif
 		client_print(id, print_console, LangType, id, "ROM_ADMIN_ALREADY_LOADED_PRINT", CvarTag);
-		return PLUGIN_HANDLED;
-	}	
 
-	loadAdminLogin();
-	getAccess(id, Password);
+		return PLUGIN_HANDLED;
+	}
 	
 	if (!IsAdmin[id])
 	{
@@ -1231,10 +1243,10 @@ public updatePlugin()
 				HTTP2_Download("http://www.romprotect.allalla.com/rom_protect182.amxx", NewPluginLocation, "downloadComplete");
 			#endif
 		}
-		#else
-			#if AMXX_VERSION_NUM == 181
-				HTTP2_Download("http://www.romprotect.allalla.com/rom_protect181.amxx", NewPluginLocation, "downloadComplete");
-			#endif
+	#else
+		#if AMXX_VERSION_NUM == 181
+			HTTP2_Download("http://www.romprotect.allalla.com/rom_protect181.amxx", NewPluginLocation, "downloadComplete");
+		#endif
 	#endif
 }
 
@@ -2617,6 +2629,39 @@ WriteLang( bool:exist )
 		{
 			fputs(FilePointer, Line);
 		}
+
+
+		#if AMXX_VERSION_NUM < 183
+			formatex(Line, charsmax(Line), "ROM_ADMIN_WITHOUT_PASS = %L^n", LANG_SERVER, "ROM_ADMIN_WITHOUT_PASS", "^%s", "^%s", "^%s" );
+			if ( contain(Line, "ML_NOTFOUND") != -1 )
+			{
+				fputs(FilePointer, "ROM_ADMIN_WITHOUT_PASS = %s%s : %sNu ai introdus nici o parola, comanda se scris in consola astfel : login ^"parola ta^".^n");
+			}
+			else
+			{
+				fputs(FilePointer, Line);
+			}
+		#else
+			formatex(Line, charsmax(Line), "ROM_ADMIN_WITHOUT_PASS = %L^n", LANG_SERVER, "ROM_ADMIN_WITHOUT_PASS", "^%s" );
+			if ( contain(Line, "ML_NOTFOUND") != -1 )
+			{
+				fputs(FilePointer, "ROM_ADMIN_WITHOUT_PASS = ^^3%s : ^^4Nu ai introdus nici o parola, comanda se scris in consola astfel : login ^"parola ta^".^n");
+			}
+			else
+			{
+				fputs(FilePointer, Line);
+			}
+		#endif
+		
+		formatex(Line, charsmax(Line), "ROM_ADMIN_WITHOUT_PASS_PRINT = %L^n", LANG_SERVER, "ROM_ADMIN_WITHOUT_PASS_PRINT", "^%s" );
+		if ( contain(Line, "ML_NOTFOUND") != -1 )
+		{
+			fputs(FilePointer, "ROM_ADMIN_WITHOUT_PASS_PRINT = %s : Nu ai introdus nici o parola, comanda se scris in consola astfel : login ^"parola ta^".^n");
+		}
+		else
+		{
+			fputs(FilePointer, Line); 
+		}
 			
 		#if AMXX_VERSION_NUM < 183
 			formatex(Line, charsmax(Line), "ROM_CMD_BUG = %L^n", LANG_SERVER, "ROM_CMD_BUG", "^%s", "^%s", "^%s" );
@@ -3151,12 +3196,20 @@ WriteLang( bool:exist )
 		#endif
 		
 		fputs(FilePointer, "ROM_ADMIN_ALREADY_LOADED_PRINT = %s : Admin-ul tau este deja incarcat.^n");
+
+		#if AMXX_VERSION_NUM < 183
+			fputs(FilePointer, "ROM_ADMIN_WITHOUT_PASS = %s%s : %sNu ai introdus nici o parola, comanda se scris in consola astfel : login ^"parola ta^".^n");
+		#else
+			fputs(FilePointer, "ROM_ADMIN_WITHOUT_PASS = ^^3%s : ^^4Nu ai introdus nici o parola, comanda se scris in consola astfel : login ^"parola ta^".^n");
+		#endif 
 		
+		fputs(FilePointer, "ROM_ADMIN_WITHOUT_PASS_PRINT = %s : Nu ai introdus nici o parola, comanda se scris in consola astfel : login ^"parola ta^".^n");
+
 		#if AMXX_VERSION_NUM < 183
 			fputs(FilePointer, "ROM_CMD_BUG = %s%s : %sS-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.^n");
 		#else
 			fputs(FilePointer, "ROM_CMD_BUG = ^^3%s : ^^4S-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.^n");
-		#endif
+		#endif 
 		
 		fputs(FilePointer, "ROM_CMD_BUG_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului.^n");
 		fputs(FilePointer, "ROM_CMD_BUG_PRINT = %s : S-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.^n");
