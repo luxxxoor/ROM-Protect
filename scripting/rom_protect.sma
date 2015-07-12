@@ -8,8 +8,8 @@
 #endif 
 
 new const Version[]           = "1.0.4s-dev",
-			 Build               = 78,
-			 Date[]              = "09.07.2015",
+			 Build               = 79,
+			 Date[]              = "11.07.2015",
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -589,7 +589,7 @@ public cmdPass(id)
 	read_argv(1, Password, charsmax(Password));
 	remove_quotes(Password);
 	copy(CvarTag, charsmax(CvarTag), getString(PlugCvar[Tag]));
-	if ( !Password[0] )
+	if (!Password[0])
 	{
 		#if AMXX_VERSION_NUM < 183
 			client_print_color(id, Grey, LangType, id, "ROM_ADMIN_WITHOUT_PASS", "^3", CvarTag, "^4");
@@ -602,26 +602,13 @@ public cmdPass(id)
 	}
 
 	loadAdminLogin();
-	getAccess(id, Password);
-
-	if ( equal(LastPass[id], Password) && IsAdmin[id] )
-	{
-		
-			
-		#if AMXX_VERSION_NUM < 183
-			client_print_color(id, Grey, LangType, id, "ROM_ADMIN_ALREADY_LOADED", "^3", CvarTag, "^4");
-		#else
-			client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_ALREADY_LOADED", CvarTag);
-		#endif
-		client_print(id, print_console, LangType, id, "ROM_ADMIN_ALREADY_LOADED_PRINT", CvarTag);
-
-		return PLUGIN_HANDLED;
-	}
+	IsAdmin[id] = false;
+	getAccess(id, Password, charsmax(Password));
 	
 	if (!IsAdmin[id])
 	{
-		
-		if (!CorrectName[ id ])
+		LastPass[id][0] = EOS;
+		if (!CorrectName[id])
 		{		
 			#if AMXX_VERSION_NUM < 183
 				client_print_color(id, Grey, LangType, id, "ROM_ADMIN_WRONG_NAME", "^3", CvarTag, "^4");
@@ -642,14 +629,28 @@ public cmdPass(id)
 	}
 	else
 	{
-		#if AMXX_VERSION_NUM < 183
-			client_print_color(id, Grey, LangType, id, "ROM_ADMIN_LOADED", "^3", CvarTag, "^4");
-		#else
-			client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_LOADED", CvarTag);
-		#endif
-		client_print(id, print_console, LangType, id, "ROM_ADMIN_LOADED_PRINT", CvarTag);
+		if ( equal(LastPass[id], Password) )
+		{
+			#if AMXX_VERSION_NUM < 183
+				client_print_color(id, Grey, LangType, id, "ROM_ADMIN_ALREADY_LOADED", "^3", CvarTag, "^4");
+			#else
+				client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_ALREADY_LOADED", CvarTag);
+			#endif
+			client_print(id, print_console, LangType, id, "ROM_ADMIN_ALREADY_LOADED_PRINT", CvarTag);
+		}
+		else
+		{
+			#if AMXX_VERSION_NUM < 183
+				client_print_color(id, Grey, LangType, id, "ROM_ADMIN_LOADED", "^3", CvarTag, "^4");
+			#else
+				client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_LOADED", CvarTag);
+			#endif
+			client_print(id, print_console, LangType, id, "ROM_ADMIN_LOADED_PRINT", CvarTag);
+
+			IsAdmin[id] = true;
+		}
 	}
-	
+
 	return PLUGIN_HANDLED;
 }
 
@@ -877,7 +878,7 @@ public reloadDelay()
 	{
 		if ( IsAdmin[Players[i]] )
 		{
-			getAccess(Players[i], LastPass[Players[i]]);
+			getAccess(Players[i], LastPass[Players[i]], charsmax(LastPass[]));
 		}
 	}
 }
@@ -1465,6 +1466,48 @@ public hookForXFakePlayerSpam(id)
 	return PLUGIN_CONTINUE;
 }
 
+public delayforSavingLastPass(UserPass[], id)
+{
+	copy(LastPass[id], charsmax(LastPass[]), UserPass);
+}
+
+getAccess(id, UserPass[], len)
+{
+	new UserName[MAX_NAME_LENGTH], Acces;
+
+	get_user_info(id, "name", UserName, charsmax(UserName));
+	
+	if ( !(get_user_flags(id) & ADMIN_CHAT) )
+	{
+		remove_user_flags(id);
+	}
+
+	for (new i = 1; i <= AdminsNum; ++i)
+	{
+		if ( equali(LoginName[i], UserName) )
+		{
+			CorrectName[id] = true;
+		}
+		else
+		{
+			CorrectName[id] = false;
+		}
+		
+		if (equal(LoginFlag[i], "f") && CorrectName[id])
+		{
+			if ( equal(LoginPass[i], UserPass) || IsAdmin[id] )
+			{
+				Acces = read_flags(LoginAccess[i]);
+				set_user_flags(id, Acces);
+				IsAdmin[id] = true;
+				set_task(0.1, "delayforSavingLastPass", id, UserPass, len);
+			}
+			
+			break;
+		}
+	}
+}
+
 loadAdminLogin()
 {
 	new Path[64];
@@ -1532,43 +1575,6 @@ loadAdminLogin()
 	}
 
 	
-}
-
-getAccess(id, UserPass[])
-{
-	new UserName[MAX_NAME_LENGTH], Acces;
-
-	get_user_info(id, "name", UserName, charsmax(UserName));
-	
-	if ( !(get_user_flags(id) & ADMIN_CHAT) )
-	{
-		remove_user_flags(id);
-	}
-
-	for (new i = 1; i <= AdminsNum; ++i)
-	{
-		if ( equali(LoginName[i], UserName) )
-		{
-			CorrectName[id] = true;
-		}
-		else
-		{
-			CorrectName[id] = false;
-		}
-		
-		if (equal(LoginFlag[i], "f") && CorrectName[id])
-		{
-			if ( equal(LoginPass[i], UserPass) || IsAdmin[id] )
-			{
-				IsAdmin[id] = true;
-				Acces = read_flags(LoginAccess[i]);
-				set_user_flags(id, Acces);
-				copy(LastPass[id], charsmax(LastPass[]), UserPass);
-			}
-			
-			break;
-		}
-	}
 }
 
 logCommand(const StandardMessage[], any:...)
