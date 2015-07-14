@@ -8,8 +8,8 @@
 #endif 
 
 new const Version[]           = "1.0.4s-dev",
-			 Build               = 79,
-			 Date[]              = "11.07.2015",
+			 Build               = 80,
+			 Date[]              = "14.07.2015",
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -3091,7 +3091,7 @@ WriteLang( bool:exist )
 		#endif
 		
 		#if AMXX_VERSION_NUM < 183
-			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_CAPCHA = %L^n", LANG_SERVER, "ROM_XFAKE_PLAYERS_CAPCHA", "^%s", "^%s", "^%s", "^%s", "^%s");
+			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_CAPCHA = %L^n", LANG_SERVER, "ROM_XFAKE_PLAYERS_CAPCHA", "^%s", "^%s", "^%s", "^%s", "^%s", "^%s");
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
 				fputs(FilePointer, "ROM_XFAKE_PLAYERS_CAPCHA = %s%s : %sPentru a folosi chat-ul scrie urmatorul cod : %s%s%s.^n");
@@ -3101,7 +3101,7 @@ WriteLang( bool:exist )
 				fputs(FilePointer, Line);
 			}
 		#else
-			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_CAPCHA = %L^n", LANG_SERVER, "ROM_XFAKE_PLAYERS_CAPCHA", "^%s", "^%s" );
+			formatex(Line, charsmax(Line), "ROM_XFAKE_PLAYERS_CAPCHA = %L^n", LANG_SERVER, "ROM_XFAKE_PLAYERS_CAPCHA", "^%s", "^%s");
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
 				fputs(FilePointer, "ROM_XFAKE_PLAYERS_CAPCHA = ^^3%s : ^^4Pentru a folosi chat-ul scrie urmatorul cod : ^^3%s^^4.^n");
@@ -3112,7 +3112,7 @@ WriteLang( bool:exist )
 			}
 		#endif
 		
-		formatex(Line, charsmax(Line), "ROM_PROTCVARS = %L^n", LANG_SERVER, "ROM_PROTCVARS", "^%s" );
+		formatex(Line, charsmax(Line), "ROM_PROTCVARS = %L^n", LANG_SERVER, "ROM_PROTCVARS", "^%s");
 		if ( contain(Line, "ML_NOTFOUND") != -1 )
 		{
 			fputs(FilePointer, "ROM_PROTCVARS = %s : Cvar-ururile acestui plugin sunt protejate, comanda ta nu a avut efect.^n");
@@ -3122,7 +3122,7 @@ WriteLang( bool:exist )
 			fputs(FilePointer, Line);
 		}
 		
-		formatex(Line, charsmax(Line), "ROM_PROTCVARS_LOG = %L^n", LANG_SERVER, "ROM_PROTCVARS_LOG", "^%s", "^%s", "^%s", "^%s" );
+		formatex(Line, charsmax(Line), "ROM_PROTCVARS_LOG = %L^n", LANG_SERVER, "ROM_PROTCVARS_LOG", "^%s", "^%s", "^%s", "^%s");
 		if ( contain(Line, "ML_NOTFOUND") != -1 )
 		{
 			fputs(FilePointer, "ROM_PROTCVARS_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa schimbe cvar-urile pluginului de protectie, astea pot fi schimbate doar din fisierul configurator.^n");	
