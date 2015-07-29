@@ -8,8 +8,8 @@
 #endif 
 
 new const Version[]           = "1.0.4s-dev",
-			 Build               = 80,
-			 Date[]              = "14.07.2015",
+			 Build               = 81,
+			 Date[]              = "29.07.2015",
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -1543,8 +1543,10 @@ loadAdminLogin()
 		{
 			return;
 		}
-	
-		for (AdminsNum = 0; !feof(FilePointer); ++AdminsNum)
+		
+		AdminsNum = 0;
+		
+		while (!feof(FilePointer))
 		{
 			fgets(FilePointer, Text, charsmax(Text));
 
@@ -1560,15 +1562,16 @@ loadAdminLogin()
 				continue;
 			}
 		
-			copy(LoginName[AdminsNum], charsmax(LoginName[]),  Name);
-			copy(LoginPass[AdminsNum], charsmax(LoginPass[]),  Password);
-			copy(LoginAccess[AdminsNum], charsmax(LoginAccess[]),  Access);
-			copy(LoginFlag[AdminsNum], charsmax(LoginFlag[]),  Flags);
+			copy(LoginName[AdminsNum], charsmax(LoginName[]), Name);
+			copy(LoginPass[AdminsNum], charsmax(LoginPass[]), Password);
+			copy(LoginAccess[AdminsNum], charsmax(LoginAccess[]), Access);
+			copy(LoginFlag[AdminsNum], charsmax(LoginFlag[]), Flags);
 		
 			if (getNum(PlugCvar[admin_login_debug]) == 1)
 			{
 				server_print(LangType, LANG_SERVER, "ROM_ADMIN_DEBUG", LoginName[AdminsNum], LoginPass[AdminsNum], LoginAccess[AdminsNum], LoginFlag[AdminsNum]);
 			}
+			++AdminsNum;
 		}
 		
 		fclose(FilePointer);
