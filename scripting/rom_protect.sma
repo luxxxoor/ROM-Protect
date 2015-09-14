@@ -8,8 +8,8 @@
 #endif 
 
 new const Version[]           = "1.0.4s-dev",
-			 Build               = 81,
-			 Date[]              = "29.07.2015",
+			 Build               = 83,
+			 Date[]              = "14.09.2015",
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -32,6 +32,13 @@ enum
     FM_TEAM_SPECTATOR
 };
 
+enum _:AdminLogin
+{
+	LoginPass[32],
+	LoginAccess[32],
+	LoginFlag[6]
+}
+
 #define OFFSET_TEAM  114 
 #define fm_set_user_team(%1,%2)  set_pdata_int( %1, OFFSET_TEAM, %2 )
 #define fm_get_user_team(%1)     get_pdata_int( %1, OFFSET_TEAM ) 
@@ -39,6 +46,7 @@ enum
 #if AMXX_VERSION_NUM < 183
 	#define MAX_PLAYERS 32		
 	#define MAX_NAME_LENGTH 32
+	new AdminNum;
 	new bool:IsFlooding[MAX_PLAYERS+1];
 	new Float:Flooding[MAX_PLAYERS+1] = {0.0, ...},
 			  Flood[MAX_PLAYERS+1] = {0, ...};		  
@@ -58,10 +66,10 @@ enum
 new ArgNum[MAX_PLAYERS+1], Contor[MAX_PLAYERS+1], LogFile[128], MapName[32], ClSaidSameTh_Count[MAX_PLAYERS+1],
 	bool:CorrectName[MAX_PLAYERS+1], bool:IsAdmin[MAX_PLAYERS+1], bool:FirstMsg[MAX_PLAYERS+1],
 	bool:Gag[MAX_PLAYERS+1], bool:UnBlockedChat[MAX_PLAYERS+1];
-new LoginName[256][32], LoginPass[256][32], LoginAccess[256][32], LoginFlag[256][6],
-	LastPass[256][32], MenuText[MAX_PLAYERS+1][MAX_PLAYERS], Capcha[MAX_PLAYERS+1][8];
-new PreviousMessage[MAX_PLAYERS+1][192]; // declarat global pentru a evita eroarea "Run time error 3: stack error "
-new AdminsNum, bool:IsLangUsed;
+new LastPass[MAX_PLAYERS+1][32], MenuText[MAX_PLAYERS+1][MAX_PLAYERS], Capcha[MAX_PLAYERS+1][8];
+new Trie:LoginName, Trie:DefaultRes;
+new PreviousMessage[MAX_PLAYERS+1][192]; // declarat global pentru a evita eroarea "Run time error 3: stack error"
+new bool:IsLangUsed;
 
 new const AllBasicOnChatCommads[][] =
 {
@@ -208,8 +216,6 @@ new const CvarValue[AllCvars][] =
 
 new PlugCvar[AllCvars];
 
-new Trie:DefaultRes;
-
 public plugin_precache()
 {	
 	registersPrecache();
@@ -348,6 +354,11 @@ public plugin_init()
 {
 	registersInit();
 	
+	if ( getNum(PlugCvar[admin_login]) == 1)
+	{
+		LoginName = TrieCreate();
+	}
+	
 	if ( getNum(PlugCvar[advertise]) == 1 )
 	{
 		set_task(getFloat(PlugCvar[advertise_time]), "showAdvertise", _, _, _, "b", 0);
@@ -395,7 +406,7 @@ public client_connect(id)
 						{
 							new Limit[8];
 							num_to_str(getNum(PlugCvar[fake_players_limit]), Limit, charsmax(Limit));
-							client_print(id, print_console, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_KICK", getString(PlugCvar[Tag]), Limit);
+							console_print(id, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_KICK", getString(PlugCvar[Tag]), Limit);
 							server_cmd("kick #%d ^"You got kicked. Check console.^"", get_user_userid(id));
 						}
 						case 1: 
@@ -578,7 +589,7 @@ public plugin_pause()
 
 public cmdPass(id)
 {
-	if ( getNum(PlugCvar[admin_login]) != 1 )
+	if ( getNum(PlugCvar[admin_login]) != 1 || !LoginName )
 	{
 		return PLUGIN_HANDLED;
 	}
@@ -596,7 +607,7 @@ public cmdPass(id)
 		#else
 			client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_WITHOUT_PASS", CvarTag);
 		#endif
-		client_print(id, print_console, LangType, id, "ROM_ADMIN_WITHOUT_PASS_PRINT", CvarTag);
+		console_print(id, LangType, id, "ROM_ADMIN_WITHOUT_PASS_PRINT", CvarTag);
 
 		return PLUGIN_HANDLED;
 	}
@@ -615,7 +626,7 @@ public cmdPass(id)
 			#else
 				client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_WRONG_NAME", CvarTag);
 			#endif
-			client_print(id, print_console, LangType, id, "ROM_ADMIN_WRONG_NAME_PRINT", CvarTag);
+			console_print(id, LangType, id, "ROM_ADMIN_WRONG_NAME_PRINT", CvarTag);
 		}
 		else
 		{
@@ -624,7 +635,7 @@ public cmdPass(id)
 			#else
 				client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_WRONG_PASS", CvarTag);
 			#endif
-			client_print(id, print_console, LangType, id, "ROM_ADMIN_WRONG_PASS_PRINT", CvarTag);
+			console_print(id, LangType, id, "ROM_ADMIN_WRONG_PASS_PRINT", CvarTag);
 		}
 	}
 	else
@@ -636,7 +647,7 @@ public cmdPass(id)
 			#else
 				client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_ALREADY_LOADED", CvarTag);
 			#endif
-			client_print(id, print_console, LangType, id, "ROM_ADMIN_ALREADY_LOADED_PRINT", CvarTag);
+			console_print(id, LangType, id, "ROM_ADMIN_ALREADY_LOADED_PRINT", CvarTag);
 		}
 		else
 		{
@@ -645,7 +656,7 @@ public cmdPass(id)
 			#else
 				client_print_color(id, print_team_grey, LangType, id, "ROM_ADMIN_LOADED", CvarTag);
 			#endif
-			client_print(id, print_console, LangType, id, "ROM_ADMIN_LOADED_PRINT", CvarTag);
+			console_print(id, LangType, id, "ROM_ADMIN_LOADED_PRINT", CvarTag);
 
 			IsAdmin[id] = true;
 		}
@@ -1279,10 +1290,10 @@ public giveClientInfo(id)
 		return PLUGIN_HANDLED;
 	}
 		
-	client_print(id, print_console, "^n^n^nVersiune curenta : %s. Build : %d. Data lansarii versiunii : %s.", Version, Build, Date);
-	client_print(id, print_console, "Autor : luxor # Dr.Fio & DR2.IND. Comunitatea : FioriGinal.Ro" );
-	client_print(id, print_console, "Link oficial : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-IsFlooding-bug-fix-t28292.html");
-	client_print(id, print_console, "Contact : luxxxoor (Steam) / alex.vrincean (Skype).^n^n^n");
+	console_print(id, "^n^n^nVersiune curenta : %s. Build : %d. Data lansarii versiunii : %s.", Version, Build, Date);
+	console_print(id, "Autor : luxor # Dr.Fio & DR2.IND. Comunitatea : FioriGinal.Ro" );
+	console_print(id, "Link oficial : http://forum.fioriginal.ro/amxmodx-plugins-pluginuri/rom-protect-anti-IsFlooding-bug-fix-t28292.html");
+	console_print(id, "Contact : luxxxoor (Steam) / alex.vrincean (Skype).^n^n^n");
 	
 	return PLUGIN_CONTINUE;
 }
@@ -1382,7 +1393,7 @@ public hookForXFakePlayerSpam(id)
 							{
 								if ( getNum(PlugCvar[plug_warn]) == 1 )
 								{
-									client_print(id, print_console, LangType, id, "ROM_XFAKE_PLAYERS_SPAM_KICK", getString(PlugCvar[Tag]));
+									console_print(id, LangType, id, "ROM_XFAKE_PLAYERS_SPAM_KICK", getString(PlugCvar[Tag]));
 									server_cmd("kick #%d ^"You got kicked. Check console.^"", get_user_userid(id));
 								}
 								else
@@ -1409,7 +1420,7 @@ public hookForXFakePlayerSpam(id)
 										client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_PUNISH", CvarTag, Punish);
 									#endif
 					
-									client_print(id, print_console, LangType, id, "ROM_XFAKE_PLAYERS_SPAM_BAN", getString(PlugCvar[Tag]), Punish);
+									console_print(id, LangType, id, "ROM_XFAKE_PLAYERS_SPAM_BAN", getString(PlugCvar[Tag]), Punish);
 								}
 						
 								server_cmd("addip ^"%s^" ^"%s^";wait;writeip", Punish, Address);
@@ -1473,32 +1484,38 @@ public delayforSavingLastPass(UserPass[], id)
 
 getAccess(id, UserPass[], len)
 {
-	new UserName[MAX_NAME_LENGTH], Acces;
+	new UserName[MAX_NAME_LENGTH];
 
-	get_user_info(id, "name", UserName, charsmax(UserName));
+	get_user_name(id, UserName, charsmax(UserName));
 	
 	if ( !(get_user_flags(id) & ADMIN_CHAT) )
 	{
 		remove_user_flags(id);
 	}
-
-	for (new i = 1; i <= AdminsNum; ++i)
+	#if AMXX_VERSION_NUM < 183
+		for (new i = 1; i <= AdminNum; ++i)
+	#else
+		for (new i = 1; i <= TrieGetSize(LoginName); ++i)
+	#endif
 	{
-		if ( equali(LoginName[i], UserName) )
+		if ( TrieKeyExists(LoginName, UserName) )
 		{
 			CorrectName[id] = true;
 		}
 		else
 		{
 			CorrectName[id] = false;
+			continue;
 		}
+		new TempData[AdminLogin];
+		TrieGetArray(LoginName, UserName, TempData, charsmax(TempData));
 		
-		if (equal(LoginFlag[i], "f") && CorrectName[id])
+		if ( equal(TempData[LoginFlag], "f") && CorrectName[id] )
 		{
-			if ( equal(LoginPass[i], UserPass) || IsAdmin[id] )
+			if ( equal(TempData[LoginPass], UserPass) || IsAdmin[id] )
 			{
-				Acces = read_flags(LoginAccess[i]);
-				set_user_flags(id, Acces);
+				new Access = read_flags(TempData[LoginAccess]);
+				set_user_flags(id, Access);
 				IsAdmin[id] = true;
 				set_task(0.1, "delayforSavingLastPass", id, UserPass, len);
 			}
@@ -1544,7 +1561,11 @@ loadAdminLogin()
 			return;
 		}
 		
-		AdminsNum = 0;
+		TrieClear(LoginName);
+		
+		#if AMXX_VERSION_NUM < 183
+			AdminNum = 0;
+		#endif
 		
 		while (!feof(FilePointer))
 		{
@@ -1562,16 +1583,20 @@ loadAdminLogin()
 				continue;
 			}
 		
-			copy(LoginName[AdminsNum], charsmax(LoginName[]), Name);
-			copy(LoginPass[AdminsNum], charsmax(LoginPass[]), Password);
-			copy(LoginAccess[AdminsNum], charsmax(LoginAccess[]), Access);
-			copy(LoginFlag[AdminsNum], charsmax(LoginFlag[]), Flags);
+			new TempData[AdminLogin];
+			copy(TempData[LoginPass], charsmax(TempData[LoginPass]), Password);
+			copy(TempData[LoginAccess], charsmax(TempData[LoginAccess]), Access);
+			copy(TempData[LoginFlag], charsmax(TempData[LoginFlag]), Flags);
+			TrieSetArray(LoginName, Name, TempData, charsmax(TempData));
+		
+			#if AMXX_VERSION_NUM < 183
+				++AdminNum;
+			#endif
 		
 			if (getNum(PlugCvar[admin_login_debug]) == 1)
 			{
-				server_print(LangType, LANG_SERVER, "ROM_ADMIN_DEBUG", LoginName[AdminsNum], LoginPass[AdminsNum], LoginAccess[AdminsNum], LoginFlag[AdminsNum]);
+				server_print(LangType, LANG_SERVER, "ROM_ADMIN_DEBUG", Name, Password, Access, Flags);
 			}
-			++AdminsNum;
 		}
 		
 		fclose(FilePointer);
@@ -1786,41 +1811,6 @@ getVaultDir()
 	}
 	
 	return BaseDir;
-}
-
-stock bool:CheckName( id )
-	{
-	new name[ MAX_NAME_LENGTH ];
-	new contor = 0;
-	new bool:b_name = false;
-	get_user_info( id, "name", name, charsmax( name ) );
-	//new i = 0, j = 0
-	for(new i = 0 ; i <= charsmax( name ); ++i)
-		{
-		for(new j = 0 ; j <= charsmax( char_list ); ++j)
-			{
-			if ( name[ i ] == char_list[ j ] )
-				b_name = true;
-		}
-		if ( b_name )
-			{
-			//server_print("debug 3 - %d", contor);
-			++contor;
-			b_name = false
-		}              
-		else
-		{
-			contor = 0
-		}
-		if ( contor >= 3)
-			{
-			//server_print("debug 1 - %d", contor);
-			return true;
-		}
-	}
-	//server_print("debug 2 - %d - %d - %d", contor, i, j);
-	return false;
-	//isalpha(ch)
 }
 
 WriteCfg( bool:exist )
