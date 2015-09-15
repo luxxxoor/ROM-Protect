@@ -113,10 +113,10 @@ enum _:AllCvars
 	motdfile,
 	anti_pause,
 	anti_ban_class,
-	auto_update,
-#if AMXX_VERSION_NUM >= 182
-	dev_update,
-#endif
+//	auto_update,
+//#if AMXX_VERSION_NUM >= 182
+//	dev_update,
+//#endif
 	info,
 	xfakeplayer_spam,
 	xfakeplayer_spam_maxchars,
@@ -156,10 +156,10 @@ new const CvarName[AllCvars][] =
 	"rom_motdfile",
 	"rom_anti_pause",
 	"rom_anti_ban_class",
-	"rom_auto_update",
-#if AMXX_VERSION_NUM >= 182
-	"rom_dev_update",
-#endif
+//	"rom_auto_update",
+//#if AMXX_VERSION_NUM >= 182
+//	"rom_dev_update",
+//#endif
 	"rom_give_info",
 	"rom_xfakeplayer_spam",
 	"rom_xfakeplayer_spam_maxchars",
@@ -199,10 +199,10 @@ new const CvarValue[AllCvars][] =
 	"1",
 	"1",
 	"2",
-	"1",
-#if AMXX_VERSION_NUM >= 182
-	"0",
-#endif
+//	"1",
+//#if AMXX_VERSION_NUM >= 182
+//	"0",
+//#endif
 	"1",
 	"1",
 	"12",
@@ -245,7 +245,7 @@ public plugin_precache()
 		server_cmd("exec %s", CfgFile);
 	}
 	
-	set_task(60.0, "updatePlugin");
+	//set_task(60.0, "updatePlugin");
 	
 	set_task(5.0, "CheckLang");
 	set_task(10.0, "CheckLangFile");
@@ -1226,7 +1226,7 @@ public CheckAutobuyBug(id)
 	return PLUGIN_CONTINUE;		
 }
 
-public updatePlugin()
+/*public updatePlugin()
 {
 	if ( getNum(PlugCvar[auto_update]) == 0 )
 	{
@@ -1260,7 +1260,7 @@ public updatePlugin()
 			HTTP2_Download("http://www.romprotect.allalla.com/rom_protect181.amxx", NewPluginLocation, "downloadComplete");
 		#endif
 	#endif
-}
+}*/
 
 public downloadComplete(Index, Error) 
 {
@@ -2190,7 +2190,7 @@ WriteCfg( bool:exist )
 	{
 		fputs(FilePointer, "rom_anti_ban_class ^"2^"^n^n");
 	}
-	
+/*	
 	fputs(FilePointer, "// Cvar      : rom_auto_update^n");
 	fputs(FilePointer, "// Scop      : Descarca si inlocuieste plugin-ul automat, pentru a face singur setarile de siguranta.^n");
 	fputs(FilePointer, "// Impact    : Actualizeaza automat plugin-ul la schimbarea hartii.^n");
@@ -2222,6 +2222,7 @@ WriteCfg( bool:exist )
 		fputs(FilePointer, "rom_dev_update ^"0^"^n^n");
 	}
 #endif
+*/
 	
 	fputs(FilePointer, "// Cvar      : rom_give_info^n");
 	fputs(FilePointer, "// Scop      : Serverul va trimite utilizatorului informatii despre plugin.^n");
