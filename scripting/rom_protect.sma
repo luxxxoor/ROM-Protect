@@ -8,8 +8,8 @@
 #endif 
 
 new const Version[]           = "1.0.4s-dev",
-			 Build               = 83,
-			 Date[]              = "14.09.2015",
+			 Build               = 84,
+			 Date[]              = "06.10.2015",
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -2363,8 +2363,11 @@ WriteLang( bool:exist )
 		{
 			return;
 		}
-		
-		writeSignature(FilePointer, true);
+		#if AMXX_VERSION_NUM < 183
+			writeSignature(FilePointer);
+		#else
+			writeSignature(FilePointer, true);
+		#endif
 		
 		fputs(FilePointer, "[en]^n^n");
 		
@@ -3137,7 +3140,11 @@ WriteLang( bool:exist )
 			return;
 		}
 		
-		writeSignature(FilePointer, true);
+		#if AMXX_VERSION_NUM < 183
+			writeSignature(FilePointer);
+		#else
+			writeSignature(FilePointer, true);
+		#endif
 		
 		fputs(FilePointer, "[en]^n^n");
 		fputs(FilePointer, "ROM_UPDATE_CFG = %s : Am actualizat fisierul CFG : rom_protect.cfg.^n");
@@ -3310,8 +3317,11 @@ WriteLang( bool:exist )
 	register_dictionary("rom_protect.txt");
 	IsLangUsed = true;
 }
-
-writeSignature(FilePointer, bool:isLangFile = false)
+#if AMXX_VERSION_NUM < 183
+	writeSignature(FilePointer)
+#else
+	writeSignature(FilePointer, bool:isLangFile = false)
+#endif
 {
 	fputs(FilePointer, "// *ROM-Protect");
 	fputs(FilePointer, "// Plugin OpenSource anti-IsFlooding/bug-fix pentru orice server. ^n");
