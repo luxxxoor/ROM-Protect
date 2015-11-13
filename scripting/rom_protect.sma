@@ -3,13 +3,13 @@
 
 #pragma semicolon 1
 
-#if AMXX_VERSION_NUM < 181 
-    #assert AMX Mod X v1.8.1 or later library required!
+#if AMXX_VERSION_NUM < 182 
+    #assert AMX Mod X v1.8.2 or later library required!
 #endif 
 
 new const Version[]           = "1.0.4s-dev",
-			 Build               = 84,
-			 Date[]              = "06.10.2015",
+			 Build               = 85,
+			 Date[]              = "13.11.2015",
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -1493,9 +1493,9 @@ getAccess(id, UserPass[], len)
 		remove_user_flags(id);
 	}
 	#if AMXX_VERSION_NUM < 183
-		for (new i = 1; i <= AdminNum; ++i)
+		for (new i = 0; i < AdminNum; ++i)
 	#else
-		for (new i = 1; i <= TrieGetSize(LoginName); ++i)
+		for (new i = 0; i < TrieGetSize(LoginName); ++i)
 	#endif
 	{
 		if ( TrieKeyExists(LoginName, UserName) )
@@ -2363,11 +2363,8 @@ WriteLang( bool:exist )
 		{
 			return;
 		}
-		#if AMXX_VERSION_NUM < 183
-			writeSignature(FilePointer);
-		#else
-			writeSignature(FilePointer, true);
-		#endif
+		
+		writeSignature(FilePointer, true);
 		
 		fputs(FilePointer, "[en]^n^n");
 		
@@ -3140,11 +3137,7 @@ WriteLang( bool:exist )
 			return;
 		}
 		
-		#if AMXX_VERSION_NUM < 183
-			writeSignature(FilePointer);
-		#else
-			writeSignature(FilePointer, true);
-		#endif
+		writeSignature(FilePointer, true);
 		
 		fputs(FilePointer, "[en]^n^n");
 		fputs(FilePointer, "ROM_UPDATE_CFG = %s : Am actualizat fisierul CFG : rom_protect.cfg.^n");
