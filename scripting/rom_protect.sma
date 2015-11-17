@@ -8,8 +8,8 @@
 #endif 
 
 new const Version[]           = "1.0.4s-dev",
-			 Build               = 85,
-			 Date[]              = "13.11.2015",
+			 Build               = 86,
+			 Date[]              = "17.11.2015",
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -471,7 +471,11 @@ public client_connect(id)
 	
 } 
 
-public client_disconnect(id)
+#if AMXX_VERSION_NUM < 183
+	public client_disconnect(id)
+#else
+	public client_disconnected(id)
+#endif
 {
 	if ( getNum(PlugCvar[fake_players]) == 1 )
 	{
@@ -2364,7 +2368,11 @@ WriteLang( bool:exist )
 			return;
 		}
 		
-		writeSignature(FilePointer, true);
+		#if AMXX_VERSION_NUM < 183
+			writeSignature(FilePointer);
+		#else
+			writeSignature(FilePointer, true);
+		#endif
 		
 		fputs(FilePointer, "[en]^n^n");
 		
@@ -3137,7 +3145,11 @@ WriteLang( bool:exist )
 			return;
 		}
 		
-		writeSignature(FilePointer, true);
+		#if AMXX_VERSION_NUM < 183
+			writeSignature(FilePointer);
+		#else
+			writeSignature(FilePointer, true);
+		#endif
 		
 		fputs(FilePointer, "[en]^n^n");
 		fputs(FilePointer, "ROM_UPDATE_CFG = %s : Am actualizat fisierul CFG : rom_protect.cfg.^n");
