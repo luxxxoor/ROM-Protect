@@ -763,11 +763,11 @@ public oldStyleMenusTeammenu(msg, des, rec)
 
 public vGuiTeammenu(msg, des, rec)  
 {  
-	if ( getNum(PlugCvar[spec_bug]) == 1 )
+	if ( is_user_connected(rec) && getNum(PlugCvar[spec_bug]) == 1 )
 	{
-		if ( get_msg_arg_int(1) == 26 || get_msg_arg_int(1) == 27 )
+		ArgNum[rec] = get_msg_arg_int(1);
+		if ( ArgNum[rec] == 26 || ArgNum[rec] == 27 )
 		{
-			ArgNum[rec] = get_msg_arg_int(1);
 			set_task(0.1, "blockSpecbugVGui", rec);
 		}
 	}
@@ -775,33 +775,42 @@ public vGuiTeammenu(msg, des, rec)
 
 public blockSpecbugOldStyleMenus(Index)
 {
-	if ( !is_user_alive(Index) && is_user_connected(Index) )
+	if ( is_user_connected(Index) )
 	{
-		if ( fm_get_user_team(Index) == FM_TEAM_SPECTATOR && !is_user_alive(Index) )
+		if ( fm_get_user_team(Index) == FM_TEAM_SPECTATOR )
 		{
-			if ( equal(MenuText[Index], Terrorist) && is_user_connected(Index) )
+			new bool:ShowLogOrWarning;
+			
+			if ( equal(MenuText[Index], Terrorist) )
 			{
 				fm_set_user_team(Index, FM_TEAM_T);
+				ShowLogOrWarning = true;
 			}
 				
-			if ( equal(MenuText[Index], Counter_Terrorist) && is_user_connected(Index) )
+			if ( equal(MenuText[Index], Counter_Terrorist) )
 			{
 				fm_set_user_team(Index, FM_TEAM_CT);
-			}
-				
-			if ( getNum(PlugCvar[plug_warn]) )
-			{
-				#if AMXX_VERSION_NUM < 183
-					client_print_color(Index,Grey, LangType, Index, "ROM_SPEC_BUG", "^3", getString(PlugCvar[Tag]), "^4");
-				#else
-					client_print_color(Index, print_team_grey, LangType, Index, "ROM_SPEC_BUG", getString(PlugCvar[Tag]));
-				#endif
+				ShowLogOrWarning = true;
 			}
 			
-			if (getNum(PlugCvar[plug_log]))
-			{
-				logCommand(LangType, LANG_SERVER, "ROM_SPEC_BUG_LOG", getString(PlugCvar[Tag]), getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+			if (ShowLogOrWarning)
+			{			
+				if ( getNum(PlugCvar[plug_warn]) )
+				{
+					#if AMXX_VERSION_NUM < 183
+						client_print_color(Index,Grey, LangType, Index, "ROM_SPEC_BUG", "^3", getString(PlugCvar[Tag]), "^4");
+					#else
+						client_print_color(Index, print_team_grey, LangType, Index, "ROM_SPEC_BUG", getString(PlugCvar[Tag]));
+					#endif
+				}
+				
+				if (getNum(PlugCvar[plug_log]))
+				{
+					logCommand(LangType, LANG_SERVER, "ROM_SPEC_BUG_LOG", getString(PlugCvar[Tag]), getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+				}
 			}
+			
+			return;
 		}
 		
 		set_task(0.1, "blockSpecbugOldStyleMenus", Index);
@@ -810,41 +819,43 @@ public blockSpecbugOldStyleMenus(Index)
 
 public blockSpecbugVGui(Index)
 {
-	if ( !is_user_alive(Index) && is_user_connected(Index) )
+	if ( is_user_connected(Index) )
 	{
 		if ( fm_get_user_team(Index) == FM_TEAM_SPECTATOR )
 		{
-			new bool:ShowLogOrWarning[MAX_PLAYERS+1];
+			new bool:ShowLogOrWarning;
 				
 			if ( ArgNum[Index] == 26 )
 			{
 				fm_set_user_team(Index, FM_TEAM_T);
-				ShowLogOrWarning[Index] = true;
+				ShowLogOrWarning = true;
 			}    
 			
 			if ( ArgNum[Index] == 27 )
 			{
 				fm_set_user_team(Index, FM_TEAM_CT);
-				ShowLogOrWarning[Index] = true;
+				ShowLogOrWarning = true;
 			}   
 			
-			if ( getNum(PlugCvar[plug_warn]) == 1 && ShowLogOrWarning[Index] )
+			if (ShowLogOrWarning)
 			{
-				#if AMXX_VERSION_NUM < 183
-					client_print_color(Index, Grey, LangType, Index, "ROM_SPEC_BUG", "^3", getString(PlugCvar[Tag]), "^4");
-				#else
-					client_print_color(Index, print_team_grey, LangType, Index, "ROM_SPEC_BUG", getString(PlugCvar[Tag]));
-				#endif
+				if ( getNum(PlugCvar[plug_warn]) == 1 )
+				{
+					#if AMXX_VERSION_NUM < 183
+						client_print_color(Index, Grey, LangType, Index, "ROM_SPEC_BUG", "^3", getString(PlugCvar[Tag]), "^4");
+					#else
+						client_print_color(Index, print_team_grey, LangType, Index, "ROM_SPEC_BUG", getString(PlugCvar[Tag]));
+					#endif
+				}
+				
+				if ( getNum(PlugCvar[plug_log]) == 1 )
+				{
+					logCommand(LangType, LANG_SERVER, "ROM_SPEC_BUG_LOG", getString(PlugCvar[Tag]), getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+				}
 			}
 			
-			if ( getNum( PlugCvar[plug_log]) == 1 && ShowLogOrWarning[Index] )
-			{
-				logCommand(LangType, LANG_SERVER, "ROM_SPEC_BUG_LOG", getString(PlugCvar[Tag]), getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
-			}
-			
-			ShowLogOrWarning[Index] = false;
+			return;
 		}
-		
 		set_task(0.1, "blockSpecbugVGui", Index);
 	}
 }
