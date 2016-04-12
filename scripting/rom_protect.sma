@@ -8,8 +8,8 @@
 #endif 
 
 new const Version[]           = "1.0.4s-dev",
-			 Build               = 87,
-			 Date[]              = "20.03.2016",
+			 Build               = 90,
+			 Date[]              = "12.04.2016",
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -582,6 +582,11 @@ public client_infochanged(Index)
 		new NewName[MAX_NAME_LENGTH], OldName[MAX_NAME_LENGTH];
 		get_user_name(Index, OldName, charsmax(OldName));
 		get_user_info(Index, "name", NewName, charsmax(NewName));
+		
+		if (equali(NewName, OldName))
+		{
+			return;
+		}
 	
 		if ( CmdBugCvarValue == 1 )
 		{
@@ -589,7 +594,7 @@ public client_infochanged(Index)
 			set_user_info(Index, "name", NewName);
 		}
 	
-		if ( AdminLoginCvarValue == 1 && !equali(NewName, OldName) && IsAdmin[Index] )
+		if ( AdminLoginCvarValue == 1 && IsAdmin[Index] )
 		{
 			IsAdmin[Index] = false;
 			remove_user_flags(Index);
@@ -653,7 +658,10 @@ public cmdPass(Index)
 
 	loadAdminLogin();
 	IsAdmin[Index] = false;
-	getAccess(Index, Password, charsmax(Password));
+	if ( !getAccess(Index, Password, charsmax(Password)) )
+	{
+		return PLUGIN_HANDLED;
+	}
 	
 	if (!IsAdmin[Index])
 	{
@@ -1536,22 +1544,28 @@ public delayforSavingLastPass(UserPass[], Index)
 	copy(LastPass[Index], charsmax(LastPass[]), UserPass);
 }
 
-getAccess(Index, UserPass[], len)
+bool:getAccess(Index, UserPass[], len)
 {
 	new UserName[MAX_NAME_LENGTH];
 
 	get_user_name(Index, UserName, charsmax(UserName));
 	
-	if ( !(get_user_flags(Index) & ADMIN_CHAT) )
+	if ( !(get_user_flags(Index) & ADMIN_RESERVATION) )
 	{
-		remove_user_flags(Index);
+		#if AMXX_VERSION_NUM < 183
+			client_print_color(Index, Grey, LangType, LANG_PLAYER, "ROM_ADMIN_HASNT_SLOT", "^3", getString(PlugCvar[Tag]), "^4");
+		#else
+			client_print_color(Index, print_team_grey, LangType, LANG_PLAYER, "ROM_ADMIN_HASNT_SLOT", getString(PlugCvar[Tag]));
+		#endif
+		return false;
 	}
+	
 	strtolower(UserName);
-	#if AMXX_VERSION_NUM < 183
-		for (new i = 0; i < AdminNum; ++i)
-	#else
-		for (new i = 0; i < TrieGetSize(LoginName); ++i)
-	#endif
+#if AMXX_VERSION_NUM < 183
+	for (new i = 0; i < AdminNum; ++i)
+#else
+	for (new i = 0; i < TrieGetSize(LoginName); ++i)
+#endif
 	{
 		if ( TrieKeyExists(LoginName, UserName) )
 		{
@@ -1578,6 +1592,8 @@ getAccess(Index, UserPass[], len)
 			break;
 		}
 	}
+	
+	return true;
 }
 
 public loadAdminLogin()
@@ -2722,6 +2738,28 @@ WriteLang( bool:exist )
 			}
 		#endif
 		
+		#if AMXX_VERSION_NUM < 183
+			formatex(Line, charsmax(Line), "ROM_ADMIN_HASNT_SLOT = %L^n", LANG_SERVER, "ROM_ADMIN_HASNT_SLOT", "^%s", "^%s", "^%s" );
+			if ( contain(Line, "ML_NOTFOUND") != -1 )
+			{
+				fputs(FilePointer, "ROM_ADMIN_HASNT_SLOT = %s%s : %sNu iti poti incarca adminul daca nu ai slot.^n");
+			}
+			else
+			{
+				fputs(FilePointer, Line);
+			}
+		#else
+			formatex(Line, charsmax(Line), "ROM_ADMIN_HASNT_SLOT = %L^n", LANG_SERVER, "ROM_ADMIN_HASNT_SLOT", "^%s" );
+			if ( contain(Line, "ML_NOTFOUND") != -1 )
+			{
+				fputs(FilePointer, "ROM_ADMIN_HASNT_SLOT = ^^3%s : ^^4Nu iti poti incarca adminul daca nu ai slot.^n");
+			}
+			else
+			{
+				fputs(FilePointer, Line);
+			}
+		#endif
+		
 		formatex(Line, charsmax(Line), "ROM_ADMIN_WITHOUT_PASS_PRINT = %L^n", LANG_SERVER, "ROM_ADMIN_WITHOUT_PASS_PRINT", "^%s" );
 		if ( contain(Line, "ML_NOTFOUND") != -1 )
 		{
@@ -3274,6 +3312,12 @@ WriteLang( bool:exist )
 			fputs(FilePointer, "ROM_ADMIN_WITHOUT_PASS = %s%s : %sNu ai introdus nici o parola, comanda se scris in consola astfel : login ^"parola ta^".^n");
 		#else
 			fputs(FilePointer, "ROM_ADMIN_WITHOUT_PASS = ^^3%s : ^^4Nu ai introdus nici o parola, comanda se scris in consola astfel : login ^"parola ta^".^n");
+		#endif
+		
+		#if AMXX_VERSION_NUM < 183
+			fputs(FilePointer, "ROM_ADMIN_HASNT_SLOT = %s%s : %sNu iti poti incarca adminul daca nu ai slot.^n");
+		#else
+			fputs(FilePointer, "ROM_ADMIN_HASNT_SLOT = ^^3%s : ^^4Nu iti poti incarca adminul daca nu ai slot.^n");
 		#endif 
 		
 		fputs(FilePointer, "ROM_ADMIN_WITHOUT_PASS_PRINT = %s : Nu ai introdus nici o parola, comanda se scris in consola astfel : login ^"parola ta^".^n");
