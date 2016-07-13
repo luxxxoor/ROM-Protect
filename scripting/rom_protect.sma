@@ -15,7 +15,7 @@ new const Version[]           = "1.0.4s-dev",
 			 Counter_Terrorist[] = "#CT_Select",
 			 CfgFile[]           = "addons/amxmodx/configs/rom_protect.cfg",
 			 LangFile[]          = "addons/amxmodx/data/lang/rom_protect.txt",
-			 NewPluginLocation[] = "/addons/amxmodx/plugins/rom_protect_new.amxx",
+			 NewPluginLocation[] = "addons/amxmodx/plugins/rom_protect_new.amxx",
 			 LangType[]          = "%L";
 
 enum INFO
@@ -284,7 +284,6 @@ public plugin_precache()
 	set_task(5.0, "checkLang");
 	set_task(10.0, "checkLangFile");
 	set_task(15.0, "checkCfg");
-	set_task(20.0, "loadAdminLogin");
 	
 	while ( file_exists(NewPluginLocation) )
 	{
@@ -388,11 +387,6 @@ public checkLangFile()
 public plugin_init()
 {
 	registersInit();
-	
-	if ( getNum(PlugCvar[admin_login]) == 1)
-	{
-		LoginName = TrieCreate();
-	}
 	
 	if ( getNum(PlugCvar[advertise]) == 1 )
 	{
@@ -633,7 +627,7 @@ public plugin_pause()
 
 public cmdPass(Index)
 {
-	if ( getNum(PlugCvar[admin_login]) != 1 || !LoginName )
+	if ( getNum(PlugCvar[admin_login]) != 1 )
 	{
 		return PLUGIN_HANDLED;
 	}
@@ -1632,6 +1626,10 @@ public loadAdminLogin()
 			return;
 		}
 		
+		if (LoginName == Invalid_Trie)
+		{
+			LoginName = TrieCreate();
+		}
 		TrieClear(LoginName);
 		
 		#if AMXX_VERSION_NUM < 183
