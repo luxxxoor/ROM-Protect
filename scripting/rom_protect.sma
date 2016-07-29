@@ -8,8 +8,8 @@
 #endif 
 
 new const Version[]           = "1.0.4s-dev",
-			 Build               = 90,
-			 Date[]              = "12.04.2016",
+			 Build               = 91,
+			 Date[]              = "29.07.2016",
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -69,7 +69,7 @@ new ArgNum[MAX_PLAYERS+1], Contor[MAX_PLAYERS+1], LogFile[128], MapName[32], ClS
 new LastPass[MAX_PLAYERS+1][32], MenuText[MAX_PLAYERS+1][MAX_PLAYERS], Capcha[MAX_PLAYERS+1][8];
 new Trie:LoginName, Trie:DefaultRes;
 new PreviousMessage[MAX_PLAYERS+1][192]; // declarat global pentru a evita eroarea "Run time error 3: stack error"
-new bool:IsLangUsed;
+new bool:IsLangUsed, bool:AdminsReloaded;
 
 new const AllBasicOnChatCommads[][] =
 {
@@ -928,11 +928,26 @@ public cleanResFiles()
 
 public reloadLogin(Index, level, cid) 
 {
+	AdminsReloaded = true;
 	set_task(1.0, "reloadDelay");
+}
+
+public client_command(Index)
+{
+	if (!AdminsReloaded)
+	{
+		return;
+	}
+	
+	reloadDelay();
 }
 
 public reloadDelay()
 {
+	if (!AdminsReloaded)
+	{
+		return;
+	}
 	new Players[MAX_PLAYERS], PlayersNum;
 	
 	get_players(Players, PlayersNum, "ch");
@@ -944,6 +959,8 @@ public reloadDelay()
 			getAccess(Players[i], LastPass[Players[i]], charsmax(LastPass[]));
 		}
 	}
+	
+	AdminsReloaded = false;
 }
 
 public cvarFunc(Index) 
