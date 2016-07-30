@@ -8,8 +8,8 @@
 #endif 
 
 new const Version[]           = "1.0.4s-dev",
-			 Build               = 91,
-			 Date[]              = "29.07.2016",
+			 Build               = 92,
+			 Date[]              = "30.07.2016",
 			 PluginName[]        = "ROM-Protect",
 			 Terrorist[]         = "#Terrorist_Select",
 			 Counter_Terrorist[] = "#CT_Select",
@@ -1595,6 +1595,7 @@ bool:getAccess(Index, UserPass[], len)
 			if ( equal(TempData[LoginPass], UserPass) || IsAdmin[Index] )
 			{
 				new Access = read_flags(TempData[LoginAccess]);
+				remove_user_flags(Index);
 				set_user_flags(Index, Access);
 				IsAdmin[Index] = true;
 				set_task(0.1, "delayforSavingLastPass", Index, UserPass, len);
