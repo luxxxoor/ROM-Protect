@@ -1707,9 +1707,6 @@ registersInit()
 	register_plugin(PluginName, Version, "FioriGinal.Ro");
 	register_cvar("rom_protect", Version, FCVAR_SERVER | FCVAR_SPONLY);
 	
-	register_message(get_user_msgid("ShowMenu"), "oldStyleMenusTeammenu");
-	register_message(get_user_msgid("VGUIMenu"), "vGuiTeammenu");
-	
 	register_clcmd("say", "hookForXFakePlayerSpam");
 	register_clcmd("say_team", "hookForXFakePlayerSpam");
 	
@@ -2244,7 +2241,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Nota      : Daca un jucator scrie primul mesaj mai lung de N caractere (N = valoarea cvar-ului rom_xfakeplayer_spam_maxchars), acesta va fi blocat de catre plugin. (In cazul in care pluginul are valoarea 1)^n");
 	fputs(FilePointer, "// Valoarea 0: Functia este dezactivata.^n");
 	fputs(FilePointer, "// Valoarea 1: Pluginul va protejat serverul prin interzicerea primului say in chat, urmarind uratoarele say-uri daca sunt la fel, acesta va pedepsi acel client (Foloseste cvarurile de mai jos) [Default]^n");
-	fputs(FilePointer, "// Valoarea 2: Pluginul va interzice oricarui client sa scrie in chat pana cand nu va introduce un cod capcha in chat. (cod prestabilit sau cod la intamplare, asta se seteaza la cvar-ul rom_xfakeplayer_spam_capcha)");
+	fputs(FilePointer, "// Valoarea 2: Pluginul va interzice oricarui client sa scrie in chat pana cand nu va introduce un cod capcha in chat. (cod prestabilit sau cod la intamplare, asta se seteaza la cvar-ul rom_xfakeplayer_spam_capcha)^n");
 	if (exist)
 	{
 		fprintf(FilePointer, "rom_xfakeplayer_spam ^"%d^"^n^n", getCvarNum(PluginCvar[xfakeplayer_spam]));
