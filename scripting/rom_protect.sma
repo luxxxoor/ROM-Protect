@@ -13,8 +13,8 @@ const Menu_OFF = 0;
 const Menu_ChooseAppearance = 3;
 
 new const Version[]           = "1.0.4s-dev",
-			 Build               = 93,
-			 Date[]              = "11.08.2016",
+			 Build               = 94,
+			 Date[]              = "23.09.2016",
 			 PluginName[]        = "ROM-Protect",
 			 CfgFile[]           = "addons/amxmodx/configs/rom_protect.cfg",
 			 LangFile[]          = "addons/amxmodx/data/lang/rom_protect.txt",
@@ -323,9 +323,11 @@ public checkCfg()
 		if ( !IsCurrentVersionUsed )
 		{
 			WriteCfg(true);
-			if ( getCvarNum(PluginCvar[plug_log]) == 1 )
+			if ( getInteger(PluginCvar[plug_log]) == 1 )
 			{
-				logCommand(LangType, LANG_SERVER, "ROM_UPDATE_CFG", getString(PluginCvar[Tag]));
+				new CvarString[32];
+				getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
+				logCommand(LangType, LANG_SERVER, "ROM_UPDATE_CFG", CvarString);
 			}
 		}
 	}
@@ -366,9 +368,11 @@ public checkLang()
 		{
 			register_dictionary("rom_protect.txt");
 			IsLangUsed = true;
-			if ( getCvarNum(PluginCvar[plug_log]) == 1 )
+			if ( getInteger(PluginCvar[plug_log]) == 1 )
 			{
-				logCommand(LangType, LANG_SERVER, "ROM_UPDATE_LANG", getString(PluginCvar[Tag]));
+				new CvarString[32];
+				getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
+				logCommand(LangType, LANG_SERVER, "ROM_UPDATE_LANG", CvarString);
 			}
 			WriteLang(true);
 		}
@@ -387,12 +391,12 @@ public plugin_init()
 {
 	registersInit();
 	
-	if ( getCvarNum(PluginCvar[advertise]) == 1 )
+	if ( getInteger(PluginCvar[advertise]) == 1 )
 	{
 		set_task(getFloat(PluginCvar[advertise_time]), "showAdvertise", _, _, _, "b", 0);
 	}
 	
-	if ( getCvarNum(PluginCvar[utf8_bom]) == 1 )
+	if ( getInteger(PluginCvar[utf8_bom]) == 1 )
 	{
 		DefaultRes = TrieCreate();
 		TrieSetCell(DefaultRes, "de_storm.res", 1);
@@ -404,14 +408,16 @@ public plugin_init()
 
 public client_authorized(Index)
 {
-	if ( getCvarNum(PluginCvar[cmd_bug]) == 1 )
+	if (getInteger(PluginCvar[cmd_bug]) == 1)
 	{
 		new Name[MAX_NAME_LENGTH];
 		get_user_name(Index, Name, charsmax(Name));
 		stringFilter(Name, charsmax(Name));
 		set_user_info(Index, "name", Name);
 	}
-	if ( getCvarNum(PluginCvar[fake_players]) == 1 )
+	
+	new CvarString[32];
+	if (getInteger(PluginCvar[fake_players]) == 1)
 	{
 		if ( clientUseSteamid(Index) )
 		{
@@ -426,26 +432,27 @@ public client_authorized(Index)
 			get_user_ip(Players[i], Address2, charsmax(Address2), 1);
 			if ( equal(Address, Address2) && !is_user_bot(Index) )
 			{
-				if ( ++Counter[Index] > getCvarNum(PluginCvar[fake_players_limit]) )
+				if ( ++Counter[Index] > getInteger(PluginCvar[fake_players_limit]) )
 				{
-					switch ( getCvarNum(PluginCvar[fake_players_type]) )
+					getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
+					switch ( getInteger(PluginCvar[fake_players_type]) )
 					{
 						case 0:
 						{
 							new Limit[8];
-							num_to_str(getCvarNum(PluginCvar[fake_players_limit]), Limit, charsmax(Limit));
-							console_print(Index, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_KICK", getString(PluginCvar[Tag]), Limit);
+							num_to_str(getInteger(PluginCvar[fake_players_limit]), Limit, charsmax(Limit));
+							console_print(Index, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_KICK", CvarString, Limit);
 							server_cmd("kick #%d ^"You got kicked. Check console.^"", get_user_userid(Index));
 						}
 						case 1: 
 						{
 							new Punish[8];
-							num_to_str(getCvarNum(PluginCvar[fake_players_punish]), Punish, charsmax(Punish));
+							num_to_str(getInteger(PluginCvar[fake_players_punish]), Punish, charsmax(Punish));
 							server_cmd("addip ^"%s^" ^"%s^";wait;writeip", Punish, Address);
-							if ( getCvarNum(PluginCvar[plug_warn]) == 1 )
+							if ( getInteger(PluginCvar[plug_warn]) == 1 )
 							{
 								new CvarTag[32];
-								copy(CvarTag, charsmax(CvarTag), getString(PluginCvar[Tag]));
+								copy(CvarTag, charsmax(CvarTag), CvarString);
 								#if AMXX_VERSION_NUM < 183
 									client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS", "^3", CvarTag, "^4", Address);
 									client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", "^3", CvarTag, "^4", Punish);
@@ -454,9 +461,9 @@ public client_authorized(Index)
 									client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_FAKE_PLAYERS_PUNISH", CvarTag, Punish);
 								#endif
 							}
-							if ( getCvarNum(PluginCvar[plug_log]) == 1 )
+							if ( getInteger(PluginCvar[plug_log]) == 1 )
 							{
-								logCommand(LangType, LANG_SERVER, "ROM_FAKE_PLAYERS_LOG", getString(PluginCvar[Tag]), Address);
+								logCommand(LangType, LANG_SERVER, "ROM_FAKE_PLAYERS_LOG", CvarString, Address);
 							}
 						}
 					}
@@ -465,7 +472,7 @@ public client_authorized(Index)
 			}
 		}
 	}
-	switch ( getCvarNum(PluginCvar[xfakeplayer_spam]))
+	switch ( getInteger(PluginCvar[xfakeplayer_spam]))
 	{
 		case 1:
 		{
@@ -474,7 +481,7 @@ public client_authorized(Index)
 		}
 		case 2:
 		{
-			if ( getCvarNum(PluginCvar[xfakeplayer_spam_capcha]) == 1 )
+			if ( getInteger(PluginCvar[xfakeplayer_spam_capcha]) == 1 )
 			{
 				new const AllChars[] = 
 				{
@@ -492,7 +499,8 @@ public client_authorized(Index)
 			}
 			else
 			{
-				formatex(Capcha[Index], charsmax(Capcha[]), "%s", getString(PluginCvar[xfakeplayer_spam_capcha_word]));
+				getString(PluginCvar[xfakeplayer_spam_capcha_word], CvarString, charsmax(CvarString));
+				copy(Capcha[Index], charsmax(Capcha[]), CvarString);
 			}
 		}
 	}
@@ -505,11 +513,11 @@ public client_authorized(Index)
 	public client_disconnected(Index)
 #endif
 {
-	if ( getCvarNum(PluginCvar[fake_players]) == 1 )
+	if ( getInteger(PluginCvar[fake_players]) == 1 )
 	{
 		Counter[Index] = 0;
 	}
-	if ( getCvarNum(PluginCvar[xfakeplayer_spam]) == 1 )
+	if ( getInteger(PluginCvar[xfakeplayer_spam]) == 1 )
 	{
 		ClSaidSameTh_Count[Index] = 0;
 	}
@@ -526,7 +534,7 @@ public client_authorized(Index)
 
 public plugin_end()
 {
-	switch ( getCvarNum(PluginCvar[delete_vault]) != 0 )
+	switch ( getInteger(PluginCvar[delete_vault]) != 0 )
 	{
 		case 1:
 		{
@@ -538,7 +546,7 @@ public plugin_end()
 		}
 	}
 	
-	if ( getCvarNum(PluginCvar[delete_custom_hpk]) == 1 )
+	if ( getInteger(PluginCvar[delete_custom_hpk]) == 1 )
 	{
 		new BaseDir[] = "/", DirPointer, File[32];
 		
@@ -569,7 +577,7 @@ public client_infochanged(Index)
 		return;
 	}
 	
-	new CmdBugCvarValue = getCvarNum(PluginCvar[cmd_bug]), AdminLoginCvarValue = getCvarNum(PluginCvar[admin_login]);
+	new CmdBugCvarValue = getInteger(PluginCvar[cmd_bug]), AdminLoginCvarValue = getInteger(PluginCvar[admin_login]);
 	if ( CmdBugCvarValue == 1 || AdminLoginCvarValue == 1)
 	{
 		new NewName[MAX_NAME_LENGTH], OldName[MAX_NAME_LENGTH];
@@ -599,24 +607,23 @@ public client_infochanged(Index)
 
 public plugin_pause()
 {
-	if (getCvarNum(PluginCvar[anti_pause]) == 1)
+	if (getInteger(PluginCvar[anti_pause]) == 1)
 	{
-		new PluginName[32];
+		new PluginName[32], CvarString[32];
+		getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
 		
-		if (getCvarNum(PluginCvar[plug_warn]) == 1)
+		if (getInteger(PluginCvar[plug_warn]) == 1)
 		{
 			#if AMXX_VERSION_NUM < 183
-				client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_PLUGIN_PAUSE", "^3", getString(PluginCvar[Tag]), "^4");
+				client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_PLUGIN_PAUSE", "^3", CvarString, "^4");
 			#else
-				client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_PLUGIN_PAUSE", getString(PluginCvar[Tag]));
+				client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_PLUGIN_PAUSE", CvarString);
 			#endif
 		}
 		
-		if (getCvarNum(PluginCvar[plug_log]) == 1)
+		if (getInteger(PluginCvar[plug_log]) == 1)
 		{
-			new CvarTag[32];
-			copy(CvarTag, charsmax(CvarTag), getString(PluginCvar[Tag]));
-			logCommand(LangType, LANG_SERVER, "ROM_PLUGIN_PAUSE_LOG", CvarTag, CvarTag);
+			logCommand(LangType, LANG_SERVER, "ROM_PLUGIN_PAUSE_LOG", CvarString, CvarString);
 		}
 		
 		get_plugin(-1, PluginName, charsmax(PluginName));
@@ -626,25 +633,25 @@ public plugin_pause()
 
 public cmdPass(Index)
 {
-	if ( getCvarNum(PluginCvar[admin_login]) != 1 )
+	if ( getInteger(PluginCvar[admin_login]) != 1 )
 	{
 		return PLUGIN_HANDLED;
 	}
 
-	new Name[MAX_NAME_LENGTH], Password[32], CvarTag[32];
+	new Name[MAX_NAME_LENGTH], Password[32], CvarString[32];
 	
 	get_user_name(Index, Name, charsmax(Name));
 	read_argv(1, Password, charsmax(Password));
 	remove_quotes(Password);
-	copy(CvarTag, charsmax(CvarTag), getString(PluginCvar[Tag]));
+	getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
 	if (!Password[0])
 	{
 		#if AMXX_VERSION_NUM < 183
-			client_print_color(Index, Grey, LangType, Index, "ROM_ADMIN_WITHOUT_PASS", "^3", CvarTag, "^4");
+			client_print_color(Index, Grey, LangType, Index, "ROM_ADMIN_WITHOUT_PASS", "^3", CvarString, "^4");
 		#else
-			client_print_color(Index, print_team_grey, LangType, Index, "ROM_ADMIN_WITHOUT_PASS", CvarTag);
+			client_print_color(Index, print_team_grey, LangType, Index, "ROM_ADMIN_WITHOUT_PASS", CvarString);
 		#endif
-		console_print(Index, LangType, Index, "ROM_ADMIN_WITHOUT_PASS_PRINT", CvarTag);
+		console_print(Index, LangType, Index, "ROM_ADMIN_WITHOUT_PASS_PRINT", CvarString);
 
 		return PLUGIN_HANDLED;
 	}
@@ -662,20 +669,20 @@ public cmdPass(Index)
 		if (!CorrectName[Index])
 		{		
 			#if AMXX_VERSION_NUM < 183
-				client_print_color(Index, Grey, LangType, Index, "ROM_ADMIN_WRONG_NAME", "^3", CvarTag, "^4");
+				client_print_color(Index, Grey, LangType, Index, "ROM_ADMIN_WRONG_NAME", "^3", CvarString, "^4");
 			#else
-				client_print_color(Index, print_team_grey, LangType, Index, "ROM_ADMIN_WRONG_NAME", CvarTag);
+				client_print_color(Index, print_team_grey, LangType, Index, "ROM_ADMIN_WRONG_NAME", CvarString);
 			#endif
-			console_print(Index, LangType, Index, "ROM_ADMIN_WRONG_NAME_PRINT", CvarTag);
+			console_print(Index, LangType, Index, "ROM_ADMIN_WRONG_NAME_PRINT", CvarString);
 		}
 		else
 		{
 			#if AMXX_VERSION_NUM < 183
-				client_print_color(Index, Grey, LangType, Index, "ROM_ADMIN_WRONG_PASS", "^3", CvarTag, "^4");
+				client_print_color(Index, Grey, LangType, Index, "ROM_ADMIN_WRONG_PASS", "^3", CvarString, "^4");
 			#else
-				client_print_color(Index, print_team_grey, LangType, Index, "ROM_ADMIN_WRONG_PASS", CvarTag);
+				client_print_color(Index, print_team_grey, LangType, Index, "ROM_ADMIN_WRONG_PASS", CvarString);
 			#endif
-			console_print(Index, LangType, Index, "ROM_ADMIN_WRONG_PASS_PRINT", CvarTag);
+			console_print(Index, LangType, Index, "ROM_ADMIN_WRONG_PASS_PRINT", CvarString);
 		}
 	}
 	else
@@ -683,20 +690,20 @@ public cmdPass(Index)
 		if ( equal(LastPass[Index], Password) )
 		{
 			#if AMXX_VERSION_NUM < 183
-				client_print_color(Index, Grey, LangType, Index, "ROM_ADMIN_ALREADY_LOADED", "^3", CvarTag, "^4");
+				client_print_color(Index, Grey, LangType, Index, "ROM_ADMIN_ALREADY_LOADED", "^3", CvarString, "^4");
 			#else
-				client_print_color(Index, print_team_grey, LangType, Index, "ROM_ADMIN_ALREADY_LOADED", CvarTag);
+				client_print_color(Index, print_team_grey, LangType, Index, "ROM_ADMIN_ALREADY_LOADED", CvarString);
 			#endif
-			console_print(Index, LangType, Index, "ROM_ADMIN_ALREADY_LOADED_PRINT", CvarTag);
+			console_print(Index, LangType, Index, "ROM_ADMIN_ALREADY_LOADED_PRINT", CvarString);
 		}
 		else
 		{
 			#if AMXX_VERSION_NUM < 183
-				client_print_color(Index, Grey, LangType, Index, "ROM_ADMIN_LOADED", "^3", CvarTag, "^4");
+				client_print_color(Index, Grey, LangType, Index, "ROM_ADMIN_LOADED", "^3", CvarString, "^4");
 			#else
-				client_print_color(Index, print_team_grey, LangType, Index, "ROM_ADMIN_LOADED", CvarTag);
+				client_print_color(Index, print_team_grey, LangType, Index, "ROM_ADMIN_LOADED", CvarString);
 			#endif
-			console_print(Index, LangType, Index, "ROM_ADMIN_LOADED_PRINT", CvarTag);
+			console_print(Index, LangType, Index, "ROM_ADMIN_LOADED_PRINT", CvarString);
 
 			IsAdmin[Index] = true;
 		}
@@ -719,7 +726,7 @@ public cmdPass(Index)
 
 		new Float:maxChat = get_pcvar_float(PluginCvar[admin_chat_flood_time]);
 
-		if (maxChat && getCvarNum(PluginCvar[admin_chat_flood]) == 1)
+		if (maxChat && getInteger(PluginCvar[admin_chat_flood]) == 1)
 		{
 			new Float:NexTime = get_gametime();
 
@@ -754,14 +761,16 @@ public cmdPass(Index)
 	{
 		if ( IsFlooding[Index] )
 		{
-			if ( getCvarNum(PluginCvar[plug_warn]) == 1 )
+			new CvarString[32];
+			getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
+			if ( getInteger(PluginCvar[plug_warn]) == 1 )
 			{
-				client_print_color(Index, Grey, LangType, Index, "ROM_ADMIN_CHAT_FLOOD", "^3", getString(PluginCvar[Tag]), "^4");
+				client_print_color(Index, Grey, LangType, Index, "ROM_ADMIN_CHAT_FLOOD", "^3", CvarString, "^4");
 			}
 			
-			if ( getCvarNum(PluginCvar[plug_log]) == 1 )
+			if ( getInteger(PluginCvar[plug_log]) == 1 )
 			{
-				logCommand(LangType, LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD_LOG", getString(PluginCvar[Tag]), getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+				logCommand(LangType, LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
 			}
 			
 			IsFlooding[Index] = false;
@@ -771,10 +780,13 @@ public cmdPass(Index)
 
 public showAdvertise()
 {
+	new CvarString[32];
+	getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
+	
 	#if AMXX_VERSION_NUM < 183
-		client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_ADVERTISE", "^3", getString(PluginCvar[Tag]), "^4", "^3", PluginName, "^4", "^3", Version, "^4");
+		client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_ADVERTISE", "^3", CvarString, "^4", "^3", PluginName, "^4", "^3", Version, "^4");
 	#else
-		client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_ADVERTISE", getString(PluginCvar[Tag]), PluginName, Version);
+		client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_ADVERTISE", CvarString, PluginName, Version);
 	#endif
 }
 
@@ -821,7 +833,7 @@ public reloadLogin(Index, level, cid)
 
 public client_command(Index)
 {
-	if (getCvarNum(PluginCvar[spec_bug]) == 1)
+	if (getInteger(PluginCvar[spec_bug]) == 1)
 	{	
 		new Command[15];
 		read_argv(0, Command, charsmax(Command));
@@ -872,45 +884,47 @@ public cvarFunc(Index)
 		return PLUGIN_CONTINUE;
 	}
 		
-	if ( getCvarNum(PluginCvar[motdfile]) == 1 )
+	if ( getInteger(PluginCvar[motdfile]) == 1 )
 	{
-		new Cvar[32], Value[32]; 
+		new Cvar[32], Value[32], CvarString[32];
+		getString(PluginCvar[Tag], CvarString, charsmax(CvarString)); 
 		
 		read_argv(1, Cvar, charsmax(Cvar));
 		read_argv(2, Value, charsmax(Value));
 		
 		if ( equali(Cvar, "motdfile") && contain(Value, ".ini") != -1 ) 
 		{
-			if ( getCvarNum(PluginCvar[plug_warn]) == 1 )
+			if ( getInteger(PluginCvar[plug_warn]) == 1 )
 			{
-				console_print(Index, LangType, Index, "ROM_MOTDFILE", getString(PluginCvar[Tag]));
+				console_print(Index, LangType, Index, "ROM_MOTDFILE", CvarString);
 			}
 			
-			if ( getCvarNum(PluginCvar[plug_log]) == 1 )
+			if ( getInteger(PluginCvar[plug_log]) == 1 )
 			{
-				logCommand(LangType, LANG_SERVER, "ROM_MOTDFILE_LOG", getString(PluginCvar[Tag]), getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+				logCommand(LangType, LANG_SERVER, "ROM_MOTDFILE_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
 			}
 			
 			return PLUGIN_HANDLED; 
 		}
 	}
 	
-	if ( getCvarNum(PluginCvar[protcvars]) == 1 )
+	if ( getInteger(PluginCvar[protcvars]) == 1 )
 	{
-		new Command[32]; 
+		new Command[32], CvarString[32];
+		getString(PluginCvar[Tag], CvarString, charsmax(CvarString)); 
 		
 		read_argv(1, Command, charsmax(Command));
 		
 		if ( containi(Command, "rom_") != -1 )
 		{
-			if ( getCvarNum(PluginCvar[plug_warn]) == 1 )
+			if ( getInteger(PluginCvar[plug_warn]) == 1 )
 			{
-				console_print(Index, LangType, Index, "ROM_PROTCVARS", getString(PluginCvar[Tag]));
+				console_print(Index, LangType, Index, "ROM_PROTCVARS", CvarString);
 			}
 			
-			if ( getCvarNum(PluginCvar[plug_log]) == 1 )
+			if ( getInteger(PluginCvar[plug_log]) == 1 )
 			{
-				logCommand(LangType, LANG_SERVER, "ROM_PROTCVARS_LOG", getString(PluginCvar[Tag]), getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+				logCommand(LangType, LANG_SERVER, "ROM_PROTCVARS_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
 			}
 			
 			return PLUGIN_HANDLED; 
@@ -927,44 +941,46 @@ public rconFunc(Index)
 		return PLUGIN_CONTINUE;
 	}
 	
-	if ( getCvarNum(PluginCvar[motdfile]) == 1 )
+	if ( getInteger(PluginCvar[motdfile]) == 1 )
 	{
-		new Command[32]; 
+		new Command[32], CvarString[32];
+		getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
 		
 		read_args(Command, charsmax(Command));
 		
 		if ( containi(Command, "motdfile") && contain(Command, ".ini") != -1 ) 
 		{
-			if ( getCvarNum(PluginCvar[plug_warn]) == 1 )
+			if ( getInteger(PluginCvar[plug_warn]) == 1 )
 			{
-				console_print(Index, LangType, Index, "ROM_MOTDFILE", getString(PluginCvar[Tag]));
+				console_print(Index, LangType, Index, "ROM_MOTDFILE", CvarString);
 			}
 			
-			if ( getCvarNum(PluginCvar[plug_log]) == 1 )
+			if ( getInteger(PluginCvar[plug_log]) == 1 )
 			{
-				logCommand(LangType, LANG_SERVER, "ROM_MOTDFILE_LOG", getString(PluginCvar[Tag]), getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+				logCommand(LangType, LANG_SERVER, "ROM_MOTDFILE_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
 			}
 			
 			return PLUGIN_HANDLED; 
 		}
 	}
 	
-	if ( getCvarNum(PluginCvar[protcvars]) == 1 )
+	if ( getInteger(PluginCvar[protcvars]) == 1 )
 	{
-		new Command[32]; 
+		new Command[32], CvarString[32];
+		getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
 		
 		read_args(Command, charsmax(Command));
 		
 		if ( !equali(Command, "rom_info") && containi(Command, "rom_") != -1 )
 		{
-			if ( getCvarNum(PluginCvar[plug_warn]) == 1 )
+			if ( getInteger(PluginCvar[plug_warn]) == 1 )
 			{
-				console_print(Index, LangType, Index, "ROM_PROTCVARS", getString(PluginCvar[Tag]));
+				console_print(Index, LangType, Index, "ROM_PROTCVARS", CvarString);
 			}
 			
-			if ( getCvarNum(PluginCvar[plug_log]) == 1 )
+			if ( getInteger(PluginCvar[plug_log]) == 1 )
 			{
-				logCommand(LangType, LANG_SERVER, "ROM_PROTCVARS_LOG", getString(PluginCvar[Tag]), getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+				logCommand(LangType, LANG_SERVER, "ROM_PROTCVARS_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
 			}
 			
 			return PLUGIN_HANDLED; 
@@ -981,7 +997,7 @@ public hookBanClassCommand(Index)
 		return PLUGIN_CONTINUE;
 	}
 	
-	new Value = getCvarNum(PluginCvar[anti_ban_class]);
+	new Value = getInteger(PluginCvar[anti_ban_class]);
 	
 	if ( Value > 0 )
 	{
@@ -999,7 +1015,7 @@ public hookBanClassCommand(Index)
 			split(Ip, IpNum[i], charsmax(IpNum[]), Ip, charsmax(Ip), ".");
 		}
 		
-		Value = getCvarNum(PluginCvar[anti_ban_class]);
+		Value = getInteger(PluginCvar[anti_ban_class]);
 		
 		if ( Value > 4 )
 		{
@@ -1008,20 +1024,23 @@ public hookBanClassCommand(Index)
 			
 		num_to_str(Value, NumStr, charsmax(NumStr));
 		
+		new CvarString[32];
+		getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
+		
 		switch (Value)
 		{
 			case 1:
 			{
 				if ( str_to_num(IpNum[0]) == 0 || str_to_num(IpNum[1]) == 0 || str_to_num(IpNum[2]) == 0 )
 				{
-					if (getCvarNum(PluginCvar[plug_warn]) == 1)
+					if (getInteger(PluginCvar[plug_warn]) == 1)
 					{
-						console_print(Index, LangType, Index, "ROM_ANTI_BAN_CLASS", getString(PluginCvar[Tag]));
+						console_print(Index, LangType, Index, "ROM_ANTI_BAN_CLASS", CvarString);
 					}
 					
-					if (getCvarNum(PluginCvar[plug_log]) == 1)
+					if (getInteger(PluginCvar[plug_log]) == 1)
 					{
-						logCommand(LangType, LANG_SERVER, "ROM_ANTI_ANY_BAN_CLASS_LOG", getString(PluginCvar[Tag]), getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+						logCommand(LangType, LANG_SERVER, "ROM_ANTI_ANY_BAN_CLASS_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
 					}
 					
 					return PLUGIN_HANDLED;
@@ -1031,14 +1050,14 @@ public hookBanClassCommand(Index)
 			{
 				if ( str_to_num(IpNum[0]) == 0 || str_to_num(IpNum[1]) == 0 )
 				{
-					if (getCvarNum(PluginCvar[plug_warn]) == 1)
+					if (getInteger(PluginCvar[plug_warn]) == 1)
 					{
-						console_print(Index, LangType, Index, "ROM_ANTI_BAN_CLASS", getString(PluginCvar[Tag]));
+						console_print(Index, LangType, Index, "ROM_ANTI_BAN_CLASS", CvarString);
 					}
 					
-					if (getCvarNum(PluginCvar[plug_log]) == 1)
+					if (getInteger(PluginCvar[plug_log]) == 1)
 					{
-						logCommand(LangType, LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", getString(PluginCvar[Tag]), getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP), NumStr);
+						logCommand(LangType, LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP), NumStr);
 					}
 					
 					return PLUGIN_HANDLED;
@@ -1048,14 +1067,14 @@ public hookBanClassCommand(Index)
 			{
 				if ( str_to_num(IpNum[0]) == 0 )
 				{
-					if (getCvarNum(PluginCvar[plug_warn]) == 1)
+					if (getInteger(PluginCvar[plug_warn]) == 1)
 					{
-						console_print(Index, LangType, Index, "ROM_ANTI_BAN_CLASS", getString(PluginCvar[Tag]));
+						console_print(Index, LangType, Index, "ROM_ANTI_BAN_CLASS", CvarString);
 					}
 					
-					if (getCvarNum(PluginCvar[plug_log]) == 1)
+					if (getInteger(PluginCvar[plug_log]) == 1)
 					{
-						logCommand(LangType, LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", getString(PluginCvar[Tag]), getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP), NumStr);
+						logCommand(LangType, LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP), NumStr);
 					}
 					
 					return PLUGIN_HANDLED;
@@ -1063,14 +1082,14 @@ public hookBanClassCommand(Index)
 			}
 			default:
 			{
-				if (getCvarNum(PluginCvar[plug_warn]) == 1)
+				if (getInteger(PluginCvar[plug_warn]) == 1)
 				{
-					console_print(Index, LangType, Index, "ROM_ANTI_BAN_CLASS", getString(PluginCvar[Tag]));
+					console_print(Index, LangType, Index, "ROM_ANTI_BAN_CLASS", CvarString);
 				}
 				
-				if (getCvarNum(PluginCvar[plug_log]) == 1)
+				if (getInteger(PluginCvar[plug_log]) == 1)
 				{
-					logCommand(LangType, LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", getString(PluginCvar[Tag]), getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP), NumStr);
+					logCommand(LangType, LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP), NumStr);
 				}
 				
 				return PLUGIN_HANDLED;
@@ -1083,7 +1102,7 @@ public hookBanClassCommand(Index)
 
 public hookBasicOnChatCommand(Index)
 {
-	new ColorBugCvarValue = getCvarNum(PluginCvar[color_bug]), CmdBugCvarValue = getCvarNum(PluginCvar[cmd_bug]);
+	new ColorBugCvarValue = getInteger(PluginCvar[color_bug]), CmdBugCvarValue = getInteger(PluginCvar[cmd_bug]);
 	if ( CmdBugCvarValue == 1 || ColorBugCvarValue == 1 )
 	{
 		new Said[192], bool:IsUsedCmdBug[MAX_PLAYERS+1], bool:IsUsedColorBug[MAX_PLAYERS+1];
@@ -1106,13 +1125,14 @@ public hookBasicOnChatCommand(Index)
 				}
 			}
 		}
-		new WarnCvarValue = getCvarNum(PluginCvar[plug_warn]), LogCvarValue = getCvarNum(PluginCvar[plug_log]);
+		new WarnCvarValue = getInteger(PluginCvar[plug_warn]), LogCvarValue = getInteger(PluginCvar[plug_log]), CvarString[32];
+		getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
 		if ( IsUsedCmdBug[Index] )
 		{
 			if ( WarnCvarValue == 1 )
 			{
 				new CvarTag[32];
-				copy(CvarTag, charsmax(CvarTag), getString(PluginCvar[Tag]));
+				copy(CvarTag, charsmax(CvarTag), CvarString);
 				
 				#if AMXX_VERSION_NUM < 183
 					client_print_color( Index, Grey, LangType, Index, "ROM_CMD_BUG", "^3", CvarTag, "^4");
@@ -1123,7 +1143,7 @@ public hookBasicOnChatCommand(Index)
 			}
 			if ( LogCvarValue == 1 )
 			{
-				logCommand(LangType, LANG_SERVER, "ROM_CMD_BUG_LOG", getString(PluginCvar[Tag]), getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+				logCommand(LangType, LANG_SERVER, "ROM_CMD_BUG_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
 			}
 			IsUsedCmdBug[Index] = false;
 			return PLUGIN_HANDLED;
@@ -1133,14 +1153,14 @@ public hookBasicOnChatCommand(Index)
 			if ( WarnCvarValue == 1 )
 			{
 				#if AMXX_VERSION_NUM < 183
-					client_print_color( Index, Grey, LangType, Index, "ROM_COLOR_BUG", "^3", getString(PluginCvar[Tag]), "^4");
+					client_print_color( Index, Grey, LangType, Index, "ROM_COLOR_BUG", "^3", CvarString, "^4");
 				#else
-					client_print_color( Index, print_team_grey, LangType, Index, "ROM_COLOR_BUG", getString(PluginCvar[Tag]) );
+					client_print_color( Index, print_team_grey, LangType, Index, "ROM_COLOR_BUG", CvarString );
 				#endif
 			}
 			if ( LogCvarValue == 1 )
 			{
-				logCommand(LangType, LANG_SERVER, "ROM_COLOR_BUG_LOG", getString(PluginCvar[Tag]), getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+				logCommand(LangType, LANG_SERVER, "ROM_COLOR_BUG_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
 			}
 			IsUsedColorBug[Index] = false;
 			return PLUGIN_HANDLED;
@@ -1153,12 +1173,14 @@ public checkBot(Index, const Var[], const Value[])
 {
     if ( equal(Var, "fps_max") && Value[0] == 'B' )
     {
-		if ( getCvarNum(PluginCvar[plug_log]) == 1 )
+		new CvarString[32];
+		getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
+		if ( getInteger(PluginCvar[plug_log]) == 1 )
 		{
-			logCommand(LangType, LANG_SERVER, "ROM_FAKE_PLAYERS_DETECT_LOG", getString(PluginCvar[Tag]), getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+			logCommand(LangType, LANG_SERVER, "ROM_FAKE_PLAYERS_DETECT_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
 		}
 		
-		console_print(Index, LangType, Index, "ROM_FAKE_PLAYERS_DETECT", getString(PluginCvar[Tag]));
+		console_print(Index, LangType, Index, "ROM_FAKE_PLAYERS_DETECT", CvarString);
 		server_cmd("kick #%d ^"You got kicked. Check console.^"", get_user_userid(Index));
     }
 }
@@ -1171,22 +1193,24 @@ public CheckAutobuyBug(Index)
 	for (new i = 1; i <= Count; ++i)
 	{		
 		read_argv(i, Command, charsmax(Command));
-		if ( getCvarNum(PluginCvar[autobuy_bug]) == 1 )
+		if ( getInteger(PluginCvar[autobuy_bug]) == 1 )
 		{
+			new CvarString[32];
+			getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
 			if ( checkLong(Command, charsmax(Command)) )
 			{		
-				if ( getCvarNum(PluginCvar[plug_warn]) == 1 )
+				if ( getInteger(PluginCvar[plug_warn]) == 1 )
 				{		
 					#if AMXX_VERSION_NUM < 183		
-						client_print_color( Index, Grey, LangType, Index, "ROM_AUTOBUY", "^3", getString(PluginCvar[Tag]), "^4");		
+						client_print_color( Index, Grey, LangType, Index, "ROM_AUTOBUY", "^3", CvarString, "^4");		
 					#else		
-						client_print_color( Index, print_team_grey, LangType, Index, "ROM_AUTOBUY", getString(PluginCvar[Tag]));
+						client_print_color( Index, print_team_grey, LangType, Index, "ROM_AUTOBUY", CvarString);
 					#endif		
 				}
 			
-				if ( getCvarNum( PluginCvar[plug_log] ) == 1 )
+				if ( getInteger( PluginCvar[plug_log] ) == 1 )
 				{
-					logCommand(LangType, LANG_SERVER, "ROM_AUTOBUY_LOG", getString(PluginCvar[Tag]), getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+					logCommand(LangType, LANG_SERVER, "ROM_AUTOBUY_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
 				}
 			
 				return PLUGIN_HANDLED;		
@@ -1199,7 +1223,7 @@ public CheckAutobuyBug(Index)
 
 /*public updatePlugin()
 {
-	if ( getCvarNum(PluginCvar[auto_update]) == 0 )
+	if ( getInteger(PluginCvar[auto_update]) == 0 )
 	{
 		return;
 	}
@@ -1208,7 +1232,7 @@ public CheckAutobuyBug(Index)
 		delete_file(NewPluginLocation);
 	}
 	#if AMXX_VERSION_NUM >= 182
-		if ( getCvarNum(PluginCvar[dev_update]) == 1 )
+		if ( getInteger(PluginCvar[dev_update]) == 1 )
 		{
 			#if AMXX_VERSION_NUM == 183
 				HTTP2_Download("http://www.romprotect.allalla.com/rom_protect_dev183.amxx", NewPluginLocation, "downloadComplete");
@@ -1235,28 +1259,29 @@ public CheckAutobuyBug(Index)
 
 public downloadComplete(Index, Error) 
 {
-	new PluginLocation[64];
+	new PluginLocation[64], CvarString[32];
 	get_plugin(-1, PluginLocation, charsmax(PluginLocation));
 	format(PluginLocation, charsmax(PluginLocation), "/addons/amxmodx/plugins/%s", PluginLocation);
+	getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
 	if ( Error == 0 && file_size(NewPluginLocation) > 40000 ) 
 	{
 		if ( file_size(PluginLocation) != file_size(NewPluginLocation) )
 		{
-			logCommand(LangType, LANG_SERVER, "ROM_AUTO_UPDATE_SUCCEED", getString(PluginCvar[Tag]));
+			logCommand(LangType, LANG_SERVER, "ROM_AUTO_UPDATE_SUCCEED", CvarString);
 		}
 		delete_file(PluginLocation);
 		rename_file(NewPluginLocation, PluginLocation, 1);
 	}
 	else
 	{
-		logCommand(LangType, LANG_SERVER, "ROM_AUTO_UPDATE_FAILED", getString(PluginCvar[Tag]));
+		logCommand(LangType, LANG_SERVER, "ROM_AUTO_UPDATE_FAILED", CvarString);
 		delete_file(NewPluginLocation);
 	}
 }*/
 
 public giveClientInfo(Index)
 {
-	if ( getCvarNum(PluginCvar[info]) != 1 )
+	if ( getInteger(PluginCvar[info]) != 1 )
 	{
 		return PLUGIN_HANDLED;
 	}
@@ -1275,7 +1300,7 @@ public giveClientInfo(Index)
 
 public giveServerInfo(Index)
 {
-	if ( getCvarNum(PluginCvar[info]) != 1 )
+	if ( getInteger(PluginCvar[info]) != 1 )
 	{
 		return PLUGIN_HANDLED;
 	}
@@ -1295,7 +1320,7 @@ public giveServerInfo(Index)
 
 public hookForXFakePlayerSpam(Index)
 {
-	new xFakePlayerCvarValue = getCvarNum(PluginCvar[xfakeplayer_spam]);
+	new xFakePlayerCvarValue = getInteger(PluginCvar[xfakeplayer_spam]), CvarString[32];
 	if ( is_user_admin(Index) )
 	{
 		if ( FirstMsg[Index] && xFakePlayerCvarValue == 1 )
@@ -1304,6 +1329,7 @@ public hookForXFakePlayerSpam(Index)
 		}
 		return PLUGIN_CONTINUE;
 	}
+	getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
 	switch( xFakePlayerCvarValue )
 	{
 		case 1 :
@@ -1316,7 +1342,7 @@ public hookForXFakePlayerSpam(Index)
 			new ClSaid[192];
 			read_args(ClSaid, charsmax(ClSaid));
 	
-			if ( strlen(ClSaid) <= getCvarNum(PluginCvar[xfakeplayer_spam_maxchars])+1 )
+			if ( strlen(ClSaid) <= getInteger(PluginCvar[xfakeplayer_spam_maxchars])+1 )
 			{	
 				if ( FirstMsg[Index] )
 				{
@@ -1339,36 +1365,36 @@ public hookForXFakePlayerSpam(Index)
 			{
 				if ( equal(ClSaid, PreviousMessage[Index]) )
 				{
-					if ( getCvarNum(PluginCvar[plug_warn]) == 1 )
+					if ( getInteger(PluginCvar[plug_warn]) == 1 )
 					{
 						#if AMXX_VERSION_NUM < 183
-							client_print_color(Index, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_WARN", "^3", getString(PluginCvar[Tag]), "^4");
+							client_print_color(Index, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_WARN", "^3", CvarString, "^4");
 						#else
-							client_print_color(Index, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_WARN", getString(PluginCvar[Tag]));
+							client_print_color(Index, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_WARN", CvarString);
 						#endif
 					}		
 			
-					if ( ClSaidSameTh_Count[Index] >= getCvarNum(PluginCvar[xfakeplayer_spam_maxsais]) )
+					if ( ClSaidSameTh_Count[Index] >= getInteger(PluginCvar[xfakeplayer_spam_maxsais]) )
 					{
 						new Address[32];
 						get_user_ip(Index, Address, charsmax(Address), 1);
-						switch ( getCvarNum(PluginCvar[xfakeplayer_spam_type]) )
+						switch ( getInteger(PluginCvar[xfakeplayer_spam_type]) )
 						{
 							case 0 :
 							{
 								#if AMXX_VERSION_NUM < 183
-									client_print_color(Index, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_GAG", "^3", getString(PluginCvar[Tag]), "^4");
+									client_print_color(Index, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_GAG", "^3", CvarString, "^4");
 								#else
-									client_print_color(Index, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_GAG", getString(PluginCvar[Tag]));
+									client_print_color(Index, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_GAG", CvarString);
 								#endif
 								Gag[Index] = true;
 								return PLUGIN_HANDLED; 
 							}
 							case 1 :
 							{
-								if ( getCvarNum(PluginCvar[plug_warn]) == 1 )
+								if ( getInteger(PluginCvar[plug_warn]) == 1 )
 								{
-									console_print(Index, LangType, Index, "ROM_XFAKE_PLAYERS_SPAM_KICK", getString(PluginCvar[Tag]));
+									console_print(Index, LangType, Index, "ROM_XFAKE_PLAYERS_SPAM_KICK", CvarString);
 									server_cmd("kick #%d ^"You got kicked. Check console.^"", get_user_userid(Index));
 								}
 								else
@@ -1380,12 +1406,12 @@ public hookForXFakePlayerSpam(Index)
 							{
 								new Punish[8];
 					
-								num_to_str(getCvarNum(PluginCvar[xfakeplayer_spam_punish]), Punish, charsmax(Punish));
+								num_to_str(getInteger(PluginCvar[xfakeplayer_spam_punish]), Punish, charsmax(Punish));
 		
-								if ( getCvarNum(PluginCvar[plug_warn]) == 1 )
+								if ( getInteger(PluginCvar[plug_warn]) == 1 )
 								{
 									new CvarTag[32];
-									copy(CvarTag, charsmax(CvarTag), getString(PluginCvar[Tag]));
+									copy(CvarTag, charsmax(CvarTag), CvarString);
 							
 									#if AMXX_VERSION_NUM < 183
 										client_print_color(0, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM", "^3", CvarTag, "^4", Address);
@@ -1395,16 +1421,16 @@ public hookForXFakePlayerSpam(Index)
 										client_print_color(0, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_SPAM_PUNISH", CvarTag, Punish);
 									#endif
 					
-									console_print(Index, LangType, Index, "ROM_XFAKE_PLAYERS_SPAM_BAN", getString(PluginCvar[Tag]), Punish);
+									console_print(Index, LangType, Index, "ROM_XFAKE_PLAYERS_SPAM_BAN", CvarString, Punish);
 								}
 						
 								server_cmd("addip ^"%s^" ^"%s^";wait;writeip", Punish, Address);
 							}
 						}
 				
-						if ( getCvarNum(PluginCvar[plug_log]) == 1 )
+						if ( getInteger(PluginCvar[plug_log]) == 1 )
 						{
-							logCommand(LangType, LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_LOG", getString(PluginCvar[Tag]), Address);
+							logCommand(LangType, LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_LOG", CvarString, Address);
 						}
 					}
 				
@@ -1423,22 +1449,22 @@ public hookForXFakePlayerSpam(Index)
 			remove_quotes(ClSaid);
 			if ( !UnBlockedChat[Index] )
 			{
-				if ( equal(ClSaid, Capcha[Index]) )
+				if (equal(ClSaid, Capcha[Index]))
 				{
 					UnBlockedChat[Index] = true;
 					#if AMXX_VERSION_NUM < 183
-						client_print_color(Index, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_ALLOW_USE_CHAT", "^3", getString(PluginCvar[Tag]), "^4");
+						client_print_color(Index, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_ALLOW_USE_CHAT", "^3", CvarString, "^4");
 					#else
-						client_print_color(Index, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_ALLOW_USE_CHAT", getString(PluginCvar[Tag]));
+						client_print_color(Index, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_ALLOW_USE_CHAT", CvarString);
 					#endif
 					return PLUGIN_HANDLED;
 				}
 				else
 				{	
 					#if AMXX_VERSION_NUM < 183
-						client_print_color(Index, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_CAPCHA", "^3", getString(PluginCvar[Tag]), "^4", "^3", Capcha[Index], "^4");
+						client_print_color(Index, Grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_CAPCHA", "^3", CvarString, "^4", "^3", Capcha[Index], "^4");
 					#else
-						client_print_color(Index, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_CAPCHA", getString(PluginCvar[Tag]), Capcha[Index]);
+						client_print_color(Index, print_team_grey, LangType, LANG_PLAYER, "ROM_XFAKE_PLAYERS_CAPCHA", CvarString, Capcha[Index]);
 					#endif
 					return PLUGIN_HANDLED;
 				}
@@ -1459,16 +1485,17 @@ public delayforSavingLastPass(UserPass[], Index)
 
 bool:getAccess(Index, UserPass[], len)
 {
-	new UserName[MAX_NAME_LENGTH];
+	new UserName[MAX_NAME_LENGTH], CvarString[32];
 
 	get_user_name(Index, UserName, charsmax(UserName));
 	
-	if ( !(get_user_flags(Index) & ADMIN_RESERVATION) )
+	if (!(get_user_flags(Index) & ADMIN_RESERVATION))
 	{
+		getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
 		#if AMXX_VERSION_NUM < 183
-			client_print_color(Index, Grey, LangType, LANG_PLAYER, "ROM_ADMIN_HASNT_SLOT", "^3", getString(PluginCvar[Tag]), "^4");
+			client_print_color(Index, Grey, LangType, LANG_PLAYER, "ROM_ADMIN_HASNT_SLOT", "^3", CvarString, "^4");
 		#else
-			client_print_color(Index, print_team_grey, LangType, LANG_PLAYER, "ROM_ADMIN_HASNT_SLOT", getString(PluginCvar[Tag]));
+			client_print_color(Index, print_team_grey, LangType, LANG_PLAYER, "ROM_ADMIN_HASNT_SLOT", CvarString);
 		#endif
 		return false;
 	}
@@ -1512,10 +1539,11 @@ bool:getAccess(Index, UserPass[], len)
 
 public loadAdminLogin()
 {
-	new Path[64];
+	new Path[64], CvarString[32];
 	
 	get_localinfo("amxx_configsdir", Path, charsmax(Path));
-	format(Path, charsmax(Path), "%s/%s", Path, getString(PluginCvar[admin_login_file]));
+	getString(PluginCvar[admin_login_file], CvarString, charsmax(CvarString));
+	format(Path, charsmax(Path), "%s/%s", Path, CvarString);
 	
 	if ( !file_exists(Path) )
 	{
@@ -1526,9 +1554,10 @@ public loadAdminLogin()
 			return;
 		}
 		
-		if ( getCvarNum(PluginCvar[plug_log]) == 1 )
+		if ( getInteger(PluginCvar[plug_log]) == 1 )
 		{
-			logCommand( LangType, LANG_SERVER, "ROM_FILE_NOT_FOUND", getString(PluginCvar[Tag]), Path);
+			getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
+			logCommand(LangType, LANG_SERVER, "ROM_FILE_NOT_FOUND", CvarString, Path);
 		}
 		
 		fputs(FilePointer, "; Aici vor fi inregistrate adminele protejate.^n");
@@ -1538,8 +1567,7 @@ public loadAdminLogin()
 	}
 	else
 	{
-		new Text[121], Name[MAX_NAME_LENGTH], Password[32], Access[26], Flags[6],
-			FilePointer = fopen(Path, "rt");
+		new FilePointer = fopen(Path, "rt");
 		
 		if ( !FilePointer ) 
 		{
@@ -1556,6 +1584,8 @@ public loadAdminLogin()
 			AdminNum = 0;
 		#endif
 		
+		new Text[121], Name[MAX_NAME_LENGTH], Password[32], Access[26], Flags[6], TempData[AdminLogin];
+		
 		while (!feof(FilePointer))
 		{
 			fgets(FilePointer, Text, charsmax(Text));
@@ -1567,23 +1597,20 @@ public loadAdminLogin()
 				continue;
 			}
 		
-			if (parse(Text, Name, charsmax(Name), Password, charsmax(Password), Access, charsmax(Access), Flags, charsmax(Flags)) != 4)
+			if (parse(Text, Name, charsmax(Name), TempData[LoginPass], charsmax(TempData[LoginPass]), 
+							TempData[LoginAccess], charsmax(TempData[LoginAccess]), TempData[LoginFlag], charsmax(TempData[LoginFlag])) != 4)
 			{
 				continue;
 			}
 		
-			new TempData[AdminLogin];
 			strtolower(Name);
-			copy(TempData[LoginPass], charsmax(TempData[LoginPass]), Password);
-			copy(TempData[LoginAccess], charsmax(TempData[LoginAccess]), Access);
-			copy(TempData[LoginFlag], charsmax(TempData[LoginFlag]), Flags);
 			TrieSetArray(LoginName, Name, TempData, charsmax(TempData));
 		
 			#if AMXX_VERSION_NUM < 183
 				++AdminNum;
 			#endif
 		
-			if (getCvarNum(PluginCvar[admin_login_debug]) == 1)
+			if (getInteger(PluginCvar[admin_login_debug]) == 1)
 			{
 				server_print(LangType, LANG_SERVER, "ROM_ADMIN_DEBUG", Name, Password, Access, Flags);
 			}
@@ -1645,27 +1672,19 @@ getInfo(Index, INFO:Type)
 	return Server; // Un return care nu se va apela niciodata, insa compilatorul nu va mai primi warning.
 }
 
-getString(Cvar)
+getString(Cvar, Buffer[], Len)
 {
-	new CvarString[32]; 
-	get_pcvar_string(Cvar, CvarString, charsmax(CvarString));
-	
-	return CvarString;
+	get_pcvar_string(Cvar, Buffer, Len);
 }
 
-getCvarNum(Cvar)
+getInteger(Cvar)
 {
-	new CvarNum;
-	CvarNum = get_pcvar_num(Cvar);
-	
-	return CvarNum;
+	return get_pcvar_num(Cvar);
 }
 
 Float:getFloat(Cvar)
-{
-	new Float:CvarFloat = get_pcvar_float(Cvar);
-	
-	return CvarFloat;
+{	
+	return get_pcvar_float(Cvar);
 } 
 
 registersPrecache()
@@ -1811,7 +1830,7 @@ getVaultDir()
 
 WriteCfg( bool:exist )
 {	
-	new FilePointer = fopen(CfgFile, "wt");
+	new FilePointer = fopen(CfgFile, "wt"), CvarString[32];
 	
 	if ( !FilePointer ) 
 	{
@@ -1835,7 +1854,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Atacul este blocat. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_cmd_bug ^"%d^"^n^n", getCvarNum(PluginCvar[cmd_bug]));
+		fprintf(FilePointer, "rom_cmd_bug ^"%d^"^n^n", getInteger(PluginCvar[cmd_bug]));
 	}
 	else
 	{
@@ -1850,7 +1869,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Atacul este blocat. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_spec_bug ^"%d^"^n^n", getCvarNum(PluginCvar[spec_bug]));
+		fprintf(FilePointer, "rom_spec_bug ^"%d^"^n^n", getInteger(PluginCvar[spec_bug]));
 	}
 	else
 	{
@@ -1866,7 +1885,7 @@ WriteCfg( bool:exist )
 		fputs(FilePointer, "// Valoarea 1: Atacul este blocat. [Default]^n");
 		if (exist)
 		{
-			fprintf(FilePointer, "rom_admin_chat_flood ^"%d^"^n", getCvarNum(PluginCvar[admin_chat_flood]));
+			fprintf(FilePointer, "rom_admin_chat_flood ^"%d^"^n", getInteger(PluginCvar[admin_chat_flood]));
 		}
 		else
 		{
@@ -1894,7 +1913,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Atacul este blocat. [Default]^n");		
 	if (exist)		
 	{		
-		fprintf(FilePointer, "rom_autobuy_bug ^"%d^"^n^n", getCvarNum(PluginCvar[autobuy_bug]));
+		fprintf(FilePointer, "rom_autobuy_bug ^"%d^"^n^n", getInteger(PluginCvar[autobuy_bug]));
 	}		
 	else
 	{
@@ -1916,7 +1935,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Atacul este blocat prin ban 30 minute. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_fake_players ^"%d^"^n^n", getCvarNum(PluginCvar[fake_players]));
+		fprintf(FilePointer, "rom_fake_players ^"%d^"^n^n", getInteger(PluginCvar[fake_players]));
 	}
 	else
 	{
@@ -1928,7 +1947,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Nota      : Se recomanda ca acest cvar sa nu fie scazut sub valoarea ^"3^".^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_fake_players_limit ^"%d^"^n^n", getCvarNum(PluginCvar[fake_players_limit]));
+		fprintf(FilePointer, "rom_fake_players_limit ^"%d^"^n^n", getInteger(PluginCvar[fake_players_limit]));
 	}
 	else
 	{
@@ -1942,7 +1961,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Daca sunt prea multi jucatori de pe acelasi ip, acestia vor primi ban. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_fake_players_type ^"%d^"^n^n", getCvarNum(PluginCvar[fake_players_type]));
+		fprintf(FilePointer, "rom_fake_players_type ^"%d^"^n^n", getInteger(PluginCvar[fake_players_type]));
 	}
 	else
 	{
@@ -1954,7 +1973,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Nota      : Recomandam sa nu setati o valoarea prea mare, deoarece in cazul unei detectari eronate jucatorii serverului pot avea de suferit.^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_fake_players_punish ^"%d^"^n^n", getCvarNum(PluginCvar[fake_players_punish]));
+		fprintf(FilePointer, "rom_fake_players_punish ^"%d^"^n^n", getInteger(PluginCvar[fake_players_punish]));
 	}
 	else
 	{
@@ -1969,7 +1988,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Fisierul este sters. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_delete_custom_hpk ^"%d^"^n^n", getCvarNum(PluginCvar[delete_custom_hpk]));
+		fprintf(FilePointer, "rom_delete_custom_hpk ^"%d^"^n^n", getInteger(PluginCvar[delete_custom_hpk]));
 	}
 	else
 	{
@@ -1985,7 +2004,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 2: Fisierul este sters si e setat ^"server_language ro^" in vault.ini.^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_delete_vault ^"%d^"^n^n", getCvarNum(PluginCvar[delete_vault]));
+		fprintf(FilePointer, "rom_delete_vault ^"%d^"^n^n", getInteger(PluginCvar[delete_vault]));
 	}
 	else
 	{
@@ -1999,7 +2018,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Mesajele sunt activate. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_advertise ^"%d^"^n^n", getCvarNum(PluginCvar[advertise]));
+		fprintf(FilePointer, "rom_advertise ^"%d^"^n^n", getInteger(PluginCvar[advertise]));
 	}
 	else
 	{
@@ -2011,7 +2030,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Nota      : Se recomanda sa nu setati acest cvar pe o valoare prea mica, altfel mesajul va face spam in chat.^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_advertise_time ^"%d^"^n^n", getCvarNum(PluginCvar[advertise_time]));
+		fprintf(FilePointer, "rom_advertise_time ^"%d^"^n^n", getInteger(PluginCvar[advertise_time]));
 	}
 	else
 	{
@@ -2025,7 +2044,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Mesajele sunt activate. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_warn ^"%d^"^n^n", getCvarNum(PluginCvar[plug_warn]));
+		fprintf(FilePointer, "rom_warn ^"%d^"^n^n", getInteger(PluginCvar[plug_warn]));
 	}
 	else
 	{
@@ -2039,7 +2058,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Functia este activata.^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_log ^"%d^"^n^n", getCvarNum(PluginCvar[plug_log]));
+		fprintf(FilePointer, "rom_log ^"%d^"^n^n", getInteger(PluginCvar[plug_log]));
 	}
 	else
 	{
@@ -2055,7 +2074,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Functia este activata. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_admin_login ^"%d^"^n^n", getCvarNum(PluginCvar[admin_login]));
+		fprintf(FilePointer, "rom_admin_login ^"%d^"^n^n", getInteger(PluginCvar[admin_login]));
 	}
 	else
 	{
@@ -2067,7 +2086,8 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Nota      : De preferat sa nu se suprapuna cu fisierul de adminurile ^"normale^", altfel unele din adminele protejate pot fi incarcate de plugin-ul de baza, creeand neplaceri.^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_admin_login_file ^"%s^"^n^n", getString(PluginCvar[admin_login_file]));
+		getString(PluginCvar[admin_login_file], CvarString, charsmax(CvarString));
+		fprintf(FilePointer, "rom_admin_login_file ^"%s^"^n^n", CvarString);
 	}
 	else
 	{
@@ -2081,7 +2101,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Argumentele sunt printate in consola.^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_admin_login_debug ^"%d^"^n^n", getCvarNum(PluginCvar[admin_login_debug]));
+		fprintf(FilePointer, "rom_admin_login_debug ^"%d^"^n^n", getInteger(PluginCvar[admin_login_debug]));
 	}
 	else
 	{
@@ -2096,7 +2116,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Fisierul este decontaminat. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_utf8_bom ^"%d^"^n^n", getCvarNum(PluginCvar[utf8_bom]));
+		fprintf(FilePointer, "rom_utf8_bom ^"%d^"^n^n", getInteger(PluginCvar[utf8_bom]));
 	}
 	else
 	{
@@ -2116,7 +2136,8 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Update    : Incepand de la versiunea 1.0.2s, plugin-ul *ROM-Protect devine mult mai primitor si te lasa chiar sa ii schimbi numele.^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_tag ^"%s^"^n^n", getString(PluginCvar[Tag]));
+		getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
+		fprintf(FilePointer, "rom_tag ^"%s^"^n^n", CvarString);
 	}
 	else
 	{
@@ -2131,7 +2152,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Bug-ul este blocat. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_color_bug ^"%d^"^n^n", getCvarNum(PluginCvar[color_bug]));
+		fprintf(FilePointer, "rom_color_bug ^"%d^"^n^n", getInteger(PluginCvar[color_bug]));
 	}
 	else
 	{
@@ -2147,7 +2168,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Bug-ul este blocat. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_motdfile ^"%d^"^n^n", getCvarNum(PluginCvar[motdfile]));
+		fprintf(FilePointer, "rom_motdfile ^"%d^"^n^n", getInteger(PluginCvar[motdfile]));
 	}
 	else
 	{
@@ -2162,7 +2183,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Bug-ul este blocat. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_anti_pause ^"%d^"^n^n", getCvarNum(PluginCvar[anti_pause]));
+		fprintf(FilePointer, "rom_anti_pause ^"%d^"^n^n", getInteger(PluginCvar[anti_pause]));
 	}
 	else
 	{
@@ -2180,7 +2201,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 4: Functia va bloca comanda daca detecteaza ban-ul pe toate clasele de ip.^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_anti_ban_class ^"%d^"^n^n", getCvarNum(PluginCvar[anti_ban_class]));
+		fprintf(FilePointer, "rom_anti_ban_class ^"%d^"^n^n", getInteger(PluginCvar[anti_ban_class]));
 	}
 	else
 	{
@@ -2195,7 +2216,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Plugin-ul se va auto-actualiza. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_auto_update ^"%d^"^n^n", getCvarNum(PluginCvar[auto_update]));
+		fprintf(FilePointer, "rom_auto_update ^"%d^"^n^n", getInteger(PluginCvar[auto_update]));
 	}
 	else
 	{
@@ -2211,7 +2232,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Plugin-ul se va auto-actualiza si cu update-uri beta. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_dev_update ^"%d^"^n^n", getCvarNum(PluginCvar[dev_update]));
+		fprintf(FilePointer, "rom_dev_update ^"%d^"^n^n", getInteger(PluginCvar[dev_update]));
 	}
 	else
 	{
@@ -2228,7 +2249,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Functia este activata. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_give_info ^"%d^"^n^n", getCvarNum(PluginCvar[info]));
+		fprintf(FilePointer, "rom_give_info ^"%d^"^n^n", getInteger(PluginCvar[info]));
 	}
 	else
 	{
@@ -2244,7 +2265,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 2: Pluginul va interzice oricarui client sa scrie in chat pana cand nu va introduce un cod capcha in chat. (cod prestabilit sau cod la intamplare, asta se seteaza la cvar-ul rom_xfakeplayer_spam_capcha)^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_xfakeplayer_spam ^"%d^"^n^n", getCvarNum(PluginCvar[xfakeplayer_spam]));
+		fprintf(FilePointer, "rom_xfakeplayer_spam ^"%d^"^n^n", getInteger(PluginCvar[xfakeplayer_spam]));
 	}
 	else
 	{
@@ -2258,7 +2279,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Functia este activata. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_xfakeplayer_spam_maxchars ^"%d^"^n^n", getCvarNum(PluginCvar[xfakeplayer_spam_maxchars]));
+		fprintf(FilePointer, "rom_xfakeplayer_spam_maxchars ^"%d^"^n^n", getInteger(PluginCvar[xfakeplayer_spam_maxchars]));
 	}
 	else
 	{
@@ -2270,7 +2291,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Nota      : Atentie, numarul de mesaje identice trimise trebuie sa nu fie mai mic de 3, altfel protectia s-ar putea sa baneze unii jucatori.^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_xfakeplayer_spam_maxsais ^"%d^"^n^n", getCvarNum(PluginCvar[xfakeplayer_spam_maxsais]));
+		fprintf(FilePointer, "rom_xfakeplayer_spam_maxsais ^"%d^"^n^n", getInteger(PluginCvar[xfakeplayer_spam_maxsais]));
 	}
 	else
 	{
@@ -2285,7 +2306,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 2: Jucatorul va primi ban pentru o valoare setata in cvar-ul rom_xfakeplayer_spam_punish. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_xfakeplayer_spam_type ^"%d^"^n^n", getCvarNum(PluginCvar[xfakeplayer_spam_type]));
+		fprintf(FilePointer, "rom_xfakeplayer_spam_type ^"%d^"^n^n", getInteger(PluginCvar[xfakeplayer_spam_type]));
 	}
 	else
 	{
@@ -2297,7 +2318,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Nota      : Se recomanda sa nu se seteze o valoare prea mare pentru acest cvar, in cazul unei detectari false, jucatorul poate avea de suferit.^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_xfakeplayer_spam_punish ^"%d^"^n^n", getCvarNum(PluginCvar[xfakeplayer_spam_punish]));
+		fprintf(FilePointer, "rom_xfakeplayer_spam_punish ^"%d^"^n^n", getInteger(PluginCvar[xfakeplayer_spam_punish]));
 	}
 	else
 	{
@@ -2311,7 +2332,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Chat-ul se va debloca printr-un cod la intamplare (random).^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_xfakeplayer_spam_capcha ^"%d^"^n^n", getCvarNum(PluginCvar[xfakeplayer_spam_capcha]));
+		fprintf(FilePointer, "rom_xfakeplayer_spam_capcha ^"%d^"^n^n", getInteger(PluginCvar[xfakeplayer_spam_capcha]));
 	}
 	else
 	{
@@ -2324,7 +2345,8 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Update    : Incepand de la versiunea 1.0.2s, plugin-ul *ROM-Protect devine mult mai primitor si te lasa chiar sa ii schimbi numele.^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_xfakeplayer_spam_capcha_word ^"%s^"^n^n", getString(PluginCvar[xfakeplayer_spam_capcha_word]));
+		getString(PluginCvar[xfakeplayer_spam_capcha_word], CvarString, charsmax(CvarString));
+		fprintf(FilePointer, "rom_xfakeplayer_spam_capcha_word ^"%s^"^n^n", CvarString);
 	}
 	else
 	{
@@ -2339,7 +2361,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Valoarea 1: Functia este activata. [Default]^n");
 	if (exist)
 	{
-		fprintf(FilePointer, "rom_prot_cvars ^"%d^"^n^n", getCvarNum(PluginCvar[protcvars]));
+		fprintf(FilePointer, "rom_prot_cvars ^"%d^"^n^n", getInteger(PluginCvar[protcvars]));
 	}
 	else
 	{
