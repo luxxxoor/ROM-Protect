@@ -13,13 +13,14 @@ const Menu_OFF = 0;
 const Menu_ChooseAppearance = 3;
 
 new const Version[]           = "1.0.4s-dev",
-			 Build               = 94,
-			 Date[]              = "23.09.2016",
+			 Build               = 95,
+			 Date[]              = "27.09.2016",
 			 PluginName[]        = "ROM-Protect",
 			 CfgFile[]           = "addons/amxmodx/configs/rom_protect.cfg",
 			 LangFile[]          = "addons/amxmodx/data/lang/rom_protect.txt",
 			 NewPluginLocation[] = "addons/amxmodx/plugins/rom_protect_new.amxx",
-			 LangType[]          = "%L";
+			 LangType[]          = "%L",
+			 NoLogInfo           = -1;
 
 enum INFO
 {
@@ -62,7 +63,7 @@ enum _:AdminLogin
 	#endif
 #endif
 
-new Counter[MAX_PLAYERS+1], LogFile[128], MapName[32], ClSaidSameTh_Count[MAX_PLAYERS+1],
+new Counter[MAX_PLAYERS+1], LogFile[128], ClSaidSameTh_Count[MAX_PLAYERS+1],
 	bool:CorrectName[MAX_PLAYERS+1], bool:IsAdmin[MAX_PLAYERS+1], bool:FirstMsg[MAX_PLAYERS+1],
 	bool:Gag[MAX_PLAYERS+1], bool:UnBlockedChat[MAX_PLAYERS+1];
 new LastPass[MAX_PLAYERS+1][32], Capcha[MAX_PLAYERS+1][8];
@@ -270,9 +271,6 @@ public plugin_precache()
 		write_file(LogFile, "*Aici este salvata activitatea suspecta a fiecarui jucator.^n^n", -1);
 	}
 	
-	get_mapname(MapName, charsmax(MapName));
-	format(MapName, charsmax(MapName), "|%s| ", MapName);
-	
 	if ( file_exists(CfgFile) )
 	{
 		server_cmd("exec %s", CfgFile);
@@ -327,7 +325,7 @@ public checkCfg()
 			{
 				new CvarString[32];
 				getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
-				logCommand(LangType, LANG_SERVER, "ROM_UPDATE_CFG", CvarString);
+				logCommand(NoLogInfo, LangType, LANG_SERVER, "ROM_UPDATE_CFG", CvarString);
 			}
 		}
 	}
@@ -372,7 +370,7 @@ public checkLang()
 			{
 				new CvarString[32];
 				getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
-				logCommand(LangType, LANG_SERVER, "ROM_UPDATE_LANG", CvarString);
+				logCommand(NoLogInfo, LangType, LANG_SERVER, "ROM_UPDATE_LANG", CvarString);
 			}
 			WriteLang(true);
 		}
@@ -463,7 +461,7 @@ public client_authorized(Index)
 							}
 							if ( getInteger(PluginCvar[plug_log]) == 1 )
 							{
-								logCommand(LangType, LANG_SERVER, "ROM_FAKE_PLAYERS_LOG", CvarString, Address);
+								logCommand(NoLogInfo, LangType, LANG_SERVER, "ROM_FAKE_PLAYERS_LOG", CvarString, Address);
 							}
 						}
 					}
@@ -623,7 +621,7 @@ public plugin_pause()
 		
 		if (getInteger(PluginCvar[plug_log]) == 1)
 		{
-			logCommand(LangType, LANG_SERVER, "ROM_PLUGIN_PAUSE_LOG", CvarString, CvarString);
+			logCommand(NoLogInfo, LangType, LANG_SERVER, "ROM_PLUGIN_PAUSE_LOG", CvarString, CvarString);
 		}
 		
 		get_plugin(-1, PluginName, charsmax(PluginName));
@@ -770,7 +768,7 @@ public cmdPass(Index)
 			
 			if ( getInteger(PluginCvar[plug_log]) == 1 )
 			{
-				logCommand(LangType, LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+				logCommand(Index, LangType, LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD_LOG", CvarString);
 			}
 			
 			IsFlooding[Index] = false;
@@ -901,7 +899,7 @@ public cvarFunc(Index)
 			
 			if ( getInteger(PluginCvar[plug_log]) == 1 )
 			{
-				logCommand(LangType, LANG_SERVER, "ROM_MOTDFILE_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+				logCommand(Index, LangType, LANG_SERVER, "ROM_MOTDFILE_LOG", CvarString);
 			}
 			
 			return PLUGIN_HANDLED; 
@@ -924,7 +922,7 @@ public cvarFunc(Index)
 			
 			if ( getInteger(PluginCvar[plug_log]) == 1 )
 			{
-				logCommand(LangType, LANG_SERVER, "ROM_PROTCVARS_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+				logCommand(Index, LangType, LANG_SERVER, "ROM_PROTCVARS_LOG", CvarString);
 			}
 			
 			return PLUGIN_HANDLED; 
@@ -957,7 +955,7 @@ public rconFunc(Index)
 			
 			if ( getInteger(PluginCvar[plug_log]) == 1 )
 			{
-				logCommand(LangType, LANG_SERVER, "ROM_MOTDFILE_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+				logCommand(Index, LangType, LANG_SERVER, "ROM_MOTDFILE_LOG", CvarString);
 			}
 			
 			return PLUGIN_HANDLED; 
@@ -980,7 +978,7 @@ public rconFunc(Index)
 			
 			if ( getInteger(PluginCvar[plug_log]) == 1 )
 			{
-				logCommand(LangType, LANG_SERVER, "ROM_PROTCVARS_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+				logCommand(Index, LangType, LANG_SERVER, "ROM_PROTCVARS_LOG", CvarString);
 			}
 			
 			return PLUGIN_HANDLED; 
@@ -1040,7 +1038,7 @@ public hookBanClassCommand(Index)
 					
 					if (getInteger(PluginCvar[plug_log]) == 1)
 					{
-						logCommand(LangType, LANG_SERVER, "ROM_ANTI_ANY_BAN_CLASS_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+						logCommand(Index, LangType, LANG_SERVER, "ROM_ANTI_ANY_BAN_CLASS_LOG", CvarString);
 					}
 					
 					return PLUGIN_HANDLED;
@@ -1057,7 +1055,7 @@ public hookBanClassCommand(Index)
 					
 					if (getInteger(PluginCvar[plug_log]) == 1)
 					{
-						logCommand(LangType, LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP), NumStr);
+						logCommand(Index, LangType, LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", CvarString, NumStr);
 					}
 					
 					return PLUGIN_HANDLED;
@@ -1074,7 +1072,7 @@ public hookBanClassCommand(Index)
 					
 					if (getInteger(PluginCvar[plug_log]) == 1)
 					{
-						logCommand(LangType, LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP), NumStr);
+						logCommand(Index, LangType, LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", CvarString, NumStr);
 					}
 					
 					return PLUGIN_HANDLED;
@@ -1089,7 +1087,7 @@ public hookBanClassCommand(Index)
 				
 				if (getInteger(PluginCvar[plug_log]) == 1)
 				{
-					logCommand(LangType, LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP), NumStr);
+					logCommand(Index, LangType, LANG_SERVER, "ROM_ANTI_SOME_BAN_CLASS_LOG", CvarString, NumStr);
 				}
 				
 				return PLUGIN_HANDLED;
@@ -1143,7 +1141,7 @@ public hookBasicOnChatCommand(Index)
 			}
 			if ( LogCvarValue == 1 )
 			{
-				logCommand(LangType, LANG_SERVER, "ROM_CMD_BUG_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+				logCommand(Index, LangType, LANG_SERVER, "ROM_CMD_BUG_LOG", CvarString);
 			}
 			IsUsedCmdBug[Index] = false;
 			return PLUGIN_HANDLED;
@@ -1160,7 +1158,7 @@ public hookBasicOnChatCommand(Index)
 			}
 			if ( LogCvarValue == 1 )
 			{
-				logCommand(LangType, LANG_SERVER, "ROM_COLOR_BUG_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+				logCommand(Index, LangType, LANG_SERVER, "ROM_COLOR_BUG_LOG", CvarString);
 			}
 			IsUsedColorBug[Index] = false;
 			return PLUGIN_HANDLED;
@@ -1177,7 +1175,7 @@ public checkBot(Index, const Var[], const Value[])
 		getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
 		if ( getInteger(PluginCvar[plug_log]) == 1 )
 		{
-			logCommand(LangType, LANG_SERVER, "ROM_FAKE_PLAYERS_DETECT_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+			logCommand(Index, LangType, LANG_SERVER, "ROM_FAKE_PLAYERS_DETECT_LOG", CvarString);
 		}
 		
 		console_print(Index, LangType, Index, "ROM_FAKE_PLAYERS_DETECT", CvarString);
@@ -1210,7 +1208,7 @@ public CheckAutobuyBug(Index)
 			
 				if ( getInteger( PluginCvar[plug_log] ) == 1 )
 				{
-					logCommand(LangType, LANG_SERVER, "ROM_AUTOBUY_LOG", CvarString, getInfo(Index, INFO_NAME), getInfo(Index, INFO_AUTHID), getInfo(Index, INFO_IP));
+					logCommand(Index, LangType, LANG_SERVER, "ROM_AUTOBUY_LOG", CvarString);
 				}
 			
 				return PLUGIN_HANDLED;		
@@ -1267,14 +1265,14 @@ public downloadComplete(Index, Error)
 	{
 		if ( file_size(PluginLocation) != file_size(NewPluginLocation) )
 		{
-			logCommand(LangType, LANG_SERVER, "ROM_AUTO_UPDATE_SUCCEED", CvarString);
+			logCommand(NoLogInfo, LangType, LANG_SERVER, "ROM_AUTO_UPDATE_SUCCEED", CvarString);
 		}
 		delete_file(PluginLocation);
 		rename_file(NewPluginLocation, PluginLocation, 1);
 	}
 	else
 	{
-		logCommand(LangType, LANG_SERVER, "ROM_AUTO_UPDATE_FAILED", CvarString);
+		logCommand(NoLogInfo, LangType, LANG_SERVER, "ROM_AUTO_UPDATE_FAILED", CvarString);
 		delete_file(NewPluginLocation);
 	}
 }*/
@@ -1430,7 +1428,7 @@ public hookForXFakePlayerSpam(Index)
 				
 						if ( getInteger(PluginCvar[plug_log]) == 1 )
 						{
-							logCommand(LangType, LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_LOG", CvarString, Address);
+							logCommand(NoLogInfo, LangType, LANG_SERVER, "ROM_XFAKE_PLAYERS_SPAM_LOG", CvarString, Address);
 						}
 					}
 				
@@ -1557,7 +1555,7 @@ public loadAdminLogin()
 		if ( getInteger(PluginCvar[plug_log]) == 1 )
 		{
 			getString(PluginCvar[Tag], CvarString, charsmax(CvarString));
-			logCommand(LangType, LANG_SERVER, "ROM_FILE_NOT_FOUND", CvarString, Path);
+			logCommand(NoLogInfo, LangType, LANG_SERVER, "ROM_FILE_NOT_FOUND", CvarString, Path);
 		}
 		
 		fputs(FilePointer, "; Aici vor fi inregistrate adminele protejate.^n");
@@ -1622,54 +1620,49 @@ public loadAdminLogin()
 	
 }
 
-logCommand(const StandardMessage[], any:...)
+logCommand(Index, const StandardMessage[], any:...)
 {
-	new Message[256], LogMessage[256], Time[32];
+	new LogMessage[256], Time[32], MapName[64];
 	
 	get_time(" %H:%M:%S ", Time, charsmax(Time));
-	vformat(Message, charsmax(Message), StandardMessage, 2);
-	formatex(LogMessage, charsmax(LogMessage), "L %s%s%s", Time, MapName, Message);
+	vformat(LogMessage, charsmax(LogMessage), StandardMessage, 3);
+	get_mapname(MapName, charsmax(MapName));
+	format(LogMessage, charsmax(LogMessage), "L %s|%s| %s", Time, MapName, LogMessage);
+	
+	if (Index != NoLogInfo)
+	{
+		new String[32];
+		get_user_name(Index, String, charsmax(String));
+		#if AMXX_VERSION_NUM < 183
+			replace_all(LogMessage, charsmax(LogMessage), "$name$", String);
+		#else
+			replace_string(LogMessage, charsmax(LogMessage), "$name$", String);
+		#endif
+			
+		get_user_ip(Index, String, charsmax(String), any:true);
+		#if AMXX_VERSION_NUM < 183
+			replace_all(LogMessage, charsmax(LogMessage), "$ip$", String);
+		#else
+			replace_string(LogMessage, charsmax(LogMessage), "$ip$", String);
+		#endif
+			
+		if (Index)
+		{
+			get_user_authid(Index, String, charsmax(String));
+		}
+		else
+		{
+			copy(String, charsmax(String), "SERVER");
+		}
+		#if AMXX_VERSION_NUM < 183
+			replace_all(LogMessage, charsmax(LogMessage), "$authid$", String);
+		#else
+			replace_string(LogMessage, charsmax(LogMessage), "$authid$", String);
+		#endif
+	}
 	
 	server_print(LogMessage);
 	write_file(LogFile, LogMessage, -1);
-}
-
-getInfo(Index, INFO:Type)
-{
-	new const Server[32] = "SERVER"; // Trebuie sa aibe acealasi numar de caractere pentru a nu primi "error 047".
-	switch ( Type )
-	{
-		case INFO_NAME:
-		{
-			new Name[32];
-			get_user_name(Index, Name, charsmax(Name));
-			
-			return Name;
-		}
-		case INFO_IP:
-		{
-			new Ip[32];
-			get_user_ip(Index, Ip, charsmax(Ip), 1);
-			
-			return Ip;
-		}
-		case INFO_AUTHID:
-		{
-			new AuthID[32];
-			if ( Index )
-			{
-				get_user_authid(Index, AuthID, charsmax(AuthID));
-				
-				return AuthID;
-			}
-			else
-			{
-				return Server;
-			}
-		}
-	}
-	
-	return Server; // Un return care nu se va apela niciodata, insa compilatorul nu va mai primi warning.
 }
 
 getString(Cvar, Buffer[], Len)
@@ -2485,7 +2478,7 @@ WriteLang( bool:exist )
 		formatex(Line, charsmax(Line), "ROM_FAKE_PLAYERS_DETECT_LOG = %L^n", LANG_SERVER, "ROM_FAKE_PLAYERS_DETECT_LOG", "^%s", "^%s", "^%s", "^%s" );
 		if ( contain(Line, "ML_NOTFOUND") != -1 )
 		{
-			fputs(FilePointer, "ROM_FAKE_PLAYERS_DETECT_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca suspect de ^"xFake-Players^" sau ^"xSpammer^".^n");
+			fputs(FilePointer, "ROM_FAKE_PLAYERS_DETECT_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca suspect de ^"xFake-Players^" sau ^"xSpammer^".^n");
 		}
 		else
 		{
@@ -2732,7 +2725,7 @@ WriteLang( bool:exist )
 		formatex(Line, charsmax(Line), "ROM_CMD_BUG_LOG = %L^n", LANG_SERVER, "ROM_CMD_BUG_LOG", "^%s", "^%s", "^%s", "^%s" );
 		if ( contain(Line, "ML_NOTFOUND") != -1 )
 		{
-			fputs(FilePointer, "ROM_CMD_BUG_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului.^n");
+			fputs(FilePointer, "ROM_CMD_BUG_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului.^n");
 		}
 		else
 		{
@@ -2775,7 +2768,7 @@ WriteLang( bool:exist )
 		if ( contain(Line, "ML_NOTFOUND") != -1 )
 		{
 			
-			fputs(FilePointer, "ROM_COLOR_BUG_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii.^n");
+			fputs(FilePointer, "ROM_COLOR_BUG_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii.^n");
 		}
 		else
 		{
@@ -2817,7 +2810,7 @@ WriteLang( bool:exist )
 		formatex(Line, charsmax(Line), "ROM_SPEC_BUG_LOG = %L^n", LANG_SERVER, "ROM_SPEC_BUG_LOG", "^%s", "^%s", "^%s", "^%s" );
 		if ( contain(Line, "ML_NOTFOUND") != -1 )
 		{
-			fputs(FilePointer, "ROM_SPEC_BUG_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului.^n");
+			fputs(FilePointer, "ROM_SPEC_BUG_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului.^n");
 		}
 		else
 		{
@@ -2838,7 +2831,7 @@ WriteLang( bool:exist )
 			formatex(Line, charsmax(Line), "ROM_ADMIN_CHAT_FLOOD_LOG = %L^n", LANG_SERVER, "ROM_ADMIN_CHAT_FLOOD_LOG", "^%s", "^%s", "^%s", "^%s" );
 			if ( contain(Line, "ML_NOTFOUND") != -1 )
 			{
-				fputs(FilePointer, "ROM_ADMIN_CHAT_FLOOD_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa dea kick adminilor de pe server.^n");	
+				fputs(FilePointer, "ROM_ADMIN_CHAT_FLOOD_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa dea kick adminilor de pe server.^n");	
 			}
 			else
 			{
@@ -2871,7 +2864,7 @@ WriteLang( bool:exist )
 		formatex(Line, charsmax(Line), "ROM_AUTOBUY_LOG = %L^n", LANG_SERVER, "ROM_AUTOBUY_LOG", "^%s", "^%s", "^%s", "^%s" );
 		if ( contain(Line, "ML_NOTFOUND") != -1 )
 		{
-			fputs(FilePointer, "ROM_AUTOBUY_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"AUTOBUY_BUG^" ca sa strice buna functionare a serverului.^n");
+			fputs(FilePointer, "ROM_AUTOBUY_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa foloseasca ^"AUTOBUY_BUG^" ca sa strice buna functionare a serverului.^n");
 		}
 		else
 		{
@@ -2911,7 +2904,7 @@ WriteLang( bool:exist )
 		formatex(Line, charsmax(Line), "ROM_MOTDFILE_LOG = %L^n", LANG_SERVER, "ROM_MOTDFILE_LOG", "^%s", "^%s", "^%s", "^%s" );
 		if ( contain(Line, "ML_NOTFOUND") != -1 )
 		{
-			fputs(FilePointer, "ROM_MOTDFILE_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca cvar-ul ^"motdfile^" ca sa fure informatii din acest server.^n");	
+			fputs(FilePointer, "ROM_MOTDFILE_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa foloseasca cvar-ul ^"motdfile^" ca sa fure informatii din acest server.^n");	
 		}
 		else
 		{
@@ -2953,7 +2946,7 @@ WriteLang( bool:exist )
 		formatex(Line, charsmax(Line), "ROM_ANTI_ANY_BAN_CLASS_LOG = %L^n", LANG_SERVER, "ROM_ANTI_ANY_BAN_CLASS_LOG", "^%s", "^%s", "^%s", "^%s" );
 		if ( contain(Line, "ML_NOTFOUND") != -1 )
 		{
-			fputs(FilePointer, "ROM_ANTI_ANY_BAN_CLASS_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa dea ban pe clasa de ip.^n");	
+			fputs(FilePointer, "ROM_ANTI_ANY_BAN_CLASS_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa dea ban pe clasa de ip.^n");	
 		}
 		else
 		{
@@ -2967,7 +2960,7 @@ WriteLang( bool:exist )
 		}
 		else
 		{
-			fputs(FilePointer, "ROM_ANTI_SOME_BAN_CLASS_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa dea ban pe mai mult de %s clase de ip.^n");	
+			fputs(FilePointer, "ROM_ANTI_SOME_BAN_CLASS_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa dea ban pe mai mult de %s clase de ip.^n");	
 		}
 		
 		formatex(Line, charsmax(Line), "ROM_AUTO_UPDATE_SUCCEED = %L^n", LANG_SERVER, "ROM_AUTO_UPDATE_SUCCEED", "^%s");
@@ -3163,7 +3156,7 @@ WriteLang( bool:exist )
 		formatex(Line, charsmax(Line), "ROM_PROTCVARS_LOG = %L^n", LANG_SERVER, "ROM_PROTCVARS_LOG", "^%s", "^%s", "^%s", "^%s");
 		if ( contain(Line, "ML_NOTFOUND") != -1 )
 		{
-			fputs(FilePointer, "ROM_PROTCVARS_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa schimbe cvar-urile pluginului de protectie, astea pot fi schimbate doar din fisierul configurator.^n");	
+			fputs(FilePointer, "ROM_PROTCVARS_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa schimbe cvar-urile pluginului de protectie, astea pot fi schimbate doar din fisierul configurator.^n");	
 		}
 		else
 		{
@@ -3203,7 +3196,7 @@ WriteLang( bool:exist )
 		fputs(FilePointer, "ROM_FAKE_PLAYERS_KICK = %s : Nu poti intra pe server, deoarece sunt inca %s jucatori cu acelasi ip-ul ca al tau.^n");
 		
 		fputs(FilePointer, "ROM_FAKE_PLAYERS_DETECT = %s : Ai primit kick deoarece deoarece esti suspect de fake-client. Te rugam sa folosesti alt client.^n");
-		fputs(FilePointer, "ROM_FAKE_PLAYERS_DETECT_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca suspect de ^"xFake-Players^" sau ^"xSpammer^".^n");
+		fputs(FilePointer, "ROM_FAKE_PLAYERS_DETECT_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca suspect de ^"xFake-Players^" sau ^"xSpammer^".^n");
 		
 		#if AMXX_VERSION_NUM < 183
 			fputs(FilePointer, "ROM_PLUGIN_PAUSE = %s%s : %sNe pare rau, dar din anumite motive, acest plugin nu poate fi pus pe pauza.^n");
@@ -3265,7 +3258,7 @@ WriteLang( bool:exist )
 			fputs(FilePointer, "ROM_CMD_BUG = ^^3%s : ^^4S-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.^n");
 		#endif 
 		
-		fputs(FilePointer, "ROM_CMD_BUG_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului.^n");
+		fputs(FilePointer, "ROM_CMD_BUG_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa foloseasca ^"CMD_BUG^" ca sa strice buna functionare a serverului.^n");
 		fputs(FilePointer, "ROM_CMD_BUG_PRINT = %s : S-au observat caractere interzise in textul trimis de tine. Mesajul tau a fost eliminat.^n");
 		
 		#if AMXX_VERSION_NUM < 183
@@ -3274,7 +3267,7 @@ WriteLang( bool:exist )
 			fputs(FilePointer, "ROM_COLOR_BUG = ^^3%s : ^^4S-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.^n");
 		#endif
 		
-		fputs(FilePointer, "ROM_COLOR_BUG_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii.^n");
+		fputs(FilePointer, "ROM_COLOR_BUG_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa foloseasca ^"COLOR_BUG^" ca sa alerteze playerii sau adminii.^n");
 		fputs(FilePointer, "ROM_COLOR_BUG_PRINT = %s : S-au observat caractere suspecte in textul trimis de tine. Mesajul tau a fost eliminat.^n");		
 		
 		#if AMXX_VERSION_NUM < 183
@@ -3283,11 +3276,11 @@ WriteLang( bool:exist )
 			fputs(FilePointer, "ROM_SPEC_BUG = ^^3%s : ^^4Ai facut o miscare suspecta asa ca te-am mutat la echipa precedenta.^n");
 		#endif
 		
-		fputs(FilePointer, "ROM_SPEC_BUG_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului.^n");
+		fputs(FilePointer, "ROM_SPEC_BUG_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa foloseasca ^"SPEC_BUG^" ca sa strice buna functionare a serverului.^n");
 		
 		#if AMXX_VERSION_NUM < 183
 			fputs(FilePointer, "ROM_ADMIN_CHAT_FLOOD = %s%s : %sS-a observat un mic IsFlooding la chat primit din partea ta. Mesajele trimise de tine vor fi filtrate.^n");
-			fputs(FilePointer, "ROM_ADMIN_CHAT_FLOOD_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa dea kick adminilor de pe server.^n");	
+			fputs(FilePointer, "ROM_ADMIN_CHAT_FLOOD_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa foloseasca ^"ADMIN_CHAT_FLOOD^" ca sa dea kick adminilor de pe server.^n");	
 		#endif
 		
 		#if AMXX_VERSION_NUM < 183
@@ -3296,14 +3289,14 @@ WriteLang( bool:exist )
 			fputs(FilePointer, "ROM_AUTOBUY = ^^3%s : ^^4Comanda trimisa de tine are valori suspecte, asa ca am blocat-o.^n");
 		#endif
 		
-		fputs(FilePointer, "ROM_AUTOBUY_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca ^"AUTOBUY_BUG^" ca sa strice buna functionare a serverului.^n");
+		fputs(FilePointer, "ROM_AUTOBUY_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa foloseasca ^"AUTOBUY_BUG^" ca sa strice buna functionare a serverului.^n");
 		
 		fputs(FilePointer, "ROM_FILE_NOT_FOUND = %s : Fisierul %s nu exista.^n");
 		
 		fputs(FilePointer, "ROM_ADMIN_DEBUG = Nume : %s - Parola : %s - Acces : %s - Flag : %s^n");
 		
 		fputs(FilePointer, "ROM_MOTDFILE = %s : S-a detectat o miscare suspecta din partea ta, comanda ta a fost blocata.^n");
-		fputs(FilePointer, "ROM_MOTDFILE_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa foloseasca cvar-ul ^"motdfile^" ca sa fure informatii din acest server.^n");		
+		fputs(FilePointer, "ROM_MOTDFILE_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa foloseasca cvar-ul ^"motdfile^" ca sa fure informatii din acest server.^n");		
 		
 		#if AMXX_VERSION_NUM < 183
 			fputs(FilePointer, "ROM_ADVERTISE = %s%s :%s Acest server este supravegheat de plugin-ul de protectie %s%s%s versiunea %s%s%s .^n");
@@ -3312,8 +3305,8 @@ WriteLang( bool:exist )
 		#endif
 		
 		fputs(FilePointer, "ROM_ANTI_BAN_CLASS = %s : S-au detectat u numar prea mare de ban-uri pe clasa de ip, comanda ta a fost blocata.^n");
-		fputs(FilePointer, "ROM_ANTI_ANY_BAN_CLASS_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa dea ban pe clasa de ip.^n");	
-		fputs(FilePointer, "ROM_ANTI_SOME_BAN_CLASS_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa dea ban pe mai mult de %s clase de ip.^n");
+		fputs(FilePointer, "ROM_ANTI_ANY_BAN_CLASS_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa dea ban pe clasa de ip.^n");	
+		fputs(FilePointer, "ROM_ANTI_SOME_BAN_CLASS_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa dea ban pe mai mult de %s clase de ip.^n");
 
 		fputs(FilePointer, "ROM_AUTO_UPDATE_SUCCEED = %s : S-a efectuat auto-actualizarea pluginului.^n");	
 		fputs(FilePointer, "ROM_AUTO_UPDATE_FAILED = %s : S-a intampinat o eroare la descarcare, iar plugin-ul nu s-a putut auto-actualiza.^n");	
@@ -3356,7 +3349,7 @@ WriteLang( bool:exist )
 		#endif
 		
 		fputs(FilePointer, "ROM_PROTCVARS = %s : Cvar-ururile acestui plugin sunt protejate, comanda ta nu a avut efect.^n");
-		fputs(FilePointer, "ROM_PROTCVARS_LOG = %s : L-am detectat pe ^"%s^" [ %s | %s ] ca a incercat sa schimbe cvar-urile pluginului de protectie, astea pot fi schimbate doar din fisierul configurator.^n");
+		fputs(FilePointer, "ROM_PROTCVARS_LOG = %s : L-am detectat pe ^"$name$^" [ $authid$ | $ip$ ] ca a incercat sa schimbe cvar-urile pluginului de protectie, astea pot fi schimbate doar din fisierul configurator.^n");
 		
 		fclose(FilePointer);
 	}
