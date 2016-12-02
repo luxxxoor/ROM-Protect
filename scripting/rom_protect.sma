@@ -13,8 +13,8 @@ const Menu_OFF = 0;
 const Menu_ChooseAppearance = 3;
 
 new const Version[]       = "1.0.4s-dev",
-			 Build        = 96,
-			 Date[]       = "11.11.2016",
+			 Build        = 97,
+			 Date[]       = "02.12.2016",
 			 PluginName[] = "ROM-Protect",
 			 CfgFile[]    = "addons/amxmodx/configs/rom_protect.cfg",
 			 LangFile[]   = "addons/amxmodx/data/lang/rom_protect.txt",
@@ -1772,18 +1772,11 @@ registersInit()
 
 public stringFilter(String[], Len)
 {
-	new LeftBuffer[MAX_NAME_LENGTH], RightBuffef[MAX_NAME_LENGTH], MidBuffer[3];
-	for (new i = 0; i <= Len; ++i)
+	for (new i = 0; String[i] != 0; ++i)
 	{
-		if ( i+1 < MAX_NAME_LENGTH )
+		if ((String[i] == '#' || String[i] == '+') && isalpha(String[i+1]))
 		{
-			if ( (String[i] == '#' && isalpha(String[i+1])) || (String[i] == '+' && isalpha(String[i+1])) )
-			{
-				formatex(MidBuffer, charsmax(MidBuffer), "%c%c", String[i], String[i+1]);
-				split(String, LeftBuffer, charsmax(LeftBuffer), RightBuffef, charsmax(RightBuffef), MidBuffer);
-				format(String, Len, "%s%c %c%s", LeftBuffer, String[i], String[i+1], RightBuffef);
-			}
-			
+			format(String[i+1], Len, " %s", String[i+1]);
 		}
 	}
 }
@@ -2351,6 +2344,7 @@ WriteCfg( bool:exist )
 	fputs(FilePointer, "// Scop      : Impiedica trimiterea mesajelor din consola, blocand astfel bindurile.^n");
 	fputs(FilePointer, "// Impact    : Opreste spam-ul si de ce nu, unele reclame.^n");
 	fputs(FilePointer, "// Nota      : Daca doriti sa adaugati cuvinte care sa reprezinte exceptii pentru acesta functie cuvintele trebuiesc scrise in fisierul ^"rom_protect.ini^".^n");
+	fputs(FilePointer, "// Nota      : Aceasta protectie nu este perfecta, ci doar un filtu. Se poate trece usor de ea.");
 	fputs(FilePointer, "// Valoarea 0: Functia este dezactivata.^n");
 	fputs(FilePointer, "// Valoarea 1: Functia este activata. [Default]^n");
 	if (exist)
