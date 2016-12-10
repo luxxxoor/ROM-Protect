@@ -14,7 +14,7 @@ const Menu_ChooseAppearance = 3;
 
 new const Version[]       = "1.0.4s-dev",
 			 Build        = 98,
-			 Date[]       = "03.12.2016",
+			 Date[]       = "10.12.2016",
 			 PluginName[] = "ROM-Protect",
 			 CfgFile[]    = "addons/amxmodx/configs/rom_protect.cfg",
 			 LangFile[]   = "addons/amxmodx/data/lang/rom_protect.txt",
@@ -401,7 +401,7 @@ public plugin_init()
 	}
 }
 
-public client_authorized(Index)
+public client_connect(Index)
 {
 	if (getInteger(PluginCvar[cmd_bug]) == 1)
 	{
@@ -409,12 +409,11 @@ public client_authorized(Index)
 		get_user_name(Index, Name, charsmax(Name));
 		stringFilter(Name, charsmax(Name));
 		set_user_info(Index, "name", Name);
-		if (pev(Index, pev_deadflag) != DEAD_NO) 
-        { 
-			set_pev(Index, pev_netname, Name);
-        }
 	}
-	
+}
+
+public client_authorized(Index)
+{	
 	new CvarString[32];
 	if (getInteger(PluginCvar[fake_players]) == 1)
 	{
@@ -592,10 +591,6 @@ public client_infochanged(Index)
 		{
 			stringFilter(NewName, charsmax(NewName));
 			set_user_info(Index, "name", NewName);
-			if (pev(Index, pev_deadflag) != DEAD_NO) 
-			{ 
-				set_pev(Index, pev_netname, NewName);
-			}
 		}
 	
 		if ( AdminLoginCvarValue == 1 && IsAdmin[Index] )
