@@ -43,8 +43,11 @@ enum _:AdminLogin
 	LoginFlag[6]
 }
 
-#if AMXX_VERSION_NUM < 183
-	#define MAX_PLAYERS 32		
+#if !defined MAX_PLAYERS
+	#define MAX_PLAYERS 32
+#endif
+
+#if AMXX_VERSION_NUM < 183	
 	#define MAX_NAME_LENGTH 32
 	new AdminNum;
 	new bool:IsFlooding[MAX_PLAYERS+1];
@@ -57,10 +60,6 @@ enum _:AdminLogin
 		Blue,
 		Grey
 	}
-#else		
-	#if MAX_PLAYERS != 32		
-		#define MAX_PLAYERS 32		
-	#endif
 #endif
 
 new Counter[MAX_PLAYERS+1], LogFile[128], ClSaidSameTh_Count[MAX_PLAYERS+1],
